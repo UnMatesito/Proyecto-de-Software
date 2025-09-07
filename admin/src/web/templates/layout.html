@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css')}}">  <!-- TE DEJO LA REF A LA HOJA DE ESTILOS,-->>
-    <title>{% block title %}Headder de la pag {% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css')}}">
+    <title>{% block title %}Header de la pagina{% endblock %}</title>
 </head>
 
-<body>
-
+<body class="gradient-background">
     <header>
-        <h1>Headder del body</h1>
+        <h1>Actividad 2</h1>
     </header>
 
     <main>
@@ -18,8 +17,7 @@
     </main>
     
     <footer>
-        <p> Pie de pagina</p>
+        <h3> Proyecto de software - Grupo 09</h3>
     </footer>
-
 </body>
 </html>
