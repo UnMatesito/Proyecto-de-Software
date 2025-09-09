@@ -19,17 +19,18 @@
         
         <h1 class="error-code">{{ error.code }}</h1>
         <h2 class="error-message">{{ error.message }}</h2>
-        <p class="error-description">{{ error.description }}</p>
-        
-        <div class="error-actions">
-            <a href="{{ url_for('home') }}" class="btn btn-primary">Volver al Inicio</a>
-            {% if error.code == 404 %}
-                <button onclick="history.back()" class="btn btn-secondary">Página Anterior</button>
-            {% endif %}
-        </div>
 
-        <div class="error-help">
+        <div class="error-help container">
+            <nav>
+                <div class="error-actions">
+                    <a href="{{ url_for('home') }}" class="btn btn-primary hover-text" >Volver al Inicio</a>
+                    {% if error.code == 404 %}
+                        <button onclick="history.back()" class="btn btn-secondary hover-text">Página Anterior</button>
+                    {% endif %}
+                </div>
+            </nav>
             <h3>¿Necesitas ayuda?</h3>
+            <p class="error-description">{{ error.description }}</p>
             <p>
                 {% if error.code == 404 %}
                     Verifica que la URL esté escrita correctamente o usa la navegación principal.

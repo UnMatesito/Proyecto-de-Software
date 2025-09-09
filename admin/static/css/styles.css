@@ -4,6 +4,16 @@ body {
     padding: 0;
     background-color: #f4f4f4;
 }
+button {
+  all: unset;
+  cursor: pointer;
+}
+a {
+  text-decoration: none; 
+  color: inherit; 
+  cursor: pointer; 
+}
+
 
 .gradient-background {
   background: linear-gradient(266deg, #02e5dc, #5857d5, #3635ff);
@@ -60,4 +70,19 @@ footer h3{
     position: absolute;
     bottom: 10px;
     width: 100%;
+}
+
+.error-actions{
+  font-size: 20px;
+  display: flex;
+  gap: 20px;
+}
+
+.hover-text {
+  color: #4228a2;
+  transition: color 0.3s ease; 
+}
+
+.hover-text:hover {
+  color: #240ab8b4; 
 }
