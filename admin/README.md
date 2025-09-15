@@ -43,7 +43,7 @@ poetry run black . ; poetry run isort . ; poetry run flake8 --show-source .
 ```
 
 ## Para configurar el .env
-1. Hacer una copia del .env.example
+1. Hacer una copia del .env.example y renombrarla a .env
 2. Rellenar los campos
 3. Para rellenar el campo de SECRET_KEY, ejecutar lo siguiente y copiar el resultado
 ```py
