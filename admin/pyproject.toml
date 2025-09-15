@@ -6,9 +6,39 @@ authors = [
     {name = "Neftalí Taiel Toledo Dicroce",email = "toledoneftali@hotmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<4.0"
 dependencies = [
-    "flask (>=3.1.2,<4.0.0)"
+    # Flask
+    "flask>=3.1.2,<4.0.0", # Framework web
+    "flask-sqlalchemy>=3.1.1,<4.0.0", # ORM
+    "flask-session>=0.8.0,<0.9.0", # Para manejo de sesiones
+
+    # Base de datos
+    "psycopg2-binary>=2.9.10,<3.0.0", # Driver para postgresql
+    "flask-migrate>=4.0.5,<5.0.0", # Migraciones para base de datos
+    "geoalchemy2>=0.15.0,<1.0.0", # Compatibilidad para datos geoespaciales
+
+    # Para los schemas (etapa 2)
+    # "marshmallow>=4.0.1,<5.0.0",
+
+    # Seguridad y validación
+    "bcrypt>=4.2.1,<5.0.0", # Hasheo de contraseñas
+    "flask-wtf>=1.2.2,<2.0.0", # Compatibilidad de flask con wtforms
+    "wtforms>=3.2.1,<4.0.0", # Formularios y validación de datos
+    "python-dateutil>=2.8.2,<3.0.0", # Manejo de fechas
+    "email-validator>=2.3.0,<3.0.0", # Requerido para validar emails en wtforms
+
+    # Configuración de entorno
+    "python-dotenv>=1.0.1,<2.0.0", # Permite cargar el .env para configurar el entorno
+
+    # Utilidades
+    "python-slugify>=8.0.4,<9.0.0", # Para crear slugs fácilmente
+    # "pillow>=10.4.0,<11.0.0", # Para manejo de imágenes (probablemente sea útil en la etapa 2, lo dejo por las dudas)
+    "folium>=0.17.0,<1.0.0", # Para los mapas interactivos
+    "pandas>=2.1.0,<3.0.0", # Para los CSV y exportación
+
+    # Para un logging más legible
+    # "python-json-logger>=2.0.7,<3.0.0",
 ]
 
 [tool.poetry]
@@ -18,6 +48,18 @@ packages = [{include = "web", from = "src"}]
 [tool.poetry.group.test.dependencies]
 pytest = "^8.4.2"
 
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+flake8 = "^7.1.1"
+isort = "^5.13.2"
+flask-shell-ipython = "^0.5.3"
+flask-debugtoolbar = "^0.15.1"
+faker = "^33.1.0"
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
