@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+
 from flask import render_template
+
 
 @dataclass
 class HTTPError:
@@ -7,27 +9,30 @@ class HTTPError:
     message: str
     description: str
 
+
 def not_found(e):
     error = HTTPError(
         code=404,
         message="Página no encontrada",
-        description="La página que buscas no existe."
+        description="La página que buscas no existe.",
     )
 
     return render_template("error.html", error=error), 404
+
 
 def internal_server_error(e):
     error = HTTPError(
         code=500,
         message="Error interno del servidor",
-        description="Ha ocurrido un error inesperado en el servidor."
+        description="Ha ocurrido un error inesperado en el servidor.",
     )
     return render_template("error.html", error=error), 500
+
 
 def unauthorized(e):
     error = HTTPError(
         code=401,
         message="No autorizado",
-        description="No tienes permiso para acceder a este recurso."
+        description="No tienes permiso para acceder a este recurso.",
     )
     return render_template("error.html", error=error), 401

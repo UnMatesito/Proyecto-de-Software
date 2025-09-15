@@ -1,0 +1,38 @@
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+class Config:
+    TESTING = False
+    SECRET_KEY = os.getenv("SECRET_KEY", "123456")
+    SESSION_TYPE = os.getenv("SESSION_TYPE", "filesystem")
+    DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+
+
+class ProductionConfig(Config):
+    DEBUG = False
+    pass
+
+
+class DevelopmentConfig(Config):
+    DEBUG_TB_INTERCEPT_REDIRECTS = (
+        False  # Para evitar que el debugbar se detenga en los redirects
+    )
+    pass
+
+
+class TestingConfig(Config):
+    TESTING = True
+
+
+config = {
+    "production": ProductionConfig,
+    "development": DevelopmentConfig,
+    "testing": TestingConfig,
+}
+
+env = os.getenv("FLASK_ENV", "development")
+current_config = config.get(env, DevelopmentConfig)
