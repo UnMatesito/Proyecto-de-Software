@@ -2,7 +2,6 @@ from flask import Flask, render_template
 from flask_debugtoolbar import DebugToolbarExtension
 from src.core.db import db
 from src.web.config import current_config
-from src.web.controllers.issue import issue_bp
 
 from .handlers import error
 
