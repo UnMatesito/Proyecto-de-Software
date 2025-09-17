@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from flask_debugtoolbar import DebugToolbarExtension
-
+from src.core.db import db
 from src.web.config import current_config
 
 from .handlers import error
@@ -12,6 +12,16 @@ def create_app(env="development", static_folder="../../static"):
 
     if app.config.get("DEBUG", False):
         DebugToolbarExtension(app)
+
+    # Inicializar base de datos
+    db.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        db.session.remove()
 
     # Rutas
     @app.route("/")

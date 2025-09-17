@@ -10,7 +10,7 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "123456")
     SESSION_TYPE = os.getenv("SESSION_TYPE", "filesystem")
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
 
 class ProductionConfig(Config):
     DEBUG = False
@@ -22,7 +22,6 @@ class DevelopmentConfig(Config):
         False  # Para evitar que el debugbar se detenga en los redirects
     )
     pass
-
 
 class TestingConfig(Config):
     TESTING = True
