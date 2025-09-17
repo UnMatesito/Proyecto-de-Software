@@ -64,6 +64,7 @@ postgresql://usuario:contraseña@host:puerto/nombre_db
 - POSTGRES_PASSWORD
 - POSTGRES_DB
 - PGADMIN_PASSWORD
+8. Replicar lo anterior en el .env de la carpeta admin (Sin PGADMIN_PASSWORD)
 
 ## Info acceder a pgadmin y la base de datos
 - Pgadmin: http://localhost:5050
