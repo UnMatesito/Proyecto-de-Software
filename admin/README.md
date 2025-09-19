@@ -56,7 +56,7 @@ python -c "import secrets;print(secrets.token_hex(32))"
 - puerto
 - nombre_db
 ```
-postgresql://usuario:contraseña@host:puerto/nombre_db
+postgresql+psycopg2://usuario:contraseña@host:puerto/nombre_db
 ```
 6. Hacer una copia del .env.example de la carpeta docker y renombrarla a .env en esa misma carpeta
 7. Para rellenar configuraciones de base de datos hay que completar los siguientes campos
