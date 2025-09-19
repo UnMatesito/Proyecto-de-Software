@@ -1,15 +1,16 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import  DeclarativeBase
 
-class Base(DeclarativeBase):
-    pass
-
 db = SQLAlchemy()
 
 def init_db(app):
-    print("init_db")
+
     db.init_app(app)
-    config(app)
+
+    config_db(app)
+
+    with app.app_context():
+        db.create_all()
 
     return app
 
