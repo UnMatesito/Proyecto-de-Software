@@ -1,9 +1,11 @@
 from flask import Flask, render_template
 from flask_debugtoolbar import DebugToolbarExtension
-from src.core.database import db
-from src.web.config import current_config
 
+from core.database import db
+
+from .config import current_config
 from .handlers import error
+
 
 # TODO: Hay que usar esta variable "env"
 def create_app(env="development", static_folder="../../static"):
@@ -22,6 +24,19 @@ def create_app(env="development", static_folder="../../static"):
         return render_template("home.html")
 
     # Blueprints
+
+    # Commands
+    @app.cli.command("reset-db")
+    def reset_db_command():
+        from core.database import reset_db
+
+        reset_db(app)
+
+    @app.cli.command("seed-db")
+    def seed_db_command():
+        from core.seeds import run as seed_db
+
+        seed_db()
 
     # Error handlers
     app.register_error_handler(404, error.not_found)
