@@ -1,13 +1,20 @@
 {% extends "layout.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Pagina Principal{% endblock %}
+
+{% block header %}
+    {% include 'components/navbar.html' %}
+{%endblock%}
 
 {% block content %}
-    <div class="container">
-
-        <h2>Pagina Principal</h2>
-        <p>Esta es la pagina principal de la <strong>Actividad 2</strong>. En esta actividad se realiza una estructura basica para el <strong>Trabajo integrador</strong></p>
-        <p>Para esta actividad, se utiliza <strong>Flask</strong> como framework web y <strong>Jinja2</strong> como motor de plantillas para un estilo basico.</p>
-
+    <div class="flex min-h-screen flex-row">
+        {# Sidebar #}
+        <div>
+            {% include 'components/sidebar.html' %}
+        </div>
+        {# Content #}
+        <h1 class="text-2xl font-bold m-4 relative top-8 left-8">
+            Contenido del panel de administracion
+        </h1>
     </div>
 {% endblock %}

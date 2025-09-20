@@ -1,0 +1,96 @@
+{% macro text_input(name='', id='', placeholder='', value='', required=false, class='', disabled=false, readonly=false, autocomplete='', pattern='') %}
+<input
+  type="text"
+  {% if name %}name="{{ name }}"{% endif %}
+  {% if id %}id="{{ id }}"{% endif %}
+  {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+  {% if value %}value="{{ value }}"{% endif %}
+  {% if required %}required{% endif %}
+  {% if disabled %}disabled{% endif %}
+  {% if readonly %}readonly{% endif %}
+  {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+  {% if pattern %}pattern="{{ pattern }}"{% endif %}
+  class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent {{ class }}"
+>
+{% endmacro %}
+
+{% macro email_input(name='', id='', placeholder='', value='', required=false, class='', disabled=false, readonly=false, autocomplete='') %}
+<input
+  type="email"
+  {% if name %}name="{{ name }}"{% endif %}
+  {% if id %}id="{{ id }}"{% endif %}
+  {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+  {% if value %}value="{{ value }}"{% endif %}
+  {% if required %}required{% endif %}
+  {% if disabled %}disabled{% endif %}
+  {% if readonly %}readonly{% endif %}
+  {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+  class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent {{ class }}"
+>
+{% endmacro %}
+
+{% macro password_input(name='', id='', placeholder='', required=false, class='', disabled=false, autocomplete='') %}
+<input
+  type="password"
+  {% if name %}name="{{ name }}"{% endif %}
+  {% if id %}id="{{ id }}"{% endif %}
+  {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+  {% if required %}required{% endif %}
+  {% if disabled %}disabled{% endif %}
+  {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+  class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent {{ class }}"
+>
+{% endmacro %}
+
+{% macro number_input(name='', id='', placeholder='', value='', required=false, class='', disabled=false, readonly=false, min='', max='', step='') %}
+<input
+  type="number"
+  {% if name %}name="{{ name }}"{% endif %}
+  {% if id %}id="{{ id }}"{% endif %}
+  {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+  {% if value %}value="{{ value }}"{% endif %}
+  {% if required %}required{% endif %}
+  {% if disabled %}disabled{% endif %}
+  {% if readonly %}readonly{% endif %}
+  {% if min %}min="{{ min }}"{% endif %}
+  {% if max %}max="{{ max }}"{% endif %}
+  {% if step %}step="{{ step }}"{% endif %}
+  class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent {{ class }}"
+>
+{% endmacro %}
+
+{% macro checkbox_input(name='', id='', value='', checked=false, class='', disabled=false, aria_label='') %}
+<input
+  type="checkbox"
+  {% if name %}name="{{ name }}"{% endif %}
+  {% if id %}id="{{ id }}"{% endif %}
+  {% if value %}value="{{ value }}"{% endif %}
+  {% if checked %}checked{% endif %}
+  {% if disabled %}disabled{% endif %}
+  {% if aria_label %}aria-label="{{ aria_label }}"{% endif %}
+  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded {{ class }}"
+>
+{% endmacro %}
+
+{% macro radio_input(name='', id='', value='', checked=false, class='', disabled=false, aria_label='') %}
+<input
+  type="radio"
+  {% if name %}name="{{ name }}"{% endif %}
+  {% if id %}id="{{ id }}"{% endif %}
+  {% if value %}value="{{ value }}"{% endif %}
+  {% if checked %}checked{% endif %}
+  {% if disabled %}disabled{% endif %}
+  {% if aria_label %}aria-label="{{ aria_label }}"{% endif %}
+  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 {{ class }}"
+>
+{% endmacro %}
+
+
+{% macro hidden_input(name='', id='', value='') %}
+<input
+  type="hidden"
+  {% if name %}name="{{ name }}"{% endif %}
+  {% if id %}id="{{ id }}"{% endif %}
+  {% if value %}value="{{ value }}"{% endif %}
+>
+{% endmacro %}
