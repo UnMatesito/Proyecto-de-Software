@@ -1,5 +1,6 @@
 from core.database import db
 
+
 class Label(db.Model):
     __tablename__ = "label"
 
