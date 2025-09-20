@@ -9,16 +9,16 @@
     <title>{% block title %}Header de la pagina{% endblock %}</title>
 </head>
 
-<body class="gradient-background">
+<body>
     <header>
-        <h1>Actividad 2</h1>
+        {% block header %}{% endblock %}
     </header>
 
     <main>
         {% block content %}{% endblock %}
     </main>
     
-    <footer>
+    <footer class="bg-gray-700 text-white text-center p-4 fixed bottom-0 left-0 w-full z-50">
         <h3> Proyecto de software - Grupo 09</h3>
     </footer>
 
