@@ -13,6 +13,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
     SESSION_COOKIE_SECURE = True
 
+
 class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
@@ -25,6 +26,7 @@ class DevelopmentConfig(Config):
     )
     SESSION_COOKIE_SECURE = False
     pass
+
 
 class TestingConfig(Config):
     TESTING = True

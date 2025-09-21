@@ -3,7 +3,9 @@ from core.database import db
 role_permission = db.Table(
     "role_permission",
     db.Column("role_id", db.Integer, db.ForeignKey("role.id"), primary_key=True),
-    db.Column("permission_id", db.Integer, db.ForeignKey("permission.id"), primary_key=True),
+    db.Column(
+        "permission_id", db.Integer, db.ForeignKey("permission.id"), primary_key=True
+    ),
 )
 
 
@@ -13,11 +15,7 @@ class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
 
-    users = db.relationship(
-        "User",
-        back_populates="role",
-        lazy="dynamic"
-    )
+    users = db.relationship("User", back_populates="role", lazy="dynamic")
     permissions = db.relationship(
         "Permission",
         secondary="role_permission",

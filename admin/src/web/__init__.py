@@ -1,7 +1,8 @@
 from flask import Flask, render_template
 from flask_debugtoolbar import DebugToolbarExtension
-from core.utils.bcrypt import bcrypt
+
 from core.database import db
+from core.utils.bcrypt import bcrypt
 
 from .config import get_current_config
 from .handlers import error
