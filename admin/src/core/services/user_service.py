@@ -1,6 +1,6 @@
 from core.database import db
 from core.models import User
-
+#from core.models import Role 
 
 def list_users():
     return User.query.all()
@@ -66,3 +66,16 @@ def block_user(user_id):
             return f"El usuario {user.name} ya esta desbloqueado"
         return None
     return update_user_attribute(user_id, "blocked", False, check_blocked)
+
+#Asigna un rol
+"""
+def assign_role(user_id, role_id):
+    role= Role.query.get(role_id)
+    if not role:
+        raise ValueError(f"No existe el rol con id {role_id}")
+    def role_check(user):
+        if user.role_id == role_id:
+            return f"El usuario {user.name} ya tiene dicho rol"
+        return None
+    return update_user_attribute(user_id, "role_id", role_id, role_check)
+"""
