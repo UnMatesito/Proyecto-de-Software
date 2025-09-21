@@ -22,24 +22,24 @@ def seed_permissions():
 
     # Permisos para módulo de usuarios (solo Administradores)
     user_permissions = [
-        "user_index",  # listar usuarios
-        "user_new",  # crear usuario
-        "user_update",  # actualizar usuario
-        "user_destroy",  # eliminar usuario
-        "user_show",  # ver detalle de usuario
-        "user_block",  # bloquear/desbloquear usuario
-        "user_assign_role",  # asignar roles
+        ("user_index", "Listar usuarios"),
+        ("user_new", "Crear usuario"),
+        ("user_update", "Actualizar usuario"),
+        ("user_destroy", "Eliminar usuario"),
+        ("user_show", "Ver detalle de usuario"),
+        ("user_block", "Bloquear/desbloquear usuario"),
+        ("user_assign_role", "Asignar roles"),
     ]
 
     # Permisos para sitios históricos
     site_permissions = [
-        "site_index",  # listar sitios
-        "site_new",  # crear sitio
-        "site_update",  # actualizar sitio
-        "site_destroy",  # eliminar sitio (solo Administradores)
-        "site_show",  # ver detalle de sitio
-        "site_export",  # exportar sitios (solo Administradores)
-        "site_history",  # ver historial de sitio
+        ("site_index", "Listar sitios"),
+        ("site_new", "Crear sitio"),
+        ("site_update", "Actualizar sitio"),
+        ("site_destroy", "Eliminar sitio"),
+        ("site_show", "Ver detalle de sitio"),
+        ("site_export", "Exportar sitios"),
+        ("site_history", "Ver historial de sitio"),
     ]
 
     # Permisos para tags
@@ -53,8 +53,8 @@ def seed_permissions():
 
     # Permisos para feature flags (solo System Admin)
     flag_permissions = [
-        "flag_index",  # listar feature flags
-        "flag_update",  # actualizar feature flags
+        ("flag_index", "Listar feature flags"),
+        ("flag_update", "Actualizar feature flags"),
     ]
 
     # Permisos para validación de propuestas (Etapa 2)
@@ -67,10 +67,10 @@ def seed_permissions():
 
     # Permisos para moderación de reseñas (Etapa 2)
     review_permissions = [
-        "review_index",  # listar reseñas
-        "review_show",  # ver reseña
-        "review_approve",  # aprobar reseña
-        "review_reject",  # rechazar reseña
+        ("review_index", "Listar reseñas"),
+        ("review_show", "Ver reseña"),
+        ("review_approve", "Aprobar reseña"),
+        ("review_reject", "Rechazar reseña"),
     ]
 
     all_permissions = (
@@ -82,7 +82,10 @@ def seed_permissions():
         + review_permissions
     )
 
-    PermissionService.create_permissions_bulk(all_permissions)
+    # Transformar la lista de tuplas en la lista de dicts que espera create_multiple_permissions
+    permissions_data = [{"name": name, "description": desc} for name, desc in all_permissions]
+
+    PermissionService.create_multiple_permissions(permissions_data)
 
 
 def seed_roles():
@@ -95,77 +98,37 @@ def seed_roles():
     # Obtener todos los permisos
     all_permissions = Permission.query.all()
 
-    # ROL EDITOR
-    editor_permission_names = [
-        "site_index",
-        "site_new",
-        "site_update",
-        "site_show",
-        "site_history",
-        "tag_index",
-        "tag_new",
-        "tag_update",
-        "tag_destroy",
-        "tag_show",
-        "proposal_index",
-        "proposal_show",
-        "proposal_approve",
-        "proposal_reject",
-        "review_index",
-        "review_show",
-        "review_approve",
-        "review_reject",
-    ]
+    roles_permissions = {
+        "Editor": [
+            "site_index", "site_new", "site_update", "site_show", "site_history",
+            "tag_index", "tag_new", "tag_update", "tag_destroy", "tag_show",
+            "proposal_index", "proposal_show", "proposal_approve", "proposal_reject",
+            "review_index", "review_show", "review_approve", "review_reject",
+        ],
+        "Administrador": [
+            # Usuarios
+            "user_index", "user_new", "user_update", "user_destroy", "user_show",
+            "user_block", "user_assign_role",
+            # Sitios
+            "site_index", "site_new", "site_update", "site_destroy", "site_show",
+            "site_export", "site_history",
+            # Tags
+            "tag_index", "tag_new", "tag_update", "tag_destroy", "tag_show",
+            # Propuestas y reseñas
+            "proposal_index", "proposal_show", "proposal_approve", "proposal_reject",
+            "review_index", "review_show", "review_approve", "review_reject",
+        ],
+        "Usuario público": []  # TODO: Ver bien qué permisos tiene
+    }
 
-    editor_permissions = [
-        p.id for p in all_permissions if p.name in editor_permission_names
-    ]
+    for role_name, perm_names in roles_permissions.items():
+        # Obtener ID de los permisos
+        permission_ids = [p.id for p in all_permissions if p.name in perm_names]
 
-    RoleService.create_role("Editor", editor_permissions)
-
-    # ROL ADMINISTRADOR
-    admin_permission_names = [
-        # Usuarios (todos los permisos)
-        "user_index",
-        "user_new",
-        "user_update",
-        "user_destroy",
-        "user_show",
-        "user_block",
-        "user_assign_role",
-        # Sitios (todos los permisos incluyendo eliminar y exportar)
-        "site_index",
-        "site_new",
-        "site_update",
-        "site_destroy",
-        "site_show",
-        "site_export",
-        "site_history",
-        # Tags
-        "tag_index",
-        "tag_new",
-        "tag_update",
-        "tag_destroy",
-        "tag_show",
-        # Propuestas y reseñas
-        "proposal_index",
-        "proposal_show",
-        "proposal_approve",
-        "proposal_reject",
-        "review_index",
-        "review_show",
-        "review_approve",
-        "review_reject",
-    ]
-
-    admin_permissions = [
-        p.id for p in all_permissions if p.name in admin_permission_names
-    ]
-
-    RoleService.create_role("Administrador", admin_permissions)
-
-    # ROL USUARIO PÚBLICO
-    RoleService.create_role("Usuario público", [])  # Sin permisos
+        if permission_ids:
+            RoleService.create_role_with_permissions(role_name, permission_ids)
+        else:
+            RoleService.create_role_without_permissions(role_name)
 
 
 def seed_event_types():
