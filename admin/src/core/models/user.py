@@ -29,6 +29,10 @@ class User(db.Model):
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
+
+    site_histories = db.relationship("SiteHistory", back_populates="user")
+    
+
     """Funcion propia para setear una contraseña con bcryp, "raw_password: str" NO obliga a que el parametro sea un str, es solo una notacion y ayuda a detectar errores    """
     def set_password(self, new_password: str):
         password_hashed = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()) #Creo el hash de la password
