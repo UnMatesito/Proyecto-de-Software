@@ -1,7 +1,7 @@
 from .category_site import CategorySite
 from .city import City
 from .conservation_state import ConservationState
-from .feature_flag import Feature_flag
+from .feature_flag import FeatureFlag
 from .historic_site import HistoricSite, historic_site_tag
 from .permission import Permission
 from .province import Province
@@ -18,7 +18,7 @@ __all__ = [
     "Tag",
     "ConservationState",
     "CategorySite",
-    "Feature_flag",
+    "FeatureFlag",
     "Permission",
     "Role",
     "role_permission",

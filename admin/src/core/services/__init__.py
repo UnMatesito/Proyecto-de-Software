@@ -13,10 +13,44 @@ from .feature_flag_service import (
 )
 
 # Permission services
-# TODO: Después lo completo bien, me quedan unas cositas
+from .permission_service import (
+    get_all_permissions,
+    get_permission_by_id,
+    get_permission_by_name,
+    create_permission,
+    create_multiple_permissions,
+    update_permission,
+    get_permission_roles,
+    permission_exists,
+    permission_exists_by_name,
+    get_permissions_count,
+    delete_permission,
+    get_permissions_by_role_count,
+    search_permissions_by_name,
+    search_permissions_by_description,
+)
 
 # Role services
-# TODO: Lo mismo que permisos
-
+from .role_service import (
+    get_all_roles,
+    get_role_by_id,
+    get_role_by_name,
+    create_role_without_permissions,
+    create_role_with_permissions,
+    assign_permission_to_role,
+    assign_multiple_permissions_to_role,
+    remove_permission_from_role,
+    remove_multiple_permissions_from_role,
+    delete_role,
+    role_has_permission,
+    get_role_permissions,
+    clear_role_permissions,
+    role_exists,
+    role_exists_by_name,
+    can_delete_role,
+    get_roles_count,
+    get_role_users_count,
+    update_role_name,
+)
 # User services
 # TODO
