@@ -1,5 +1,8 @@
 from core.database import db
 from core.models import User
+from flask_sqlalchemy import SQLAlchemyError
+from datetime import datetime, timezone
+from core.models import Role
 #from core.models import Role 
 
 def list_users():
@@ -53,7 +56,7 @@ def delete_user(user_id):
 #Bloquea un usuario 
 def block_user(user_id):
     #Funcion para checkear que si el usuario esta bloqueado, se manda como parametro
-   def check_blocked(user):
+    def check_blocked(user):
         if user.blocked:
             return f"El usuario {user.name} ya esta bloqueado"
         return None
@@ -61,21 +64,36 @@ def block_user(user_id):
 #Desbloquea un usuario 
 def block_user(user_id):
     #Funcion para checkear que si el usuario esta desbloqueado, se manda como parametro
-   def check_blocked(user):
+    def check_blocked(user):
         if not user.blocked:
             return f"El usuario {user.name} ya esta desbloqueado"
         return None
     return update_user_attribute(user_id, "blocked", False, check_blocked)
 
+#Cambia la contraseña
+def change_password(user_id, old_password, new_password):
+    user = User.query.get(user_id)
+    if not user:
+        raise ValueError(f"No existe el usuario con id {user_id}")
+    if not user.check_password(user, old_password):
+        raise ValueError("La contraseña actual no es correcta")
+    if user.check_password(user, new_password):
+        raise ValueError("La nueva contraseña no puede ser igual a la anterior")
+    user.set_password(new_password)
+
+    try:
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al actualizar la contraseña: {e}")
+    return True
 #Asigna un rol
-"""
 def assign_role(user_id, role_id):
     role= Role.query.get(role_id)
     if not role:
         raise ValueError(f"No existe el rol con id {role_id}")
     def role_check(user):
-        if user.role_id == role_id:
+        if user.check_role(user,role_id):
             return f"El usuario {user.name} ya tiene dicho rol"
         return None
     return update_user_attribute(user_id, "role_id", role_id, role_check)
-"""
