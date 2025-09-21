@@ -53,15 +53,18 @@ from .role_service import (
     update_role_name,
 )
 
+# Tag services
+from .tag_service import create_tag
+
 # User services
 from .user_service import (
-    get_user_by_id,
+    assign_role,
+    block_user,
+    change_password,
     create_user,
     delete_user,
-    block_user,
-    unlock_user,
-    list_users,
-    change_password,
-    assign_role,
+    get_all_users,
+    get_user_by_email,
+    get_user_by_id,
+    unblock_user,
 )
-# TODO

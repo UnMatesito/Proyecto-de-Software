@@ -7,7 +7,7 @@ def run():
 
     seed_permissions()
     seed_roles()
-    #seed_event_types()
+    # seed_event_types()
     seed_system_admin()
     seed_editor()
     seed_feature_flags()
@@ -226,7 +226,8 @@ def seed_system_admin():
 
     db.session.add(admin_user)
     db.session.commit()
-    
+
+
 def seed_editor():
     """Crea un usuario editor"""
     from core.models import User
@@ -251,9 +252,10 @@ def seed_editor():
     db.session.add(editor_user)
     db.session.commit()
 
+
 def seed_feature_flags():
     """Crea los feature flags iniciales del sistema"""
-    from core.models import FeatureFlag ##ACA LO IMPORTASTE COMO src.core.models TONCES ME CREA OTRA INSTANCIA DE LOS MODELOS 
+    from core.models import FeatureFlag
 
     print("Creando feature flags...")
 
@@ -275,7 +277,7 @@ def seed_feature_flags():
             "name": "reviews_enabled",
             "description": "Habilitar creación y visualización de reseñas",
             "is_enabled": True,
-            "maintenance_message": "textoplano ACA LO DEJASTE EN NONE Y NO PERMITE NULL LA COLUMNA ",
+            "maintenance_message": "No se permiten reseñas",
         },
     ]
 

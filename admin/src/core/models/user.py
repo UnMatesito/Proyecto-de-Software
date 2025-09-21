@@ -48,7 +48,6 @@ class User(db.Model):
         """Función para comprobar si la contraseña pasada por parámetro es igual a la asignada al usuario"""
         return bcrypt.check_password_hash(self.password_hash, password)
 
-
     def check_role(self, role_id):
         """Funcion para comprobar si tiene un rol en particular"""
         return self.role_id == role_id

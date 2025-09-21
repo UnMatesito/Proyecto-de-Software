@@ -1,5 +1,6 @@
-from core.database import db
 from datetime import datetime, timezone
+
+from core.database import db
 
 historic_site_tag = db.Table(
     "historic_site_tag",
