@@ -21,6 +21,8 @@ __all__ = [
     "Tag",
     "ConservationState",
     "CategorySite",
-    "Feature_flag", 
+    "Feature_flag",
+    "SiteHistory" ,
+    EventType,
     ]
  
