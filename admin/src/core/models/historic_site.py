@@ -23,7 +23,7 @@ class HistoricSite(db.Model):
     latitude = db.Column(db.Double, nullable=False)
     longitude = db.Column(db.Double, nullable=False)
     inauguration_year = db.Column(db.Integer, nullable=False)
-    registration_date = db.Column(db.DateTime, nullable=False)
+    registration_date = db.Column(db.DateTime, default=False)
     is_visible = db.Column(db.Boolean, default=False, nullable=False)
     pending_validation = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(
@@ -50,5 +50,13 @@ class HistoricSite(db.Model):
     proposed_by = db.Column(db.Integer, db.ForeignKey("user.id"))
     user = db.relationship("User", back_populates="historic_sites")
 
+    tags = db.relationship("Tag", secondary="historic_site_tags")
+
     def __repr__(self):
         return f"<Historic Site {self.name}>"
+    
+    def is_deleted(self):
+        return not self.deleted_at != None
+    
+    def id_active(self):
+        return self.deleted_at == None
