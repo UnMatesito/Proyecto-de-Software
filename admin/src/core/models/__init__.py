@@ -8,6 +8,8 @@ from .province import Province
 from .tag import Tag
 from .conservation_state import ConservationState
 from .category_site import CategorySite
+from .site_history import SiteHistory
+from .event_type import EventType
 
 __all__ = [
     "Issue", 
@@ -23,6 +25,6 @@ __all__ = [
     "CategorySite",
     "Feature_flag",
     "SiteHistory" ,
-    EventType,
+    "EventType",
     ]
  
