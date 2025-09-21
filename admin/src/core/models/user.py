@@ -16,6 +16,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: DateTime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=lambda: DateTime.now(timezone.utc))
     deleted_at = db.Column(db.DateTime)
+    bocked = db.Column(db.Boolean, nullable=False, default=False)
     password_hash = db.Column(db.String(255), nullable=False)
     # role = db.relationship("Role", back_populates="users")
 

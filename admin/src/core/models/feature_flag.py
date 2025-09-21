@@ -15,6 +15,7 @@ class Feature_flag(db.Model):
         db.DateTime, default=lambda: DateTime.now(timezone.utc)
     )
     last_modified_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    last_modified_by = db.relationship("User")
     inserted_at = db.Column(
         db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )

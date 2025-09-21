@@ -1,6 +1,5 @@
 from core.database import db
-from core.models import Issue
-from core.models import Label
+from core.models import Issue, Label
 
 
 def list_issues():
