@@ -1,6 +1,22 @@
 from core.database import db
 from datetime import datetime, timezone
 
+historic_site_tag = db.Table(
+    "historic_site_tag",
+    db.Column(
+        "historic_site_id",
+        db.Integer,
+        db.ForeignKey("historic_site.id"),
+        primary_key = True
+    ),
+    db.Column(
+        "tag_id",
+        db.Integer,
+        db.ForeignKey("tag.id"),
+        primary_key = True
+    ),
+)
+
 class HistoricSite(db.Model):
     __tablename__ = "historic_site"
     id = db.Column(db.Integer, primary_key = True)
@@ -28,4 +44,15 @@ class HistoricSite(db.Model):
         default = None,
         nullable = True
     )
-    city_id = 
+    
+    city_id = db.Column(db.Integer, db.ForeignKey("city.id"))
+    city = db.relationship("City", back_populates = "historic_sites")
+
+    conservation_state_id = db.Column(db.Integer, db.ForeignKey("conservation_state.id"))
+    conservation_state = db.relationship("ConservationState", back_populates = "historic_sites")
+
+    category_id = db.Column(db.Integer, db.ForeignKey("category_site.id"))
+    category_site = db.relationship("Category", back_populates = "historic_sites")
+    
+    proposed_by = db.Column(db.Integer, db.ForeignKey("user.id"))
+    user = db.relationship("User", back_populates = "historic_sites")
