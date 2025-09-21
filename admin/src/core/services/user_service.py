@@ -8,7 +8,7 @@ def list_users():
 
 def get_user_by_id(user_id):
     return User.query.get(user_id)
-
+#Falta hacer el hash de la passw
 def create_user(**kwargs):
     user = User(**kwargs)
     db.session.add(user)

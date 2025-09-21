@@ -31,4 +31,4 @@ class User(db.Model):
     )
 
     def __repr__(self):
-        return f"<User {self.name}>"
+        return f"<User {self.first_name}>"
