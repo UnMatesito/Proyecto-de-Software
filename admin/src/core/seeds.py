@@ -5,12 +5,12 @@ def run():
     """Ejecuta todos los seeds en orden"""
     print("Iniciando seeders...")
 
-    seed_permissions()
-    seed_roles()
-    seed_event_types()
-    seed_system_admin()
-    seed_feature_flags()
-
+    #seed_permissions()
+    #seed_roles()
+    #seed_event_types()
+    #seed_system_admin()
+    #seed_feature_flags()
+    seed_editor()
     print("Seed finalizado")
 
 
@@ -223,11 +223,34 @@ def seed_system_admin():
         active=True,
         role_id=admin_role.id,
     )
-    admin_user.set_password("admin123")
+    admin_user.set_password(admin_user,"admin123")
 
     db.session.add(admin_user)
     db.session.commit()
+    
+def seed_editor():
+    """Crea un usuario editor"""
+    from core.models import User
+    #from core.services import role_service as RoleService
 
+    print("Creando usuario editor...")
+
+    # Obtener rol Editor
+    #editor_role = RoleService.get_role_by_name("Editor")
+
+    # Crear usuario editor
+    editor_user = User(
+        email="editor@.com",
+        first_name="EditorNomb",
+        last_name="EditorApe",
+        system_admin=False,
+        active=True,
+        role_id=None,
+    )
+    editor_user.set_password(editor_user,"editor123")
+
+    db.session.add(editor_user)
+    db.session.commit()
 
 def seed_feature_flags():
     """Crea los feature flags iniciales del sistema"""

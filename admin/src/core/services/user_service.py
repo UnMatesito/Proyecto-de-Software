@@ -1,6 +1,6 @@
 from core.database import db
 from core.models import User
-from flask_sqlalchemy import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime, timezone
 from core.models import Role
 #from core.models import Role 
@@ -13,9 +13,18 @@ def get_user_by_id(user_id):
     return User.query.get(user_id)
 #Falta hacer el hash de la passw
 def create_user(**kwargs):
+    if User.query.filter_by(email=kwargs.get("email")).first():
+        raise ValueError("Ya existe un usuario con ese email")
+    raw_password = kwargs.pop("password", None)
     user = User(**kwargs)
-    db.session.add(user)
-    db.session.commit()
+    if raw_password:
+        user.set_password(user, raw_password)
+    
+    try:
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al eliminar el usuario: {e}")
     return user
 """
 Cuando cree los serv de deleted y block, me di cuenta que es casi el mismo codigo, entonces lo reciclo en esta funcion que hace un update de x atributo 
@@ -62,7 +71,7 @@ def block_user(user_id):
         return None
     return update_user_attribute(user_id, "blocked", True, check_blocked)
 #Desbloquea un usuario 
-def block_user(user_id):
+def unlock_user(user_id):
     #Funcion para checkear que si el usuario esta desbloqueado, se manda como parametro
     def check_blocked(user):
         if not user.blocked:
