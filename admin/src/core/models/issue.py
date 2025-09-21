@@ -8,6 +8,7 @@ issue_label = db.Table(
     db.Column("label_id", db.Integer, db.ForeignKey("label.id"), primary_key=True),
 )
 
+
 class Issue(db.Model):
     __tablename__ = "issue"
 

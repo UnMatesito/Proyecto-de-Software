@@ -29,6 +29,6 @@ class User(db.Model):
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
+
     def __repr__(self):
         return f"<User {self.first_name}>"
-

@@ -1,26 +1,24 @@
+from .category_site import CategorySite
+from .city import City
+from .conservation_state import ConservationState
 from .feature_flag import Feature_flag
-from .user import User
+from .historic_site import HistoricSite, historic_site_tag
 from .issue import Issue, issue_label
 from .label import Label
-from .historic_site import HistoricSite, historic_site_tag
-from .city import City
 from .province import Province
 from .tag import Tag
-from .conservation_state import ConservationState
-from .category_site import CategorySite
+from .user import User
 
 __all__ = [
-    "Issue", 
-    "User", 
-    "Label", 
-    "issue_label", 
+    "Issue",
+    "User",
+    "Label",
+    "issue_label",
     "HistoricSite",
-    "historic_site_tag"
-    "City",
+    "historic_site_tag" "City",
     "Province",
     "Tag",
     "ConservationState",
     "CategorySite",
-    "Feature_flag", 
-    ]
- 
+    "Feature_flag",
+]

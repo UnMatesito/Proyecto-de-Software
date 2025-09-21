@@ -12,6 +12,7 @@ class Config:
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
 
+
 class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
@@ -23,6 +24,7 @@ class DevelopmentConfig(Config):
         False  # Para evitar que el debugbar se detenga en los redirects
     )
     pass
+
 
 class TestingConfig(Config):
     TESTING = True

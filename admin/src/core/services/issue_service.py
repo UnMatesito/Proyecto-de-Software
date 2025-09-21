@@ -16,6 +16,7 @@ def create_issue(email, title, description, status="open"):
     db.session.commit()
     return issue
 
+
 def assign_issue_to_user(issue_id, user_id):
     issue = get_issue_by_id(issue_id)
     if issue:
@@ -37,6 +38,7 @@ def assign_issue(issue, user):
     issue.user = user
     db.session.commit()
     return issue
+
 
 def assign_labels(issue, labels):
     issue.labels = labels
