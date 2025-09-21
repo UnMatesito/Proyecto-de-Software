@@ -56,3 +56,7 @@ class HistoricSite(db.Model):
     
     proposed_by = db.Column(db.Integer, db.ForeignKey("user.id"))
     user = db.relationship("User", back_populates = "historic_sites")
+
+        
+    def __repr__(self):
+        return f"<Historic Site {self.name}>"
