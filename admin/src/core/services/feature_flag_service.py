@@ -6,7 +6,7 @@ def list_feature_flags():
     return Feature_flag.query.all()
 
 
-def get_feature_flag_by_id():
+def get_feature_flag_by_id(feature_flag_id):
     return Feature_flag.query.get(feature_flag_id)
 
 
