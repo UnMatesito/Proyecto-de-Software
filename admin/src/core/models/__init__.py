@@ -8,6 +8,8 @@ from .province import Province
 from .role import Role, role_permission
 from .tag import Tag
 from .user import User
+from .site_history import SiteHistory
+from .event_type import EventType
 
 __all__ = [
     "User",
@@ -18,6 +20,9 @@ __all__ = [
     "Tag",
     "ConservationState",
     "CategorySite",
+    "Feature_flag",
+    "SiteHistory",
+    "EventType",
     "FeatureFlag",
     "Permission",
     "Role",

@@ -11,6 +11,7 @@ class Config:
     SESSION_TYPE = os.getenv("SESSION_TYPE", "filesystem")
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
+    SESSION_COOKIE_SECURE = True
 
 
 class ProductionConfig(Config):
@@ -23,6 +24,7 @@ class DevelopmentConfig(Config):
     DEBUG_TB_INTERCEPT_REDIRECTS = (
         False  # Para evitar que el debugbar se detenga en los redirects
     )
+    SESSION_COOKIE_SECURE = False
     pass
 
 

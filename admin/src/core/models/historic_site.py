@@ -45,12 +45,12 @@ class HistoricSite(db.Model):
     )
 
     category_id = db.Column(db.Integer, db.ForeignKey("category_site.id"))
-    category_site = db.relationship("Category", back_populates="historic_sites")
+    category_site = db.relationship("CategorySite", back_populates="historic_sites")
 
     proposed_by = db.Column(db.Integer, db.ForeignKey("user.id"))
     user = db.relationship("User", back_populates="historic_sites")
 
-    tags = db.relationship("Tag", secondary="historic_site_tags")
+    site_histories = db.relationship("SiteHistory", back_populates = "historic_site")    
 
     def __repr__(self):
         return f"<Historic Site {self.name}>"

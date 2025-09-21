@@ -7,10 +7,10 @@ def run():
 
     seed_permissions()
     seed_roles()
-    seed_event_types()
+    #seed_event_types()
     seed_system_admin()
+    seed_editor()
     seed_feature_flags()
-
     print("Seed finalizado")
 
 
@@ -22,55 +22,55 @@ def seed_permissions():
 
     # Permisos para módulo de usuarios (solo Administradores)
     user_permissions = [
-        "user_index",  # listar usuarios
-        "user_new",  # crear usuario
-        "user_update",  # actualizar usuario
-        "user_destroy",  # eliminar usuario
-        "user_show",  # ver detalle de usuario
-        "user_block",  # bloquear/desbloquear usuario
-        "user_assign_role",  # asignar roles
+        ("user_index", "Listar usuarios"),
+        ("user_new", "Crear usuario"),
+        ("user_update", "Actualizar usuario"),
+        ("user_destroy", "Eliminar usuario"),
+        ("user_show", "Ver detalle de usuario"),
+        ("user_block", "Bloquear/desbloquear usuario"),
+        ("user_assign_role", "Asignar roles"),
     ]
 
     # Permisos para sitios históricos
     site_permissions = [
-        "site_index",  # listar sitios
-        "site_new",  # crear sitio
-        "site_update",  # actualizar sitio
-        "site_destroy",  # eliminar sitio (solo Administradores)
-        "site_show",  # ver detalle de sitio
-        "site_export",  # exportar sitios (solo Administradores)
-        "site_history",  # ver historial de sitio
+        ("site_index", "Listar sitios"),
+        ("site_new", "Crear sitio"),
+        ("site_update", "Actualizar sitio"),
+        ("site_destroy", "Eliminar sitio"),
+        ("site_show", "Ver detalle de sitio"),
+        ("site_export", "Exportar sitios"),
+        ("site_history", "Ver historial de sitio"),
     ]
 
     # Permisos para tags
     tag_permissions = [
-        "tag_index",  # listar tags
-        "tag_new",  # crear tag
-        "tag_update",  # actualizar tag
-        "tag_destroy",  # eliminar tag
-        "tag_show",  # ver detalle de tag
+        ("tag_index", "Listar tags"),
+        ("tag_new", "Crear tag"),
+        ("tag_update", "Actualizar tag"),
+        ("tag_destroy", "Eliminar tag"),
+        ("tag_show", "Ver detalle de tag"),
     ]
 
     # Permisos para feature flags (solo System Admin)
     flag_permissions = [
-        "flag_index",  # listar feature flags
-        "flag_update",  # actualizar feature flags
+        ("flag_index", "Listar feature flags"),
+        ("flag_update", "Actualizar feature flags"),
     ]
 
     # Permisos para validación de propuestas (Etapa 2)
     proposal_permissions = [
-        "proposal_index",  # listar propuestas
-        "proposal_show",  # ver propuesta
-        "proposal_approve",  # aprobar propuesta
-        "proposal_reject",  # rechazar propuesta
+        ("proposal_index", "Listar propuestas"),
+        ("proposal_show", "Ver propuesta"),
+        ("proposal_approve", "Aprobar propuesta"),
+        ("proposal_reject", "Rechazar propuesta"),
     ]
 
     # Permisos para moderación de reseñas (Etapa 2)
     review_permissions = [
-        "review_index",  # listar reseñas
-        "review_show",  # ver reseña
-        "review_approve",  # aprobar reseña
-        "review_reject",  # rechazar reseña
+        ("review_index", "Listar reseñas"),
+        ("review_show", "Ver reseña"),
+        ("review_approve", "Aprobar reseña"),
+        ("review_reject", "Rechazar reseña"),
     ]
 
     all_permissions = (
@@ -82,7 +82,10 @@ def seed_permissions():
         + review_permissions
     )
 
-    PermissionService.create_permissions_bulk(all_permissions)
+    # Transformar la lista de tuplas en la lista de dicts que espera create_multiple_permissions
+    permissions_data = [{"name": name, "description": desc} for name, desc in all_permissions]
+
+    PermissionService.create_multiple_permissions(permissions_data)
 
 
 def seed_roles():
@@ -95,77 +98,37 @@ def seed_roles():
     # Obtener todos los permisos
     all_permissions = Permission.query.all()
 
-    # ROL EDITOR
-    editor_permission_names = [
-        "site_index",
-        "site_new",
-        "site_update",
-        "site_show",
-        "site_history",
-        "tag_index",
-        "tag_new",
-        "tag_update",
-        "tag_destroy",
-        "tag_show",
-        "proposal_index",
-        "proposal_show",
-        "proposal_approve",
-        "proposal_reject",
-        "review_index",
-        "review_show",
-        "review_approve",
-        "review_reject",
-    ]
+    roles_permissions = {
+        "Editor": [
+            "site_index", "site_new", "site_update", "site_show", "site_history",
+            "tag_index", "tag_new", "tag_update", "tag_destroy", "tag_show",
+            "proposal_index", "proposal_show", "proposal_approve", "proposal_reject",
+            "review_index", "review_show", "review_approve", "review_reject",
+        ],
+        "Administrador": [
+            # Usuarios
+            "user_index", "user_new", "user_update", "user_destroy", "user_show",
+            "user_block", "user_assign_role",
+            # Sitios
+            "site_index", "site_new", "site_update", "site_destroy", "site_show",
+            "site_export", "site_history",
+            # Tags
+            "tag_index", "tag_new", "tag_update", "tag_destroy", "tag_show",
+            # Propuestas y reseñas
+            "proposal_index", "proposal_show", "proposal_approve", "proposal_reject",
+            "review_index", "review_show", "review_approve", "review_reject",
+        ],
+        "Usuario público": []  # TODO: Ver bien qué permisos tiene
+    }
 
-    editor_permissions = [
-        p.id for p in all_permissions if p.name in editor_permission_names
-    ]
+    for role_name, perm_names in roles_permissions.items():
+        # Obtener ID de los permisos
+        permission_ids = [p.id for p in all_permissions if p.name in perm_names]
 
-    RoleService.create_role("Editor", editor_permissions)
-
-    # ROL ADMINISTRADOR
-    admin_permission_names = [
-        # Usuarios (todos los permisos)
-        "user_index",
-        "user_new",
-        "user_update",
-        "user_destroy",
-        "user_show",
-        "user_block",
-        "user_assign_role",
-        # Sitios (todos los permisos incluyendo eliminar y exportar)
-        "site_index",
-        "site_new",
-        "site_update",
-        "site_destroy",
-        "site_show",
-        "site_export",
-        "site_history",
-        # Tags
-        "tag_index",
-        "tag_new",
-        "tag_update",
-        "tag_destroy",
-        "tag_show",
-        # Propuestas y reseñas
-        "proposal_index",
-        "proposal_show",
-        "proposal_approve",
-        "proposal_reject",
-        "review_index",
-        "review_show",
-        "review_approve",
-        "review_reject",
-    ]
-
-    admin_permissions = [
-        p.id for p in all_permissions if p.name in admin_permission_names
-    ]
-
-    RoleService.create_role("Administrador", admin_permissions)
-
-    # ROL USUARIO PÚBLICO
-    RoleService.create_role("Usuario público", [])  # Sin permisos
+        if permission_ids:
+            RoleService.create_role_with_permissions(role_name, permission_ids)
+        else:
+            RoleService.create_role_without_permissions(role_name)
 
 
 def seed_event_types():
@@ -227,11 +190,34 @@ def seed_system_admin():
 
     db.session.add(admin_user)
     db.session.commit()
+    
+def seed_editor():
+    """Crea un usuario editor"""
+    from core.models import User
+    from core.services import role_service as RoleService
 
+    print("Creando usuario editor...")
+
+    # Obtener rol Editor
+    editor_role = RoleService.get_role_by_name("Editor")
+
+    # Crear usuario editor
+    editor_user = User(
+        email="editor@.com",
+        first_name="EditorNomb",
+        last_name="EditorApe",
+        system_admin=False,
+        active=True,
+        role_id=editor_role.id,
+    )
+    editor_user.set_password("editor123")
+
+    db.session.add(editor_user)
+    db.session.commit()
 
 def seed_feature_flags():
     """Crea los feature flags iniciales del sistema"""
-    from src.core.models.feature_flag import FeatureFlag
+    from core.models import FeatureFlag ##ACA LO IMPORTASTE COMO src.core.models TONCES ME CREA OTRA INSTANCIA DE LOS MODELOS 
 
     print("Creando feature flags...")
 
@@ -253,7 +239,7 @@ def seed_feature_flags():
             "name": "reviews_enabled",
             "description": "Habilitar creación y visualización de reseñas",
             "is_enabled": True,
-            "maintenance_message": None,
+            "maintenance_message": "textoplano ACA LO DEJASTE EN NONE Y NO PERMITE NULL LA COLUMNA ",
         },
     ]
 
