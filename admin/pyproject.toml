@@ -15,7 +15,6 @@ dependencies = [
 
     # Base de datos
     "psycopg2-binary>=2.9.10,<3.0.0", # Driver para postgresql
-    "flask-migrate>=4.0.5,<5.0.0", # Migraciones para base de datos
     "geoalchemy2>=0.15.0,<1.0.0", # Compatibilidad para datos geoespaciales
 
     # Para los schemas (etapa 2)
@@ -23,6 +22,7 @@ dependencies = [
 
     # Seguridad y validación
     "bcrypt>=4.2.1,<5.0.0", # Hasheo de contraseñas
+    "flask-bcrypt (>=1.0.1,<2.0.0)", # Integración de bcrypt con flask
     "flask-wtf>=1.2.2,<2.0.0", # Compatibilidad de flask con wtforms
     "wtforms>=3.2.1,<4.0.0", # Formularios y validación de datos
     "python-dateutil>=2.8.2,<3.0.0", # Manejo de fechas

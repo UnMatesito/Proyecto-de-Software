@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from flask_debugtoolbar import DebugToolbarExtension
-
+from core.utils.bcrypt import bcrypt
 from core.database import db
 
 from .config import current_config
@@ -15,7 +15,8 @@ def create_app(env="development", static_folder="../../static"):
     if app.config.get("DEBUG", False):
         DebugToolbarExtension(app)
 
-    # Inicializar base de datos
+    # Inicializar extensiones
+    bcrypt.init_app(app)
     db.init_app(app)
 
     # Rutas
