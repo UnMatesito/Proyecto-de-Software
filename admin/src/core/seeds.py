@@ -7,10 +7,10 @@ def run():
 
     seed_permissions()
     seed_roles()
-    seed_event_types()
+    #seed_event_types()
     seed_system_admin()
+    seed_editor()
     seed_feature_flags()
-
     print("Seed finalizado")
 
 
@@ -226,11 +226,34 @@ def seed_system_admin():
 
     db.session.add(admin_user)
     db.session.commit()
+    
+def seed_editor():
+    """Crea un usuario editor"""
+    from core.models import User
+    from core.services import role_service as RoleService
 
+    print("Creando usuario editor...")
+
+    # Obtener rol Editor
+    editor_role = RoleService.get_role_by_name("Editor")
+
+    # Crear usuario editor
+    editor_user = User(
+        email="editor@.com",
+        first_name="EditorNomb",
+        last_name="EditorApe",
+        system_admin=False,
+        active=True,
+        role_id=editor_role.id,
+    )
+    editor_user.set_password("editor123")
+
+    db.session.add(editor_user)
+    db.session.commit()
 
 def seed_feature_flags():
     """Crea los feature flags iniciales del sistema"""
-    from src.core.models.feature_flag import FeatureFlag
+    from core.models import FeatureFlag ##ACA LO IMPORTASTE COMO src.core.models TONCES ME CREA OTRA INSTANCIA DE LOS MODELOS 
 
     print("Creando feature flags...")
 
@@ -252,7 +275,7 @@ def seed_feature_flags():
             "name": "reviews_enabled",
             "description": "Habilitar creación y visualización de reseñas",
             "is_enabled": True,
-            "maintenance_message": None,
+            "maintenance_message": "textoplano ACA LO DEJASTE EN NONE Y NO PERMITE NULL LA COLUMNA ",
         },
     ]
 

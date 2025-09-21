@@ -54,4 +54,14 @@ from .role_service import (
 )
 
 # User services
+from .user_service import (
+    get_user_by_id,
+    create_user,
+    delete_user,
+    block_user,
+    unlock_user,
+    list_users,
+    change_password,
+    assign_role,
+)
 # TODO
