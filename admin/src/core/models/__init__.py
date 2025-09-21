@@ -3,22 +3,23 @@ from .city import City
 from .conservation_state import ConservationState
 from .feature_flag import Feature_flag
 from .historic_site import HistoricSite, historic_site_tag
-from .issue import Issue, issue_label
-from .label import Label
+from .permission import Permission
 from .province import Province
+from .role import Role, role_permission
 from .tag import Tag
 from .user import User
 
 __all__ = [
-    "Issue",
     "User",
-    "Label",
-    "issue_label",
     "HistoricSite",
-    "historic_site_tag" "City",
+    "historic_site_tag",
+    "City",
     "Province",
     "Tag",
     "ConservationState",
     "CategorySite",
     "Feature_flag",
+    "Permission",
+    "Role",
+    "role_permission",
 ]

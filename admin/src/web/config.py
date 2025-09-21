@@ -36,5 +36,8 @@ config = {
     "testing": TestingConfig,
 }
 
-env = os.getenv("FLASK_ENV", "development")
-current_config = config.get(env, DevelopmentConfig)
+
+def get_current_config(env=None):
+    if env is None:
+        env = os.getenv("FLASK_ENV", "production")
+    return config.get(env, ProductionConfig)

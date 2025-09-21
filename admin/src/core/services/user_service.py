@@ -21,7 +21,7 @@ def create_user(**kwargs):
 
 
 """
-Cuando cree los serv de deleted y block, me di cuenta que es casi el mismo codigo, tonces lo reciclo en esta funcion que hace un update de x atributo 
+Cuando cree los serv de deleted y block, me di cuenta que es casi el mismo codigo, entonces lo reciclo en esta funcion que hace un update de x atributo 
 Le llega user_id para checkear que exista el user, el atributo a modificar, el valor, y la funcion que verifica el estado del atributo 
 """
 
