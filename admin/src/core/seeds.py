@@ -5,12 +5,12 @@ def run():
     """Ejecuta todos los seeds en orden"""
     print("Iniciando seeders...")
 
-    #seed_permissions()
-    #seed_roles()
+    seed_permissions()
+    seed_roles()
     #seed_event_types()
-    #seed_system_admin()
-    #seed_feature_flags()
+    seed_system_admin()
     seed_editor()
+    seed_feature_flags()
     print("Seed finalizado")
 
 
@@ -186,7 +186,7 @@ def seed_system_admin():
         active=True,
         role_id=admin_role.id,
     )
-    admin_user.set_password(admin_user,"admin123")
+    admin_user.set_password("admin123")
 
     db.session.add(admin_user)
     db.session.commit()
@@ -194,12 +194,12 @@ def seed_system_admin():
 def seed_editor():
     """Crea un usuario editor"""
     from core.models import User
-    #from core.services import role_service as RoleService
+    from core.services import role_service as RoleService
 
     print("Creando usuario editor...")
 
     # Obtener rol Editor
-    #editor_role = RoleService.get_role_by_name("Editor")
+    editor_role = RoleService.get_role_by_name("Editor")
 
     # Crear usuario editor
     editor_user = User(
@@ -208,7 +208,7 @@ def seed_editor():
         last_name="EditorApe",
         system_admin=False,
         active=True,
-        role_id=None,
+        role_id=editor_role.id,
     )
     editor_user.set_password("editor123")
 
@@ -217,7 +217,7 @@ def seed_editor():
 
 def seed_feature_flags():
     """Crea los feature flags iniciales del sistema"""
-    from src.core.models.feature_flag import FeatureFlag
+    from core.models import FeatureFlag ##ACA LO IMPORTASTE COMO src.core.models TONCES ME CREA OTRA INSTANCIA DE LOS MODELOS 
 
     print("Creando feature flags...")
 
@@ -239,7 +239,7 @@ def seed_feature_flags():
             "name": "reviews_enabled",
             "description": "Habilitar creación y visualización de reseñas",
             "is_enabled": True,
-            "maintenance_message": None,
+            "maintenance_message": "textoplano ACA LO DEJASTE EN NONE Y NO PERMITE NULL LA COLUMNA ",
         },
     ]
 

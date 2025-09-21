@@ -16,7 +16,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     deleted_at = db.Column(db.DateTime)
-    bocked = db.Column(db.Boolean, nullable=False, default=False)
+    blocked = db.Column(db.Boolean, nullable=False, default=False)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.relationship("Role", back_populates="users")
     historic_sites = db.relationship("HistoricSite", back_populates="user")
