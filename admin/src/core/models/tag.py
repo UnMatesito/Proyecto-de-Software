@@ -10,3 +10,6 @@ class Tag(db.Model):
         db.DateTime, 
         default = lambda: datetime.now(timezone),
         nullable = False)   
+            
+    def __repr__(self):
+        return f"<Tag {self.name}>"
