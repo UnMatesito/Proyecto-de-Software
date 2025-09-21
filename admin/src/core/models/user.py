@@ -10,7 +10,7 @@ class User(db.Model):
     email = db.Column(db.String(120), nullable=False, unique=True)
     first_name = db.Column(db.String(50), nullable=False, unique=True)
     last_name = db.Column(db.String(50), nullable=False, unique=True)
-    active = db.Column(db.Boolean, nullable=False)
+    active = db.Column(db.Boolean, nullable=True)
     system_admin = db.Column(db.Boolean, nullable=False)
     # role_id = db.Column(db.Integer, db.ForeignKey("role.id"))
     created_at = db.Column(db.DateTime, default=lambda: DateTime.now(timezone.utc))
