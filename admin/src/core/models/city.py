@@ -9,4 +9,7 @@ class City(db.Model):
     province_id = db.Column(db.Integer, db.ForeignKey("province.id"))
     province = db.relationship("Province", back_populates = "cities")
 
-    historic_sites = db.relationship("HistoricSite", back_populates = "city")
+    historic_sites = db.relationship("HistoricSite", back_populates = "city") 
+        
+    def __repr__(self):
+        return f"<City {self.name}>"
