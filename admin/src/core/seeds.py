@@ -44,11 +44,11 @@ def seed_permissions():
 
     # Permisos para tags
     tag_permissions = [
-        "tag_index",  # listar tags
-        "tag_new",  # crear tag
-        "tag_update",  # actualizar tag
-        "tag_destroy",  # eliminar tag
-        "tag_show",  # ver detalle de tag
+        ("tag_index", "Listar tags"),
+        ("tag_new", "Crear tag"),
+        ("tag_update", "Actualizar tag"),
+        ("tag_destroy", "Eliminar tag"),
+        ("tag_show", "Ver detalle de tag"),
     ]
 
     # Permisos para feature flags (solo System Admin)
@@ -59,10 +59,10 @@ def seed_permissions():
 
     # Permisos para validación de propuestas (Etapa 2)
     proposal_permissions = [
-        "proposal_index",  # listar propuestas
-        "proposal_show",  # ver propuesta
-        "proposal_approve",  # aprobar propuesta
-        "proposal_reject",  # rechazar propuesta
+        ("proposal_index", "Listar propuestas"),
+        ("proposal_show", "Ver propuesta"),
+        ("proposal_approve", "Aprobar propuesta"),
+        ("proposal_reject", "Rechazar propuesta"),
     ]
 
     # Permisos para moderación de reseñas (Etapa 2)
