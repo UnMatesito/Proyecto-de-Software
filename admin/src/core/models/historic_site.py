@@ -52,7 +52,7 @@ class HistoricSite(db.Model):
     conservation_state = db.relationship("ConservationState", back_populates = "historic_sites")
 
     category_id = db.Column(db.Integer, db.ForeignKey("category_site.id"))
-    category_site = db.relationship("Category", back_populates = "historic_sites")
+    category_site = db.relationship("CategorySite", back_populates = "historic_sites")
     
     proposed_by = db.Column(db.Integer, db.ForeignKey("user.id"))
     user = db.relationship("User", back_populates = "historic_sites")

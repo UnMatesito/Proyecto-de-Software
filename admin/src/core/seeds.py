@@ -247,7 +247,7 @@ def seed_editor():
         active=True,
         role_id=None,
     )
-    editor_user.set_password(editor_user,"editor123")
+    editor_user.set_password("editor123")
 
     db.session.add(editor_user)
     db.session.commit()
