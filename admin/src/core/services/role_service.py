@@ -1,10 +1,11 @@
 from typing import List, Optional
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from core.database import db
-from core.models.role import Role
 from core.models.permission import Permission
+from core.models.role import Role
 
 
 def get_all_roles() -> List[Role]:
@@ -72,7 +73,9 @@ def assign_permission_to_role(role_id: int, permission_id: int) -> bool:
     return True
 
 
-def assign_multiple_permissions_to_role(role_id: int, permission_ids: List[int]) -> dict:
+def assign_multiple_permissions_to_role(
+    role_id: int, permission_ids: List[int]
+) -> dict:
     """Asigna múltiples permisos a un rol. Retorna un dict con resultados"""
     role = Role.query.get(role_id)
     if not role:
@@ -97,9 +100,9 @@ def assign_multiple_permissions_to_role(role_id: int, permission_ids: List[int])
     db.session.commit()
 
     return {
-        'assigned': [p.id for p in new_permissions],
-        'already_assigned': already_assigned,
-        'total_assigned': len(new_permissions)
+        "assigned": [p.id for p in new_permissions],
+        "already_assigned": already_assigned,
+        "total_assigned": len(new_permissions),
     }
 
 
@@ -121,7 +124,9 @@ def remove_permission_from_role(role_id: int, permission_id: int) -> bool:
     return True
 
 
-def remove_multiple_permissions_from_role(role_id: int, permission_ids: List[int]) -> dict:
+def remove_multiple_permissions_from_role(
+    role_id: int, permission_ids: List[int]
+) -> dict:
     """Elimina múltiples permisos de un rol. Retorna un dict con resultados"""
     role = Role.query.get(role_id)
     if not role:
@@ -149,9 +154,9 @@ def remove_multiple_permissions_from_role(role_id: int, permission_ids: List[int
     db.session.commit()
 
     return {
-        'removed': removed_permissions,
-        'not_assigned': not_assigned,
-        'total_removed': len(removed_permissions)
+        "removed": removed_permissions,
+        "not_assigned": not_assigned,
+        "total_removed": len(removed_permissions),
     }
 
 
@@ -162,7 +167,9 @@ def delete_role(role_id: int) -> bool:
         raise ValueError(f"No existe un rol con ID {role_id}")
 
     if role.has_users():
-        raise ValueError(f"No se puede eliminar el rol '{role.name}' porque tiene {role.get_users_count()} usuarios asignados")
+        raise ValueError(
+            f"No se puede eliminar el rol '{role.name}' porque tiene {role.get_users_count()} usuarios asignados"
+        )
 
     db.session.delete(role)
     db.session.commit()

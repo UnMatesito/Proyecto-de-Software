@@ -1,56 +1,62 @@
 from datetime import datetime, timezone
 
-from flask_sqlalchemy import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 
 from core.database import db
-from core.models import User
-from sqlalchemy.exc import SQLAlchemyError
-from datetime import datetime, timezone
-from core.models import Role
-#from core.models import Role 
+from core.models import Role, User
 
-def list_users():
+
+def get_all_users():
     return User.query.all()
 
 
 def get_user_by_id(user_id):
     return User.query.get(user_id)
 
+
+def get_user_by_email(email):
+    return User.query.filter_by(email=email).first()
+
+
 def create_user(**kwargs):
     if User.query.filter_by(email=kwargs.get("email")).first():
         raise ValueError("Ya existe un usuario con ese email")
+
     raw_password = kwargs.pop("password", None)
     user = User(**kwargs)
+
     if raw_password:
-        user.set_password(user, raw_password)
-    
+        user.password = raw_password
+
+    db.session.add(user)
+
     try:
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        raise RuntimeError(f"Error al eliminar el usuario: {e}")
+        raise RuntimeError(f"Error al crear el usuario: {e}")
     return user
 
 
-"""
-Cuando cree los serv de deleted y block, me di cuenta que es casi el mismo codigo, entonces lo reciclo en esta funcion que hace un update de x atributo 
-Le llega user_id para checkear que exista el user, el atributo a modificar, el valor, y la funcion que verifica el estado del atributo 
-"""
-
-
 def update_user_attribute(user_id, attr_name, new_value, check_func=None):
+    """
+    Función genérica para actualizar atributos de usuario
+    - user_id: ID del usuario a modificar
+    - attr_name: nombre del atributo a modificar
+    - new_value: nuevo valor para el atributo
+    - check_func: función opcional para verificar condiciones antes del update
+    """
     # Checkeo si existe el usuario
     user = User.query.get(user_id)
     if not user:
         raise ValueError(f"No existe el usuario con id {user_id}")
+
     if check_func:
         msg = check_func(user)
         if msg:
             raise ValueError(msg)
-    """
-    hasattr permite asignar dinámicamente un valor a un atributo de un objeto
-     setattr(objeto, "nombre_del_atributo", valor), pero tengo que checkear que exista dicho atributo de lo contrario creara una nuevo 
-    """
+
+    # Verificar que el atributo existe en el modelo
     if hasattr(user, attr_name):
         setattr(user, attr_name, new_value)
     else:
@@ -60,16 +66,16 @@ def update_user_attribute(user_id, attr_name, new_value, check_func=None):
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        raise RuntimeError(f"Error al eliminar el usuario: {e}")
+        raise RuntimeError(f"Error al actualizar el usuario: {e}")
     return True
 
 
-# Borra un usuario
 def delete_user(user_id):
-    # Funcion para checkear que si el usuario esta borrado, se manda como parametro
+    """Marca un usuario como eliminado (soft delete)"""
+
     def check_delete(user):
         if user.deleted_at is not None:
-            return f"El usuario {user.name} ya esta eliminado"
+            return f"El usuario {user.first_name} ya está eliminado"
         return None
 
     return update_user_attribute(
@@ -77,35 +83,41 @@ def delete_user(user_id):
     )
 
 
-# Bloquea un usuario
 def block_user(user_id):
-    #Funcion para checkear que si el usuario esta bloqueado, se manda como parametro
+    """Bloquea un usuario"""
+
     def check_blocked(user):
         if user.blocked:
-            return f"El usuario {user.name} ya esta bloqueado"
+            return f"El usuario {user.first_name} ya está bloqueado"
         return None
 
     return update_user_attribute(user_id, "blocked", True, check_blocked)
-#Desbloquea un usuario 
-def unlock_user(user_id):
-    #Funcion para checkear que si el usuario esta desbloqueado, se manda como parametro
+
+
+def unblock_user(user_id):
+    """Desbloquea un usuario"""
+
     def check_blocked(user):
         if not user.blocked:
-            return f"El usuario {user.name} ya esta desbloqueado"
+            return f"El usuario {user.first_name} ya está desbloqueado"
         return None
 
     return update_user_attribute(user_id, "blocked", False, check_blocked)
 
-#Cambia la contraseña
+
 def change_password(user_id, old_password, new_password):
+    """Cambia la contraseña de un usuario"""
     user = User.query.get(user_id)
     if not user:
         raise ValueError(f"No existe el usuario con id {user_id}")
-    if not user.check_password(user, old_password):
+
+    if not user.check_password(old_password):
         raise ValueError("La contraseña actual no es correcta")
-    if user.check_password(user, new_password):
+
+    if user.check_password(new_password):
         raise ValueError("La nueva contraseña no puede ser igual a la anterior")
-    user.set_password(new_password)
+
+    user.password = new_password
 
     try:
         db.session.commit()
@@ -113,13 +125,17 @@ def change_password(user_id, old_password, new_password):
         db.session.rollback()
         raise RuntimeError(f"Error al actualizar la contraseña: {e}")
     return True
-#Asigna un rol
+
+
 def assign_role(user_id, role_id):
-    role= Role.query.get(role_id)
+    """Asigna un rol a un usuario"""
+    role = Role.query.get(role_id)
     if not role:
         raise ValueError(f"No existe el rol con id {role_id}")
+
     def role_check(user):
-        if user.check_role(user,role_id):
-            return f"El usuario {user.name} ya tiene dicho rol"
+        if user.check_role(role_id):
+            return f"El usuario {user.first_name} ya tiene dicho rol"
         return None
+
     return update_user_attribute(user_id, "role_id", role_id, role_check)

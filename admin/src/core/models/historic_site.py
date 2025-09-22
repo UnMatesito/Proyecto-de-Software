@@ -2,6 +2,8 @@ from datetime import datetime, timezone
 
 from core.database import db
 
+from core.database import db
+
 historic_site_tag = db.Table(
     "historic_site_tag",
     db.Column(
@@ -11,7 +13,9 @@ historic_site_tag = db.Table(
         primary_key=True,
     ),
     db.Column("tag_id", db.Integer, db.ForeignKey("tag.id"), primary_key=True),
+    db.Column("tag_id", db.Integer, db.ForeignKey("tag.id"), primary_key=True),
 )
+
 
 
 class HistoricSite(db.Model):
@@ -36,7 +40,14 @@ class HistoricSite(db.Model):
 
     city_id = db.Column(db.Integer, db.ForeignKey("city.id"))
     city = db.relationship("City", back_populates="historic_sites")
+    city = db.relationship("City", back_populates="historic_sites")
 
+    conservation_state_id = db.Column(
+        db.Integer, db.ForeignKey("conservation_state.id")
+    )
+    conservation_state = db.relationship(
+        "ConservationState", back_populates="historic_sites"
+    )
     conservation_state_id = db.Column(
         db.Integer, db.ForeignKey("conservation_state.id")
     )
@@ -47,10 +58,13 @@ class HistoricSite(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey("category_site.id"))
     category_site = db.relationship("CategorySite", back_populates="historic_sites")
 
+    category_site = db.relationship("CategorySite", back_populates="historic_sites")
+
     proposed_by = db.Column(db.Integer, db.ForeignKey("user.id"))
     user = db.relationship("User", back_populates="historic_sites")
+    user = db.relationship("User", back_populates="historic_sites")
 
-    site_histories = db.relationship("SiteHistory", back_populates = "historic_site")    
+    site_histories = db.relationship("SiteHistory", back_populates="historic_site")
 
     def __repr__(self):
         return f"<Historic Site {self.name}>"
@@ -60,3 +74,4 @@ class HistoricSite(db.Model):
     
     def id_active(self):
         return self.deleted_at == None
+

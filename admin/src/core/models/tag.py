@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from core.database import db
 from slugify import slugify
+from core.database import db
+
 
 class Tag(db.Model):
     __tablename__ = "tag"
@@ -22,9 +24,9 @@ class Tag(db.Model):
         return self._name
         
     @name.setter
-    def name (self, name):
-        self._name = name
-        self.slug = slugify(name)
+    def name (self, value):
+        self._name = value
+        self.slug = slugify(value)
 
     def has_site():
         return 

@@ -7,7 +7,7 @@ def run():
 
     seed_permissions()
     seed_roles()
-    #seed_event_types()
+    # seed_event_types()
     seed_system_admin()
     seed_editor()
     seed_feature_flags()
@@ -83,7 +83,9 @@ def seed_permissions():
     )
 
     # Transformar la lista de tuplas en la lista de dicts que espera create_multiple_permissions
-    permissions_data = [{"name": name, "description": desc} for name, desc in all_permissions]
+    permissions_data = [
+        {"name": name, "description": desc} for name, desc in all_permissions
+    ]
 
     PermissionService.create_multiple_permissions(permissions_data)
 
@@ -100,25 +102,59 @@ def seed_roles():
 
     roles_permissions = {
         "Editor": [
-            "site_index", "site_new", "site_update", "site_show", "site_history",
-            "tag_index", "tag_new", "tag_update", "tag_destroy", "tag_show",
-            "proposal_index", "proposal_show", "proposal_approve", "proposal_reject",
-            "review_index", "review_show", "review_approve", "review_reject",
+            "site_index",
+            "site_new",
+            "site_update",
+            "site_show",
+            "site_history",
+            "tag_index",
+            "tag_new",
+            "tag_update",
+            "tag_destroy",
+            "tag_show",
+            "proposal_index",
+            "proposal_show",
+            "proposal_approve",
+            "proposal_reject",
+            "review_index",
+            "review_show",
+            "review_approve",
+            "review_reject",
         ],
         "Administrador": [
             # Usuarios
-            "user_index", "user_new", "user_update", "user_destroy", "user_show",
-            "user_block", "user_assign_role",
+            "user_index",
+            "user_new",
+            "user_update",
+            "user_destroy",
+            "user_show",
+            "user_block",
+            "user_assign_role",
             # Sitios
-            "site_index", "site_new", "site_update", "site_destroy", "site_show",
-            "site_export", "site_history",
+            "site_index",
+            "site_new",
+            "site_update",
+            "site_destroy",
+            "site_show",
+            "site_export",
+            "site_history",
             # Tags
-            "tag_index", "tag_new", "tag_update", "tag_destroy", "tag_show",
+            "tag_index",
+            "tag_new",
+            "tag_update",
+            "tag_destroy",
+            "tag_show",
             # Propuestas y reseñas
-            "proposal_index", "proposal_show", "proposal_approve", "proposal_reject",
-            "review_index", "review_show", "review_approve", "review_reject",
+            "proposal_index",
+            "proposal_show",
+            "proposal_approve",
+            "proposal_reject",
+            "review_index",
+            "review_show",
+            "review_approve",
+            "review_reject",
         ],
-        "Usuario público": []  # TODO: Ver bien qué permisos tiene
+        "Usuario público": [],  # TODO: Ver bien qué permisos tiene
     }
 
     for role_name, perm_names in roles_permissions.items():
@@ -190,7 +226,8 @@ def seed_system_admin():
 
     db.session.add(admin_user)
     db.session.commit()
-    
+
+
 def seed_editor():
     """Crea un usuario editor"""
     from core.models import User
@@ -215,9 +252,10 @@ def seed_editor():
     db.session.add(editor_user)
     db.session.commit()
 
+
 def seed_feature_flags():
     """Crea los feature flags iniciales del sistema"""
-    from core.models import FeatureFlag ##ACA LO IMPORTASTE COMO src.core.models TONCES ME CREA OTRA INSTANCIA DE LOS MODELOS 
+    from core.models import FeatureFlag
 
     print("Creando feature flags...")
 
@@ -239,7 +277,7 @@ def seed_feature_flags():
             "name": "reviews_enabled",
             "description": "Habilitar creación y visualización de reseñas",
             "is_enabled": True,
-            "maintenance_message": "textoplano ACA LO DEJASTE EN NONE Y NO PERMITE NULL LA COLUMNA ",
+            "maintenance_message": "No se permiten reseñas",
         },
     ]
 

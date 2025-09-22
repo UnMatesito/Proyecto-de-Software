@@ -4,6 +4,7 @@ from flask import abort, flash, redirect, request, session, url_for
 
 from core.services import get_user_by_id
 
+
 def get_current_user():
     """Obtiene el usuario actual de la sesión"""
     if "user_id" in session:
@@ -30,6 +31,7 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
 
 def permission_required(permission_name):
     """Decorador que requiere un permiso específico"""
@@ -85,6 +87,7 @@ def role_required(role_name):
 
     return decorator
 
+
 def system_admin_required(f):
     """Decorador que requiere que el usuario sea System Admin"""
 
@@ -104,6 +107,7 @@ def system_admin_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
 
 """
 def check_maintenance_mode():

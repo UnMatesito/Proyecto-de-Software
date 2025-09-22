@@ -1,4 +1,5 @@
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
@@ -34,7 +35,9 @@ def create_permission(name: str, description: str) -> Permission:
         raise ValueError(f"Ya existe un permiso con el nombre '{name}'")
 
 
-def create_multiple_permissions(permissions_data: List[Dict[str, str]]) -> List[Permission]:
+def create_multiple_permissions(
+    permissions_data: List[Dict[str, str]],
+) -> List[Permission]:
     """
     Crea múltiples permisos
 
@@ -49,8 +52,8 @@ def create_multiple_permissions(permissions_data: List[Dict[str, str]]) -> List[
 
     for perm_data in permissions_data:
         try:
-            name = perm_data.get('name')
-            description = perm_data.get('description')
+            name = perm_data.get("name")
+            description = perm_data.get("description")
 
             if not name or not description:
                 errors.append(f"Datos incompletos: {perm_data}")
@@ -61,14 +64,16 @@ def create_multiple_permissions(permissions_data: List[Dict[str, str]]) -> List[
             created_permissions.append(permission)
 
         except Exception as e:
-            errors.append(f"Error creando permiso '{perm_data.get('name', 'Unknown')}': {str(e)}")
+            errors.append(
+                f"Error creando permiso '{perm_data.get('name', 'Unknown')}': {str(e)}"
+            )
 
     try:
         db.session.commit()
     except IntegrityError as e:
         db.session.rollback()
         # Intentar identificar qué nombre causó el conflicto
-        if 'UNIQUE constraint failed' in str(e) or 'duplicate key' in str(e):
+        if "UNIQUE constraint failed" in str(e) or "duplicate key" in str(e):
             raise ValueError(f"Uno o más permisos ya existen. Error: {str(e)}")
         raise ValueError(f"Error de integridad al crear permisos: {str(e)}")
 
@@ -76,13 +81,17 @@ def create_multiple_permissions(permissions_data: List[Dict[str, str]]) -> List[
         # Si hay errores pero algunos permisos se crearon, informar sobre ambos
         error_msg = "Algunos permisos no pudieron ser creados: " + "; ".join(errors)
         if created_permissions:
-            error_msg += f". Se crearon exitosamente {len(created_permissions)} permisos."
+            error_msg += (
+                f". Se crearon exitosamente {len(created_permissions)} permisos."
+            )
         raise ValueError(error_msg)
 
     return created_permissions
 
 
-def update_permission(permission_id: int, name: str = None, description: str = None) -> Permission:
+def update_permission(
+    permission_id: int, name: str = None, description: str = None
+) -> Permission:
     """
     Actualiza el nombre y/o descripción de un permiso
 
@@ -102,7 +111,9 @@ def update_permission(permission_id: int, name: str = None, description: str = N
             permission.description = description
 
         if name is None and description is None:
-            raise ValueError("Debe proporcionar al menos un campo para actualizar (name o description)")
+            raise ValueError(
+                "Debe proporcionar al menos un campo para actualizar (name o description)"
+            )
 
         db.session.commit()
         return permission
@@ -115,7 +126,9 @@ def update_permission(permission_id: int, name: str = None, description: str = N
 
 def get_permission_roles(permission_id: int) -> List[Role]:
     """Obtiene los roles que tienen asignado un permiso específico"""
-    permission = Permission.query.options(joinedload(Permission.roles)).get(permission_id)
+    permission = Permission.query.options(joinedload(Permission.roles)).get(
+        permission_id
+    )
     if not permission:
         raise ValueError(f"No existe un permiso con ID {permission_id}")
 
@@ -168,9 +181,11 @@ def get_permissions_by_role_count() -> Dict[int, int]:
 
 def search_permissions_by_name(search_term: str) -> List[Permission]:
     """Busca permisos que contengan el término de búsqueda en su nombre"""
-    return Permission.query.filter(Permission.name.ilike(f'%{search_term}%')).all()
+    return Permission.query.filter(Permission.name.ilike(f"%{search_term}%")).all()
 
 
 def search_permissions_by_description(search_term: str) -> List[Permission]:
     """Busca permisos que contengan el término de búsqueda en su descripción"""
-    return Permission.query.filter(Permission.description.ilike(f'%{search_term}%')).all()
+    return Permission.query.filter(
+        Permission.description.ilike(f"%{search_term}%")
+    ).all()
