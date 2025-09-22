@@ -2,7 +2,6 @@ from core.database import db
 from core.models import Tag
 from core.utils import pagination
 from sqlalchemy import desc  
-from core.models.tag import Tag
 
 def get_tag_by_id(tag_id):
     tag = Tag.query.get(tag_id)
@@ -28,6 +27,15 @@ def validation_tag_name(tag_name):
         raise ValueError("Ya existe un tag con nombre {tag_name}")
     return True
 
+def create_tag(name):    
+    if (not name):
+        raise ValueError("El nombre del tag es obligatorio")
+    validation_tag_name(name)
+    tag = Tag(name)
+    db.session.add(tag)
+    db.session.commit()
+    return tag
+
 def get_paginated_tags(page, order):
     if (order == "asc"):
         query = Tag.query.order_by(Tag.created_at)
@@ -39,10 +47,3 @@ def delete_tag(tag_id):
     tag = get_tag_by_id(tag_id)
     if (tag.is_deleted()):
         raise ValueError("El tag se encuentra borrado")
-
-def create_tag(name: str) -> Tag:
-    validation_tag_name(name)
-    tag = Tag(name=name)
-    db.session.add(tag)
-    db.session.commit()
-    return tag

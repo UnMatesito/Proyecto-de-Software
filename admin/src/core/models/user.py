@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 
-
 from core.database import db
 from core.utils.bcrypt import bcrypt
 

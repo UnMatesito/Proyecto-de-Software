@@ -1,5 +1,6 @@
 from core.database import db
 
+
 class CategorySite(db.Model):
     __tablename__ = "category_site"
     id = db.Column(db.Integer, primary_key=True)

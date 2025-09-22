@@ -1,14 +1,8 @@
 from datetime import datetime
-<<<<<<< HEAD
-from sqlalchemy import and_, or_, inspect
-from sqlalchemy.orm import Query
-from typing import Dict, List, Any, Optional, Union
-=======
 from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy import and_, inspect, or_
 from sqlalchemy.orm import Query
->>>>>>> b3993202772a16e7a333a95b16553bc88327f522
 
 
 class GenericSearchBuilder:
@@ -39,11 +33,7 @@ class GenericSearchBuilder:
 
         # Procesar cada filtro
         for filter_name, filter_value in filters.items():
-<<<<<<< HEAD
-            if filter_value is None or filter_value == '':
-=======
             if filter_value is None or filter_value == "":
->>>>>>> b3993202772a16e7a333a95b16553bc88327f522
                 continue
 
             query = self._apply_filter(query, filter_name, filter_value)
@@ -55,19 +45,11 @@ class GenericSearchBuilder:
 
         # Filtros especiales (no corresponden directamente a columnas)
         special_filters = {
-<<<<<<< HEAD
-            'search_text': self._apply_text_search,
-            'date_from': self._apply_date_from,
-            'date_to': self._apply_date_to,
-            'date_range': self._apply_date_range,
-            'in_list': self._apply_in_list,
-=======
             "search_text": self._apply_text_search,
             "date_from": self._apply_date_from,
             "date_to": self._apply_date_to,
             "date_range": self._apply_date_range,
             "in_list": self._apply_in_list,
->>>>>>> b3993202772a16e7a333a95b16553bc88327f522
         }
 
         if filter_name in special_filters:
@@ -85,11 +67,7 @@ class GenericSearchBuilder:
         text_columns = [
             getattr(self.model_class, col_name)
             for col_name, col in self.columns.items()
-<<<<<<< HEAD
-            if str(col.type).upper().startswith(('VARCHAR', 'TEXT', 'STRING'))
-=======
             if str(col.type).upper().startswith(("VARCHAR", "TEXT", "STRING"))
->>>>>>> b3993202772a16e7a333a95b16553bc88327f522
         ]
 
         if not text_columns:
@@ -132,17 +110,10 @@ class GenericSearchBuilder:
 
     def _apply_date_range(self, query: Query, date_range: Dict[str, str]) -> Query:
         """Aplica filtro de rango de fechas"""
-<<<<<<< HEAD
-        if 'from' in date_range:
-            query = self._apply_date_from(query, date_range['from'])
-        if 'to' in date_range:
-            query = self._apply_date_to(query, date_range['to'])
-=======
         if "from" in date_range:
             query = self._apply_date_from(query, date_range["from"])
         if "to" in date_range:
             query = self._apply_date_to(query, date_range["to"])
->>>>>>> b3993202772a16e7a333a95b16553bc88327f522
         return query
 
     def _apply_in_list(self, query: Query, in_filters: Dict[str, List]) -> Query:
@@ -153,13 +124,9 @@ class GenericSearchBuilder:
                 query = query.filter(column.in_(values))
         return query
 
-<<<<<<< HEAD
-    def _apply_column_filter(self, query: Query, column_name: str, filter_value: Any) -> Query:
-=======
     def _apply_column_filter(
         self, query: Query, column_name: str, filter_value: Any
     ) -> Query:
->>>>>>> b3993202772a16e7a333a95b16553bc88327f522
         """Aplica filtro directo a una columna"""
         if column_name not in self.columns:
             return query
@@ -171,17 +138,10 @@ class GenericSearchBuilder:
         if isinstance(filter_value, dict):
             # Filtros complejos: {'operator': 'like', 'value': 'texto'}
             return self._apply_complex_filter(query, column, filter_value)
-<<<<<<< HEAD
-        elif column_type.startswith(('VARCHAR', 'TEXT', 'STRING')):
-            # Búsqueda LIKE para strings
-            return query.filter(column.ilike(f"%{filter_value}%"))
-        elif column_type.startswith('BOOLEAN'):
-=======
         elif column_type.startswith(("VARCHAR", "TEXT", "STRING")):
             # Búsqueda LIKE para strings
             return query.filter(column.ilike(f"%{filter_value}%"))
         elif column_type.startswith("BOOLEAN"):
->>>>>>> b3993202772a16e7a333a95b16553bc88327f522
             # Filtro exacto para booleanos
             return query.filter(column == bool(filter_value))
         else:
@@ -190,24 +150,6 @@ class GenericSearchBuilder:
 
     def _apply_complex_filter(self, query: Query, column, filter_config: Dict) -> Query:
         """Aplica filtros complejos con operadores específicos"""
-<<<<<<< HEAD
-        operator = filter_config.get('operator', 'eq')
-        value = filter_config.get('value')
-
-        operators = {
-            'eq': lambda c, v: c == v,
-            'ne': lambda c, v: c != v,
-            'lt': lambda c, v: c < v,
-            'le': lambda c, v: c <= v,
-            'gt': lambda c, v: c > v,
-            'ge': lambda c, v: c >= v,
-            'like': lambda c, v: c.ilike(f"%{v}%"),
-            'ilike': lambda c, v: c.ilike(f"%{v}%"),
-            'startswith': lambda c, v: c.ilike(f"{v}%"),
-            'endswith': lambda c, v: c.ilike(f"%{v}"),
-            'in': lambda c, v: c.in_(v) if isinstance(v, list) else c == v,
-            'not_in': lambda c, v: ~c.in_(v) if isinstance(v, list) else c != v,
-=======
         operator = filter_config.get("operator", "eq")
         value = filter_config.get("value")
 
@@ -224,7 +166,6 @@ class GenericSearchBuilder:
             "endswith": lambda c, v: c.ilike(f"%{v}"),
             "in": lambda c, v: c.in_(v) if isinstance(v, list) else c == v,
             "not_in": lambda c, v: ~c.in_(v) if isinstance(v, list) else c != v,
->>>>>>> b3993202772a16e7a333a95b16553bc88327f522
         }
 
         if operator in operators:
@@ -237,13 +178,9 @@ class GenericSearchBuilder:
         date_columns = []
         for col_name, col in self.columns.items():
             col_type = str(col.type).upper()
-<<<<<<< HEAD
-            if any(date_type in col_type for date_type in ['DATETIME', 'DATE', 'TIMESTAMP']):
-=======
             if any(
                 date_type in col_type for date_type in ["DATETIME", "DATE", "TIMESTAMP"]
             ):
->>>>>>> b3993202772a16e7a333a95b16553bc88327f522
                 date_columns.append(getattr(self.model_class, col_name))
         return date_columns
 
@@ -280,13 +217,9 @@ def build_search_query(model_class, filters: Dict[str, Any]) -> Query:
     return builder.build_query(filters)
 
 
-<<<<<<< HEAD
-def apply_ordering(query: Query, model_class, order_by: str, order_dir: str = "asc") -> Query:
-=======
 def apply_ordering(
     query: Query, model_class, order_by: str, order_dir: str = "asc"
 ) -> Query:
->>>>>>> b3993202772a16e7a333a95b16553bc88327f522
     """
     Aplica ordenamiento a una query de forma genérica
 
@@ -305,12 +238,6 @@ def apply_ordering(
     else:
         return query.order_by(field.asc())
 
-<<<<<<< HEAD
-# Función completa que combina todo
-def search_with_pagination(model_class, filters: Dict, page: int = 1,
-                           per_page: int = 25, order_by: str = None,
-                           order_dir: str = "asc"):
-=======
 
 # Función completa que combina todo
 def search_with_pagination(
@@ -321,7 +248,6 @@ def search_with_pagination(
     order_by: str = None,
     order_dir: str = "asc",
 ):
->>>>>>> b3993202772a16e7a333a95b16553bc88327f522
     """
     Función completa que combina búsqueda, ordenamiento y paginación
     """
@@ -335,8 +261,4 @@ def search_with_pagination(
         query = apply_ordering(query, model_class, order_by, order_dir)
 
     # Aplicar paginación
-<<<<<<< HEAD
     return paginate_query(query, page, per_page)
-=======
-    return paginate_query(query, page, per_page)
->>>>>>> b3993202772a16e7a333a95b16553bc88327f522

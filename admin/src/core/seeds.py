@@ -11,6 +11,7 @@ def run():
     seed_system_admin()
     seed_editor()
     seed_feature_flags()
+    seed_tags()
     print("Seed finalizado")
 
 
@@ -215,6 +216,7 @@ def seed_system_admin():
 
     # Crear usuario system admin
     admin_user = User(
+        password = "admin123",
         email="admin@sistema.com",
         first_name="System",
         last_name="Administrator",
@@ -222,7 +224,6 @@ def seed_system_admin():
         active=True,
         role_id=admin_role.id,
     )
-    admin_user.set_password("admin123")
 
     db.session.add(admin_user)
     db.session.commit()
@@ -240,6 +241,7 @@ def seed_editor():
 
     # Crear usuario editor
     editor_user = User(
+        password = "editor123",
         email="editor@.com",
         first_name="EditorNomb",
         last_name="EditorApe",
@@ -247,7 +249,6 @@ def seed_editor():
         active=True,
         role_id=editor_role.id,
     )
-    editor_user.set_password("editor123")
 
     db.session.add(editor_user)
     db.session.commit()
@@ -290,4 +291,14 @@ def seed_feature_flags():
         )
         db.session.add(flag)
 
+    db.session.commit()
+
+def seed_tags():
+    from core.models import Tag
+
+    tags = ["tag 1", "tag 2", "tag 3", "tag 4"]
+
+    for t in tags:
+        tag = Tag(name=t)
+        db.session.add(tag)
     db.session.commit()
