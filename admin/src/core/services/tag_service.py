@@ -42,3 +42,8 @@ def get_paginated_tags(page, order):
     else:
         query = Tag.query.order_by(desc(Tag.name))
     return pagination.paginate_query(query, page = page)
+
+def delete_tag(tag_id):
+    tag = get_tag_by_id(tag_id)
+    if (tag.is_deleted()):
+        raise ValueError("El tag se encuentra borrado")

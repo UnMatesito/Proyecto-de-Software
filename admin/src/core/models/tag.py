@@ -10,6 +10,8 @@ class Tag(db.Model):
     created_at = db.Column(
         db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
+    deleted_at = db.Column(db.DateTime, default = None)
+
     sites = db.relationship("HistoricSitee", back_populates="tag")
 
     def __repr__(self):
@@ -26,3 +28,9 @@ class Tag(db.Model):
 
     def has_site():
         return 
+    
+    def is_deleted(self):
+        return self.deleted_at != None
+    
+    def id_active(self):
+        return self.deleted_at == None

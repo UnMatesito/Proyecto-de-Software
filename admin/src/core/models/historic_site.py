@@ -56,7 +56,7 @@ class HistoricSite(db.Model):
         return f"<Historic Site {self.name}>"
     
     def is_deleted(self):
-        return not self.deleted_at != None
+        return  self.deleted_at != None
     
     def id_active(self):
         return self.deleted_at == None
