@@ -295,10 +295,11 @@ def seed_feature_flags():
 
 def seed_tags():
     from core.models import Tag
-
+    print("Creando tags...")
     tags = ["tag 1", "tag 2", "tag 3", "tag 4"]
 
     for t in tags:
         tag = Tag(name=t)
         db.session.add(tag)
     db.session.commit()
+

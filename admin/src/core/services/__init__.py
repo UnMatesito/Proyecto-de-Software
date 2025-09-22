@@ -54,7 +54,11 @@ from .role_service import (
 )
 
 # Tag services
-from .tag_service import create_tag
+from .tag_service import (
+    create_tag,
+    delete_tag,
+    get_paginated_tags
+)
 
 # User services
 from .user_service import (

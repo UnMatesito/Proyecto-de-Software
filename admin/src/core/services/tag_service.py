@@ -2,6 +2,7 @@ from core.database import db
 from core.models import Tag
 from core.utils import pagination
 from sqlalchemy import desc  
+from datetime import datetime, timezone
 
 def get_tag_by_id(tag_id):
     tag = Tag.query.get(tag_id)
@@ -36,14 +37,24 @@ def create_tag(name):
     db.session.commit()
     return tag
 
-def get_paginated_tags(page, order):
-    if (order == "asc"):
-        query = Tag.query.order_by(Tag.created_at)
-    else:
-        query = Tag.query.order_by(desc(Tag.name))
+def get_paginated_tags(page, order_by, sorted_by):
+    if order_by == "name":
+        if (sorted_by == "asc"):
+            query = Tag.query.order_by(Tag._name)
+        else:
+            query = Tag.query.order_by(desc(Tag._name))
+    elif order_by == "created_date":
+        if (sorted_by == "asc"):
+            query = Tag.query.order_by(Tag.created_at)
+        else:
+            query = Tag.query.order_by(desc(Tag.created_at))
     return pagination.paginate_query(query, page = page)
 
 def delete_tag(tag_id):
     tag = get_tag_by_id(tag_id)
     if (tag.is_deleted()):
         raise ValueError("El tag se encuentra borrado")
+    if(tag.has_sites()):
+        raise ValueError("El tag posee sitios asociados")
+    tag.deleted_at = datetime.now(timezone.utc)
+    db.session.commit()

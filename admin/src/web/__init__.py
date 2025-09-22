@@ -39,6 +39,18 @@ def create_app(env="development", static_folder="../../static"):
 
         seed_db()
 
+    @app.cli.command("delete-tag")
+    def delete_tag_command():
+        from core.services import delete_tag
+        delete_tag(1)
+    
+    @app.cli.command("paginated_tag")
+    def paginated_tag_command():
+        from core.services import get_paginated_tags
+        print(get_paginated_tags(1, "name", "asc"))
+
+        print(get_paginated_tags(1, "name", "dsc"))
+
     # Error handlers
     app.register_error_handler(404, error.not_found)
     app.register_error_handler(500, error.internal_server_error)

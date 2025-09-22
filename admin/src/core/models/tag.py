@@ -30,8 +30,8 @@ class Tag(db.Model):
         self._name = value
         self.slug = slugify(value)
 
-    def has_site():
-        return
+    def has_sites(self):
+        return any(site.is_active for site in self.sites)
 
     def is_deleted(self):
         return self.deleted_at != None

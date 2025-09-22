@@ -68,7 +68,7 @@ def assigin_tags(historic_site, tags):
         raise ValueError(f"Tags invalidos")
     for t in tags:
         historic_site.tags.append(t)
-        historic_site.updated_at = datetime.now(timezone.utc)
+    historic_site.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     return historic_site
 

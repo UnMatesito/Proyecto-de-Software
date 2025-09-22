@@ -20,7 +20,7 @@ __all__ = [
     "Tag",
     "ConservationState",
     "CategorySite",
-    "Feature_flag",
+    "FeatureFlag",
     "SiteHistory",
     "EventType",
     "FeatureFlag",
