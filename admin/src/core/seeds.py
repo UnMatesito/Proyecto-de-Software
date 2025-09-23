@@ -216,7 +216,7 @@ def seed_system_admin():
 
     # Crear usuario system admin
     admin_user = User(
-        password = "admin123",
+        password="admin123",
         email="admin@sistema.com",
         first_name="System",
         last_name="Administrator",
@@ -241,7 +241,7 @@ def seed_editor():
 
     # Crear usuario editor
     editor_user = User(
-        password = "editor123",
+        password="editor123",
         email="editor@.com",
         first_name="EditorNomb",
         last_name="EditorApe",
@@ -293,8 +293,10 @@ def seed_feature_flags():
 
     db.session.commit()
 
+
 def seed_tags():
     from core.models import Tag
+
     print("Creando tags...")
     tags = ["tag 1", "tag 2", "tag 3", "tag 4"]
 
@@ -302,4 +304,3 @@ def seed_tags():
         tag = Tag(name=t)
         db.session.add(tag)
     db.session.commit()
-

@@ -1,60 +1,90 @@
+from datetime import datetime, timezone
+
+from sqlalchemy import desc
+from sqlalchemy.exc import SQLAlchemyError
+
 from core.database import db
 from core.models import Tag
 from core.utils import pagination
-from sqlalchemy import desc  
-from datetime import datetime, timezone
+
+# TODO: Agregar dosctrings
+
 
 def get_tag_by_id(tag_id):
     tag = Tag.query.get(tag_id)
-    if (not tag):
+    if not tag:
         raise ValueError(f"No existe un tag con id {tag_id}")
     return tag
 
+
 def get_tag_by_name(tag_name):
-    tag = Tag.query.filter_by(Tag.name == tag_name)
-    if (not tag):
+    tag = Tag.query.filter_by(name=tag_name).first()
+    if not tag:
         raise ValueError(f"No existe un tag con nombre {tag_name}")
     return tag
-    
 
-def validation_tag_name(tag_name):
-    if (len(tag_name) > 50):
+
+def validate_tag_name(tag_name):
+    if len(tag_name) > 50:
         raise ValueError("El tamaño maximo para un nombre es de caracteres es 50")
-    if (len(tag_name) < 3):
+    if len(tag_name) < 3:
         raise ValueError("El tamaño minimo para un nombre es de caracteres es 3")
     tag_name = tag_name.lower()
     tag = get_tag_by_name(tag_name)
-    if (tag):
-        raise ValueError("Ya existe un tag con nombre {tag_name}")
+    if tag:
+        raise ValueError(f"Ya existe un tag con nombre {tag_name}")
     return True
 
-def create_tag(name):    
-    if (not name):
+
+def create_tag(name):
+    if not name:
         raise ValueError("El nombre del tag es obligatorio")
-    validation_tag_name(name)
-    tag = Tag(name)
+    validate_tag_name(name)
+    tag = Tag()
+    tag.name = name
     db.session.add(tag)
     db.session.commit()
     return tag
 
+
+def update_tag(tag_id, new_name):
+    """Actualiza el nombre de un tag"""
+    tag = get_tag_by_id(tag_id)
+
+    if tag.is_deleted():
+        raise ValueError("No se puede actualizar un tag eliminado")
+
+    validate_tag_name(new_name)
+
+    try:
+        tag.name = new_name
+        db.session.commit()
+        return tag
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al actualizar el tag: {e}")
+
+
 def get_paginated_tags(page, order_by, sorted_by):
     if order_by == "name":
-        if (sorted_by == "asc"):
+        if sorted_by == "asc":
             query = Tag.query.order_by(Tag._name)
         else:
             query = Tag.query.order_by(desc(Tag._name))
     elif order_by == "created_date":
-        if (sorted_by == "asc"):
+        if sorted_by == "asc":
             query = Tag.query.order_by(Tag.created_at)
         else:
             query = Tag.query.order_by(desc(Tag.created_at))
-    return pagination.paginate_query(query, page = page)
+    return pagination.paginate_query(query, page=page)
+
 
 def delete_tag(tag_id):
     tag = get_tag_by_id(tag_id)
-    if (tag.is_deleted()):
+    if tag.is_deleted():
         raise ValueError("El tag se encuentra borrado")
-    if(tag.has_sites()):
+    if tag.has_sites():
         raise ValueError("El tag posee sitios asociados")
     tag.deleted_at = datetime.now(timezone.utc)
     db.session.commit()

@@ -1,6 +1,8 @@
 from core.database import db
 from core.models import FeatureFlag
 
+# TODO: Agregar docstrings
+
 
 def get_all_feature_flags():
     return FeatureFlag.query.all()
