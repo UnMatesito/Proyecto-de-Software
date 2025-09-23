@@ -7,6 +7,8 @@ from core.database import db
 from core.models.permission import Permission
 from core.models.role import Role
 
+# TODO: Sacar o aplicar typing a todo
+
 
 def get_all_permissions() -> List[Permission]:
     """Obtiene todos los permisos"""
