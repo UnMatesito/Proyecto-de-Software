@@ -1,6 +1,6 @@
 {% from 'macros/button.html' import button %}
 
-{% macro render_table(data, columns=None, title="", empty_message="No hay datos para mostrar.", button_link="") %}
+{% macro render_table(data, columns=None, title="", empty_message="No hay datos para mostrar.", button_link="", show_details_button=True) %}
     <div class="relative overflow-x-auto">
         {# Titulo (Puede no tener) #}
         {% if title %}
@@ -12,6 +12,7 @@
           <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
+                {# Encabezados #}
                 {% if columns %}
                   {% for col in columns %}
                     <th scope="col" class="px-6 py-3">{{ col.label }}</th>
@@ -28,42 +29,45 @@
               </tr>
             </thead>
             <tbody>
-              {% for item in data %}
-                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                  {% if columns %}
-                    {% for col in columns %}
-                      {% set value = item[col.key] if item is mapping else getattr(item, col.key, '') %}
-                      <td class="px-6 py-4">{{ value }}</td>
-                    {% endfor %}
-                      <td>
-                        {{ button("Ver Detalles",
-                        icon_left_svg='<svg class="w-6 h-6 text-white mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
-                                        </svg>
-                    ', link="url_for(button_link, id=item.id)", type="button") }}
-                      {# Descomentar el url_for() para utilizar ids #}
-                      </td>
-                  {% else %}
-                    {% if item is mapping %}
-                      {% for value in item.values() %}
-                        <td class="px-6 py-4">{{ value }}</td>
-                      {% endfor %}
-                        <td>
-                        {{ button("Ver Detalles",
-                        icon_left_svg='<svg class="w-6 h-6 text-white mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
-                                        </svg>
-                    ', link="url_for(button_link, id=item.id)", type="button") }}
-                        {# Descomentar el url_for() para utilizar ids #}
-                      </td>
-                    {% endif %}
-                  {% endif %}
-                </tr>
-              {% endfor %}
+                {# Datos #}
+                {% for item in data %}
+                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                      {% if columns %}
+                        {% for col in columns %}
+                          {% set value = item[col.key] if item is mapping else getattr(item, col.key, '') %}
+                          <td class="px-6 py-4">{{ value }}</td>
+                        {% endfor %}
+                        {% if show_details_button %}
+                          <td>
+                            {{ details_button() }}
+                          </td>
+                        {% endif %}
+                      {% else %}
+                        {% if item is mapping %}
+                          {% for value in item.values() %}
+                            <td class="px-6 py-4">{{ value }}</td>
+                          {% endfor %}
+                            {% if show_details_button %}
+                              <td>
+                                {{ details_button() }}
+                              </td>
+                            {% endif %}
+                        {% endif %}
+                      {% endif %}
+                    </tr>
+                {% endfor %}
             </tbody>
           </table>
         {% else %}
           <p class="text-gray-500 dark:text-gray-400">{{ empty_message }}</p>
         {% endif %}
     </div>
+{% endmacro %}
+
+{% macro details_button() %}
+{{ button("Ver Detalles",
+icon_left_svg='<svg class="w-6 h-6 text-white mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+<path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
+</svg>', link="url_for(button_link, id=item.id)", type="button") }}
+    {# Descomentar el url_for() para utilizar ids #}
 {% endmacro %}
