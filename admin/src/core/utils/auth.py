@@ -84,7 +84,7 @@ def role_required(role_name):
                 return f(*args, **kwargs)
 
             if not user.has_role(role_name):
-                abort(403) # Forbidden
+                abort(403)  # Forbidden
 
             return f(*args, **kwargs)
 

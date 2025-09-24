@@ -7,16 +7,19 @@ from core.services import role_service
 
 class AssignRoleForm(FlaskForm):
     role_id = SelectField(
-        'Rol',
+        "Rol",
         coerce=int,
-        validators=[DataRequired(message='Debe seleccionar un rol')],
-        choices=[]
+        validators=[DataRequired(message="Debe seleccionar un rol")],
+        choices=[],
     )
-    submit = SubmitField('Asignar Rol')
+    submit = SubmitField("Asignar Rol")
 
     def __init__(self, *args, **kwargs):
         super(AssignRoleForm, self).__init__(*args, **kwargs)
         # Cargar roles disponibles (Editor, Administrador)
         roles = role_service.get_all_roles()
-        self.role_id.choices = [(role.id, role.name) for role in roles
-                                if role.name in ['Editor', 'Administrador']]
+        self.role_id.choices = [
+            (role.id, role.name)
+            for role in roles
+            if role.name in ["Editor", "Administrador"]
+        ]

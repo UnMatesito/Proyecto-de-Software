@@ -3,5 +3,5 @@ from wtforms import BooleanField, SubmitField
 
 
 class BlockUserForm(FlaskForm):
-    block = BooleanField('Bloquear usuario')
-    submit = SubmitField('Confirmar cambios')
+    block = BooleanField("Bloquear usuario")
+    submit = SubmitField("Confirmar cambios")

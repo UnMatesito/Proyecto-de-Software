@@ -6,9 +6,9 @@ from core.models import User
 from core.utils.bcrypt import bcrypt
 
 from .config import get_current_config
-from .controllers import user_bp
+from .controllers import user_bp, user_management_bp
 from .handlers import error
-from .controllers import user_management_bp
+
 
 def create_app(env="development", static_folder="../../static"):
     app = Flask(__name__, static_folder=static_folder)
@@ -26,12 +26,12 @@ def create_app(env="development", static_folder="../../static"):
     def home():
         return render_template("home.html")
 
-# TODO: Eliminar
+    # TODO: Eliminar
     @app.route("/fake-login/<string:email>")
     def fake_login(email):
         """
-            Login falso para pruebas: simula que el usuario con ese email inició sesión
-            """
+        Login falso para pruebas: simula que el usuario con ese email inició sesión
+        """
         # Buscar el usuario en la DB
         user = User.query.filter_by(email=email).first()
         if not user:
