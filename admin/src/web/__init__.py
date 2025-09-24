@@ -5,6 +5,7 @@ from core.database import db
 from core.utils.bcrypt import bcrypt
 
 from .config import get_current_config
+from .controllers import auth as auth_bp
 from .handlers import error
 
 
@@ -25,6 +26,7 @@ def create_app(env="development", static_folder="../../static"):
         return render_template("home.html")
 
     # Blueprints
+    app.register_blueprint(auth_bp.bp)
 
     # Commands
     @app.cli.command("reset-db")
