@@ -1,4 +1,4 @@
-from .category_site import CategorySite
+from .category import Category, category_site
 from .city import City
 from .conservation_state import ConservationState
 from .event_type import EventType
@@ -19,11 +19,11 @@ __all__ = [
     "Province",
     "Tag",
     "ConservationState",
-    "CategorySite",
-    "Feature_flag",
+    "Category",
+    "category_site",
+    "FeatureFlag",
     "SiteHistory",
     "EventType",
-    "FeatureFlag",
     "Permission",
     "Role",
     "role_permission",

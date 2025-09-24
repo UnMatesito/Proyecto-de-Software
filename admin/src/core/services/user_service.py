@@ -7,18 +7,22 @@ from core.models import Role, User
 
 
 def get_all_users():
+    """Obtiene todos los usuarios."""
     return User.query.all()
 
 
 def get_user_by_id(user_id):
+    """Obtiene un usuario por su id."""
     return User.query.get(user_id)
 
 
 def get_user_by_email(email):
+    """Obtiene un usuario por su email."""
     return User.query.filter_by(email=email).first()
 
 
 def create_user(**kwargs):
+    """Crea un nuevo usuario."""
     if User.query.filter_by(email=kwargs.get("email")).first():
         raise ValueError("Ya existe un usuario con ese email")
 
@@ -61,7 +65,6 @@ def update_user_attribute(user_id, attr_name, new_value, check_func=None):
         setattr(user, attr_name, new_value)
     else:
         raise AttributeError(f"{attr_name} no es un atributo de User")
-
     # Intento actualizar la db
     try:
         db.session.commit()
