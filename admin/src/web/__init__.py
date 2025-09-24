@@ -1,12 +1,14 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, session
 from flask_debugtoolbar import DebugToolbarExtension
 
 from core.database import db
+from core.models import User
 from core.utils.bcrypt import bcrypt
 
 from .config import get_current_config
+from .controllers import user_bp
 from .handlers import error
-
+from .controllers import user_management_bp
 
 def create_app(env="development", static_folder="../../static"):
     app = Flask(__name__, static_folder=static_folder)
@@ -24,7 +26,25 @@ def create_app(env="development", static_folder="../../static"):
     def home():
         return render_template("home.html")
 
+# TODO: Eliminar
+    @app.route("/fake-login/<string:email>")
+    def fake_login(email):
+        """
+            Login falso para pruebas: simula que el usuario con ese email inició sesión
+            """
+        # Buscar el usuario en la DB
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return f"Usuario con email {email} no existe", 404
+
+        # Simular login guardando en session
+        session["user_id"] = user.id
+
+        return f"Sesión simulada como {user.email} (rol_id={user.role_id})"
+
     # Blueprints
+    app.register_blueprint(user_management_bp)
+    app.register_blueprint(user_bp)
 
     # Commands
     @app.cli.command("reset-db")
@@ -39,12 +59,14 @@ def create_app(env="development", static_folder="../../static"):
 
         seed_db()
 
+    # TODO: Eliminar
     @app.cli.command("delete-tag")
     def delete_tag_command():
         from core.services import delete_tag
 
         delete_tag(1)
 
+    # TODO: Eliminar
     @app.cli.command("paginated_tag")
     def paginated_tag_command():
         from core.services import get_paginated_tags
