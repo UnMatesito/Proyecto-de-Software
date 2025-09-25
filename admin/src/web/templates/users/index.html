@@ -23,7 +23,7 @@
             {% for user in users %}
             <tr>
                 <td class="border border-gray-400 px-4 py-2">{{ user.id }}</td>
-                <td class="border border-gray-400 px-4 py-2">{{ user.get_full_name}}</td>
+                <td class="border border-gray-400 px-4 py-2">{{ user.first_name }} {{ user.last_name }}</td>
                 <td class="border border-gray-400 px-4 py-2">{{ user.email }}</td>
                 <td class="border border-gray-400 px-4 py-2">{{ user.role.name if user.role else "Sin rol" }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">

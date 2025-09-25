@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
 from core.utils.auth import login_required, permission_required
-from web.forms.user import AssignRoleForm, ChangePasswordForm, CreateUserForm, EditUserForm
+from web.forms.user import AssignRoleForm, CreateUserForm ## ChangePasswordForm, EditUserForm
 
 from core.services.user_service import (
     get_all_users,
@@ -12,7 +12,8 @@ from core.services.user_service import (
     block_user,
     unblock_user,
     change_password,
-    assign_role
+    assign_role,
+    restore_user
 )
 
 user_bp = Blueprint('users', __name__, url_prefix='/users')
@@ -54,3 +55,36 @@ def create():
 
     return render_template('users/create.html', form=form)
 
+@user_bp.route("/<int:user_id>/delete", methods= ["POST"])
+def delete_user_rute(user_id):
+    """Borrar un usuario """
+    try:
+        delete_user(user_id)
+        flash("Usuario eliminado","success")
+    except ValueError as e:
+        flash(str(e), 'warning')
+    except RuntimeError as e:
+        flash(str(e), 'error')
+    except Exception as e:
+        flash(f'Error inesperado: {str(e)}', 'error')
+
+    return redirect(url_for("users.list_users"))
+
+@user_bp.route("/<int:user_id>/restore", methods= ["POST"])
+def delete_user_rute(user_id):
+    """Restaurar un usuario """
+    try:
+        user=get_user_by_id(user_id)
+        if not user:
+            flash("Usuario no ecntrado","error")
+            return redirect(url_for("users.list_users"))
+        user.restore_user()
+        flash("Usuario restaurado","success")
+    except ValueError as e:
+        flash(str(e), 'warning')
+    except RuntimeError as e:
+        flash(str(e), 'error')
+    except Exception as e:
+        flash(f'Error inesperado: {str(e)}', 'error')
+
+    return redirect(url_for("users.list_users"))
