@@ -1,18 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>TODO</title>
-</head>
-<body>
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for message in messages %}
-      <li>{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
-</body>
-</html>
+{% extends "layout.html" %}
+
+{% block title %}Listado de usuarios{% endblock %}
+
+{% block header %}
+<h1 class="text-2xl font-bold p-4">Usuarios</h1>
+{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <table class="table-auto border-collapse border border-gray-400 w-full">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="border border-gray-400 px-4 py-2">ID</th>
+                <th class="border border-gray-400 px-4 py-2">Usuario</th>
+                <th class="border border-gray-400 px-4 py-2">Correo</th>
+                <th class="border border-gray-400 px-4 py-2">Rol</th>
+                <th class="border border-gray-400 px-4 py-2">Estado</th>
+                <th class="border border-gray-400 px-4 py-2">Creado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td class="border border-gray-400 px-4 py-2">{{ user.id }}</td>
+                <td class="border border-gray-400 px-4 py-2">{{ user.first_name }} {{ user.last_name }}</td>
+                <td class="border border-gray-400 px-4 py-2">{{ user.email }}</td>
+                <td class="border border-gray-400 px-4 py-2">{{ user.role.name if user.role else "Sin rol" }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {% if user.deleted_at %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            <i class="fas fa-trash mr-1"></i>Eliminado
+                        </span>
+                    {% elif user.blocked %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                            <i class="fas fa-ban mr-1"></i>Bloqueado
+                        </span>
+                    {% elif user.active %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-check mr-1"></i>Activo
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            <i class="fas fa-pause mr-1"></i>Inactivo
+                        </span>
+                    {% endif %}
+                </td>
+               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center p-4">No hay usuarios cargados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
