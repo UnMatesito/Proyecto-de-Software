@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
 from core.utils.auth import login_required, permission_required
-from web.forms.user import AssignRoleForm, CreateUserForm ## ChangePasswordForm, EditUserForm
+from web.forms.user import CreateUserForm, EditUserForm   ## ChangePasswordForm, EditUserForm
 
 from core.services.user_service import (
     get_all_users,
@@ -66,6 +66,38 @@ def create():
             flash(f'Error inesperado: {str(e)}', 'error')
 
     return render_template('users/create.html', form=form)
+
+@user_bp.route("/<int:user_id>/edit", methods=["GET", "POST"])
+def edit(user_id):
+    """Editar un usuario"""
+    try:
+        user = get_user_by_id(user_id)
+        if not user:
+            flash("Usuario no encontrado", "error")
+            return redirect(url_for("users.index"))
+        
+        form = EditUserForm(obj=user) #Rellena los campos del form con los datos del usuario
+
+        if form.validate_on_submit():
+            # Actualizo los atributos
+            update_user_attribute(user_id, "first_name", form.first_name.data)
+            update_user_attribute(user_id, "last_name", form.last_name.data)
+            update_user_attribute(user_id, "email", form.email.data)
+            update_user_attribute(user_id, "active", form.active.data)
+            update_user_attribute(user_id, "system_admin", form.system_admin.data)
+
+            #Si cambia el rol lo actualizo
+            if user.role_id != form.role_id.data:
+                    assign_role(user_id, form.role_id.data)
+            flash("Usuario actualizado correctamente", "success")
+
+            return redirect(url_for("users.details",user=user))
+        return render_template("users/edit.html", form=form, user=user)
+       
+    except Exception as e:
+        print("Entre a la exception")
+        flash(f"Error al editar el usuario: {str(e)}", "error")
+        return redirect(url_for("users.index"))
 
 @user_bp.route("/<int:user_id>/delete", methods= ["POST"])
 def delete(user_id):

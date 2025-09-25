@@ -20,6 +20,13 @@ class EditUserForm(FlaskForm):
                     Length(max=120, message="El maximo es de 120 caracteres")
                     ])
     
+    role_id = SelectField("Rol", 
+        choices=[], 
+        coerce=int, 
+        validators=[DataRequired(message="El rol es obligatorio")
+                    ])
+
+    
     system_admin = BooleanField("Administrador del sistema")
 
     active = BooleanField("Usuario activo")
