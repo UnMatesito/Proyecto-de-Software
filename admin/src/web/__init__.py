@@ -53,6 +53,24 @@ def create_app(env="development", static_folder="../../static"):
 
         print(get_paginated_tags(1, "name", "dsc"))
 
+    @app.cli.command("update_site")
+    def update_site_command():
+        from core.services import update_historic_site
+        body = {
+            "name": "Updated Obalisco",
+            "brief_description": "Updated brief decription",
+            "full_description": "Updated full description",
+            "latitude": 1111111,
+            "longitude": 22222,
+            "inauguration_year": 2025,
+            "is_visible": True,
+            "city_id": 2,
+            "conservation_state_id": 1,
+            "category_id": 1,
+            "tag_ids": [1],
+            "historic_site_id": 1
+        }
+        update_historic_site(body)
     # Error handlers
     app.register_error_handler(404, error.not_found)
     app.register_error_handler(500, error.internal_server_error)

@@ -37,9 +37,10 @@ from .historic_site_service import (
     get_historic_site_by_id,
     get_pending_historic_sites,
     get_published_historic_sites,
-    update_category_site,
+    update_category,
     update_city,
     update_conservation_state,
+    update_historic_site
 )
 
 # Permission services
@@ -146,6 +147,7 @@ __all__ = [
     "update_category_site",
     "update_city",
     "update_conservation_state",
+    "update_historic_site",
     # Permission services
     "create_multiple_permissions",
     "create_permission",
