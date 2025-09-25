@@ -19,7 +19,7 @@ from core.services.user_service import (
 user_bp = Blueprint('users', __name__, url_prefix='/users')
 
 @user_bp.route("/")
-def list_users():
+def index():
     """Lista los usuarios y opciones """
     try:
         users = get_all_users()
@@ -27,6 +27,19 @@ def list_users():
     except Exception as e:
         flash(f'Error al cargar usuarios: {str(e)}', 'error') #Envia un  mensaje temporal a la sesión
         return render_template("users/index.html", users=[] )
+
+@user_bp.route('/<int:user_id>')
+def detail(user_id):
+    """Informacion de un usuario """
+    try:
+        user=get_user_by_id(user_id)
+        if not user:
+            flash('Usuario no encontrado', 'error')
+            return redirect(url_for('users.index'))
+        return render_template("users/detail.html", user=user)
+    except Exception as e:
+        flash(f'Error al cargar el usuario: {str(e)}', 'error')
+        return redirect(url_for('users.index'))
 
 @user_bp.route("/create", methods= ["GET", "POST"])
 def create():
@@ -43,7 +56,6 @@ def create():
                 "system_admin": form.system_admin.data
             }
             user = create_user(**user_data)
-            user = create_user(**user_data)
             flash(f'Usuario {user.get_full_name()} creado exitosamente', 'success')
             return redirect(url_for('users.index'))
         except ValueError as e:
@@ -56,7 +68,7 @@ def create():
     return render_template('users/create.html', form=form)
 
 @user_bp.route("/<int:user_id>/delete", methods= ["POST"])
-def delete_user_rute(user_id):
+def delete(user_id):
     """Borrar un usuario """
     try:
         delete_user(user_id)
@@ -68,10 +80,10 @@ def delete_user_rute(user_id):
     except Exception as e:
         flash(f'Error inesperado: {str(e)}', 'error')
 
-    return redirect(url_for("users.list_users"))
+    return redirect(url_for("users.index"))
 
 @user_bp.route("/<int:user_id>/restore", methods= ["POST"])
-def restore_user_rute(user_id):
+def restore(user_id):
     """Recuperar un usuario """
     try:
         restore_user(user_id)
@@ -83,5 +95,5 @@ def restore_user_rute(user_id):
     except Exception as e:
         flash(f'Error inesperado: {str(e)}', 'error')
 
-    return redirect(url_for("users.list_users"))
+    return redirect(url_for("users.index"))
 
