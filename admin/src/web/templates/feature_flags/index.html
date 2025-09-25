@@ -24,18 +24,18 @@
                 <td class="border px-4 py-2">{{ flag.name }}</td>
                 <td class="border px-4 py-2">{{ flag.description }}</td>
                 <td class="border px-4 py-2">
-                    {% if flag.enabled %}
+                    {% if flag.is_enabled %}
                         <span class="bg-green-100 text-green-800 px-2 py-1 rounded">ON</span>
                     {% else %}
                         <span class="bg-red-100 text-red-800 px-2 py-1 rounded">OFF</span>
                     {% endif %}
                 </td>
                 <td class="border px-4 py-2 text-sm text-gray-600">
-                    {{ flag.updated_by }} <br>
-                    {{ flag.updated_at.strftime("%d/%m/%Y %H:%M") if flag.updated_at else "-" }}
+                    {{ flag.last_modified_by.name if flag.last_modified_by else "-" }} <br>
+                    {{ flag.last_modified_at.strftime("%d/%m/%Y %H:%M") if flag.last_modified_at else "-" }}
                 </td>
                 <td class="border px-4 py-2">
-                    <form method="POST" action="{{ url_for('admin.toggle_feature_flag', flag_id=flag.id) }}">
+                    <form method="POST" action="{{ url_for('feature-flags.toggle', flag_id=flag.id) }}">
                         {% if flag.name in ["admin_maintenance_mode", "portal_maintenance_mode"] %}
                             <input type="text" name="message" 
                                    placeholder="Mensaje de mantenimiento"
