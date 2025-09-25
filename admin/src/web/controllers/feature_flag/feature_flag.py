@@ -7,17 +7,21 @@ from core.services.feature_flag_service import (
     
 )
 from core.services.user_service import get_user_by_id
-
+from core.utils.auth import system_admin_required, login_required
 
 
 
 feature_flag_bp = Blueprint('feature-flags', __name__, url_prefix='/feature-flag')
 
+@login_required
+@system_admin_required
 @feature_flag_bp.route("/")
 def index():
     flags = get_all_feature_flags()
     return render_template("feature_flags/index.html",flags=flags)
 
+@login_required
+@system_admin_required
 @feature_flag_bp.route("/<int:flag_id>/toggle", methods=["POST"])
 def toggle(flag_id):
     user= get_user_by_id(session['user_id'])
