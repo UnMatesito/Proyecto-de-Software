@@ -9,8 +9,6 @@ from core.services.user_service import (
     create_user,
     update_user_attribute,
     delete_user,
-    block_user,
-    unblock_user,
     change_password,
     assign_role,
     restore_user

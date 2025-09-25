@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block title %}Feature Flags{% endblock %}
+
+{% block header %}
+<h1 class="text-2xl font-bold p-4">Feature Flags</h1>
+{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <table class="table-auto border-collapse border border-gray-400 w-full">
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="px-4 py-2 border">Nombre</th>
+                <th class="px-4 py-2 border">Descripción</th>
+                <th class="px-4 py-2 border">Estado</th>
+                <th class="px-4 py-2 border">Última modificación</th>
+                <th class="px-4 py-2 border">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for flag in flags %}
+            <tr>
+                <td class="border px-4 py-2">{{ flag.name }}</td>
+                <td class="border px-4 py-2">{{ flag.description }}</td>
+                <td class="border px-4 py-2">
+                    {% if flag.enabled %}
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded">ON</span>
+                    {% else %}
+                        <span class="bg-red-100 text-red-800 px-2 py-1 rounded">OFF</span>
+                    {% endif %}
+                </td>
+                <td class="border px-4 py-2 text-sm text-gray-600">
+                    {{ flag.updated_by }} <br>
+                    {{ flag.updated_at.strftime("%d/%m/%Y %H:%M") if flag.updated_at else "-" }}
+                </td>
+                <td class="border px-4 py-2">
+                    <form method="POST" action="{{ url_for('admin.toggle_feature_flag', flag_id=flag.id) }}">
+                        {% if flag.name in ["admin_maintenance_mode", "portal_maintenance_mode"] %}
+                            <input type="text" name="message" 
+                                   placeholder="Mensaje de mantenimiento"
+                                   class="border rounded p-1 mb-1 w-full"
+                                   {% if flag.enabled %} value="{{ flag.message }}" {% endif %}>
+                        {% endif %}
+                        <button type="submit"
+                                onclick="return confirm('¿Confirmar cambio del flag {{ flag.name }}?')"
+                                class="bg-blue-600 text-white px-3 py-1 rounded">
+                            Cambiar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
