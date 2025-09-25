@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
 from core.utils.auth import login_required, permission_required
-from web.forms.user import CreateUserForm, EditUserForm   ## ChangePasswordForm, EditUserForm
+from web.forms.user import CreateUserForm, EditUserForm, ChangePasswordForm
 
 from core.services.user_service import (
     get_all_users,
@@ -128,4 +128,30 @@ def restore(user_id):
         flash(f'Error inesperado: {str(e)}', 'error')
 
     return redirect(url_for("users.index"))
+
+@user_bp.route("/<int:user_id>/change-password", methods=["GET", "POST"])
+def change_password(user_id):
+    """Cambiar la contraseña de un usuario"""
+    try:
+        user= get_user_by_id(user_id)
+        if not user:
+            flash("Usuario no encontrado","error")
+            return redirect(url_for("users.index"))
+        
+        form = ChangePasswordForm()
+
+        if form.validate_on_submit():
+            try:
+                change_password(user_id, form.old_password.data, form.new_password.data)
+                flash("Contraseña actualizada","success")
+                return redirect(url_for("users.detail",user=user))
+            except ValueError as e:
+                flash(str(e), "warning")
+            except Exception as e:
+                flash(f"Error al cambiar contraseña: {str(e)}", "error")
+        return render_template("users/change_password.html",form=form, user=user)
+
+    except Exception as e:
+        flash(f"Error inesperado: {str(e)}", "error")
+        return redirect(url_for("users.list_users"))
 
