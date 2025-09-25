@@ -2,48 +2,59 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 
 from core.services import user_service
 from core.utils.auth import login_required
+from web.forms.auth import AuthForm
 
-bp = Blueprint("auth", __name__, url_prefix="/auth")
+auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
-@bp.get("/")
+@auth_bp.get("/")
 def login():
-    """Renderiza la página de inicio de sesión.
+    """
+    Renderiza la página de inicio de sesión.
+
+    Crea una instancia vacía del formulario de autenticación (`AuthForm`)
+    y la pasa a la plantilla para que el usuario pueda ingresar sus
+    credenciales.
 
     Returns:
-        Response: Página de login.
+        Response: Página HTML del formulario de login.
     """
-    return render_template("auth/login.html")
+    form = AuthForm()
+    return render_template("auth/login.html", form=form)
 
 
-@bp.post("/login")
+@auth_bp.post("/login")
 def authenticate():
     """
-    Autentica al usuario y crea una sesión.
-    Valida las credenciales del usuario y crea una sesión activa
-    si la autenticación es exitosa.
+    Autentica al usuario y crea una sesión activa.
+
+    Valida las credenciales enviadas a través del formulario de login.
+    Si son correctas, guarda el ID del usuario en la sesión y redirige
+    a la página principal. Si son incorrectas o el formulario no es válido,
+    vuelve a renderizar la página de login con un mensaje de error.
 
     Returns:
-        Redirección al sistema de administración si es exitoso,
-        o al login con mensaje de error si falla.
+        Response: 
+            - Si la autenticación es exitosa, redirige a la vista 'home'.
+            - Si falla, renderiza nuevamente la plantilla de login con errores.
     """
-    email = request.form["email"].strip()
-    password = request.form["password"]
+    form = AuthForm()
 
-    if not email or not password:
-        flash("Email y contraseña son obligatorios", "error")
-        return redirect(url_for("auth.login"))
+    if not form.validate_on_submit():  
+        return render_template("auth/login.html", form=form)
 
+    email = form.email.data
     user = user_service.get_user_by_email(email)
 
-    if user is None or not user.check_password(password):
+    if user is None or not user.check_password(form.password.data):
         flash("Email y/o contraseña incorrectos", "error")
-        return redirect(url_for("auth.login"))
+        return render_template("auth/login.html", form=form)
+        
     session["user_id"] = user.id
     return redirect(url_for("home"))
 
 
-@bp.get("/logout")
+@auth_bp.get("/logout")
 @login_required
 def logout():
     """Cierra la sesión del usuario.
