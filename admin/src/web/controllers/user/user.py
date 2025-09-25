@@ -85,33 +85,3 @@ def restore_user_rute(user_id):
 
     return redirect(url_for("users.list_users"))
 
-@user_bp.route("/<int:user_id>/block", methods= ["POST"])
-def block_user_rute(user_id):
-    """Borra un usuario """
-    try:
-        block_user(user_id)
-        flash("Usuario bloqueado","success")
-    except ValueError as e:
-        flash(str(e), 'warning')
-    except RuntimeError as e:
-        flash(str(e), 'error')
-    except Exception as e:
-        flash(f'Error inesperado: {str(e)}', 'error')
-
-    return redirect(url_for("users.list_users"))
-
-@user_bp.route("/<int:user_id>/unblock", methods= ["POST"])
-def unblock_user_rute(user_id):
-    """Borra un usuario """
-    try:
-        unblock_user(user_id)
-        flash("Usuario desbloqueado","success")
-    except ValueError as e:
-        flash(str(e), 'warning')
-    except RuntimeError as e:
-        flash(str(e), 'error')
-    except Exception as e:
-        flash(f'Error inesperado: {str(e)}', 'error')
-
-    return redirect(url_for("users.list_users"))
-
