@@ -85,6 +85,17 @@ def delete_user(user_id):
     return update_user_attribute(
         user_id, "deleted_at", datetime.now(timezone.utc), check_delete
     )
+def restore_user(user_id):
+    """Desmarca un usuario como eliminado """
+
+    def check_delete(user):
+        if user.deleted_at is None:
+            return f"El usuario {user.first_name} no esta eliminado"
+        return None
+
+    return update_user_attribute(
+        user_id, "deleted_at", None, check_delete
+    )
 
 
 def block_user(user_id):
