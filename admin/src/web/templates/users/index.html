@@ -141,13 +141,15 @@
                                 Editar
                             </a>
                             {% if user.deleted_at %}
-                            <form action="{{ url_for('users.restore', user_id=user.id) }}" method="post" class="inline">
+                            <form action="{{ url_for('users.restore', user_id=user.id) }}" method="post" class="inline"
+                            onsubmit="return confirm('¿Está seguro de restaurar el usuario {{ user.first_name }} ?')">
                                 <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
                                     Restaurar
                                 </button>
                             </form>
                             {% else %}
-                            <form action="{{ url_for('users.delete', user_id=user.id) }}" method="post" class="inline">
+                            <form action="{{ url_for('users.delete', user_id=user.id) }}" method="post" class="inline" 
+                            onsubmit="return confirm('¿Está seguro de eliminar el usuario {{ user.first_name }} ?')">
                                 <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
                                     Eliminar
                                 </button>
