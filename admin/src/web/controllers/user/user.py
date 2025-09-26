@@ -15,7 +15,7 @@ from core.services.user_service import (
     assign_role,
     restore_user,
     get_user_by_email,
-    get_filtered_users
+    get_paginated_users
 )
 
 user_bp = Blueprint('users', __name__, url_prefix='/users')
@@ -26,11 +26,14 @@ user_bp = Blueprint('users', __name__, url_prefix='/users')
 def index():
     """Lista los usuarios y opciones """
     try:
-        active_param = request.args.get("active")
-        role_id = request.args.get("role_id")
-        users = get_filtered_users(active_param, role_id)
+        order_by = request.args.get("order_by", "name")
+        sorted_by = request.args.get("sorted_by", "asc")
+        page = request.args.get("page", 1)
+        active_param = request.args.get("active",None)
+        role_id = request.args.get("role_id",None)
+        users_page = get_paginated_users(page=page, order_by=order_by, sorted_by=sorted_by,active=active_param, role_id=role_id)
         roles = get_all_roles()
-        return render_template("users/index.html", users=users, roles=roles)
+        return render_template("users/index.html", pagination=users_page, roles=roles, active=active_param, role_id=role_id, sorted_by=sorted_by, order_by=order_by)
     except Exception as e:
         flash(f'Error al cargar usuarios: {str(e)}', 'error') #Envia un  mensaje temporal a la sesión
         return render_template("users/index.html", users=[] )

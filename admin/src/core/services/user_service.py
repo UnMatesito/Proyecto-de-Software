@@ -4,7 +4,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from core.database import db
 from core.models import Role, User
-
+from core.utils import pagination
+from sqlalchemy import desc
 
 def get_all_users():
     """Obtiene todos los usuarios."""
@@ -30,6 +31,22 @@ def get_filtered_users(active=None, role_id=None):
     if role_id:
         query = query.filter_by(role_id=int(role_id))
     return query.all()
+
+def get_paginated_users(page = 1, order_by = "created_at", sorted_by = "asc", active=None, role_id=None):
+    query = User.query
+    if active == "1":
+        query = query.filter_by(active=True)
+    elif active == "0":
+        query = query.filter_by(active=False)
+    if role_id:
+        query = query.filter_by(role_id=int(role_id))
+    if order_by == "created_at":
+        if sorted_by == "asc":
+            query = query.order_by(User.created_at)
+        else:
+            query = query.order_by(desc(User.created_at))
+
+    return pagination.paginate_query(query, page=page, order_by=order_by, sorted_by=sorted_by)
 
 def create_user(**kwargs):
     """Crea un nuevo usuario."""
