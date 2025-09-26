@@ -68,7 +68,14 @@ class User(db.Model):
         return self.blocked is False
 
     def block_user(self):
+        """Bloquea al usuario, excepto si es administrador."""
+        if self.is_admin() or self.has_role("Administrador"):
+            raise ValueError("No se puede bloquear un administrador")
         self.blocked = True
+
+    def unblock_user(self):
+        """Desbloquea al usuario."""
+        self.blocked = False
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"

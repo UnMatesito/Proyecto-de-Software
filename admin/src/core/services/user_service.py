@@ -102,14 +102,41 @@ def update_user_attribute(user_id, attr_name, new_value, check_func=None):
         setattr(user, attr_name, new_value)
     else:
         raise AttributeError(f"{attr_name} no es un atributo de User")
+
     # Intento actualizar la db
     try:
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
         raise RuntimeError(f"Error al actualizar el usuario: {e}")
+
     return True
 
+
+def update_user_with_action(user_id, action_func):
+    """
+    Función genérica para ejecutar acciones sobre un usuario
+    - user_id: ID del usuario a modificar
+    - action_func: función que recibe el usuario y ejecuta la acción
+    """
+    # Checkeo si existe el usuario
+    user = User.query.get(user_id)
+    if not user:
+        raise ValueError(f"No existe el usuario con id {user_id}")
+
+    # Ejecutar la función de acción
+    msg = action_func(user)
+    if msg:
+        raise ValueError(msg)
+
+    # Intento actualizar la db
+    try:
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al actualizar el usuario: {e}")
+
+    return True
 
 def delete_user(user_id):
     """Marca un usuario como eliminado (soft delete)"""
@@ -138,23 +165,29 @@ def restore_user(user_id):
 def block_user(user_id):
     """Bloquea un usuario"""
 
-    def check_blocked(user):
+    def check_and_block(user):
         if user.blocked:
             return f"El usuario {user.first_name} ya está bloqueado"
-        return None
+        try:
+            user.block_user()
+            return None
+        except ValueError as e:
+            return str(e)
 
-    return update_user_attribute(user_id, "blocked", True, check_blocked)
+    return update_user_with_action(user_id, check_and_block)
 
 
 def unblock_user(user_id):
     """Desbloquea un usuario"""
 
-    def check_blocked(user):
+    def check_and_unblock(user):
         if not user.blocked:
             return f"El usuario {user.first_name} ya está desbloqueado"
+
+        user.unblock_user()
         return None
 
-    return update_user_attribute(user_id, "blocked", False, check_blocked)
+    return update_user_with_action(user_id, check_and_unblock)
 
 
 def change_password(user_id, old_password, new_password):
