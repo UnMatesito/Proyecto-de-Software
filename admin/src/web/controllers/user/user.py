@@ -16,8 +16,8 @@ from core.services.user_service import (
 
 user_bp = Blueprint('users', __name__, url_prefix='/users')
 
-@login_required
-@permission_required("user_index")
+#@login_required
+#@permission_required("user_index")
 @user_bp.route("/")
 def index():
     """Lista los usuarios y opciones """
@@ -25,11 +25,12 @@ def index():
         users = get_all_users()
         return render_template("users/index.html", users=users)
     except Exception as e:
+        print("ENTRE ACAAAA")
         flash(f'Error al cargar usuarios: {str(e)}', 'error') #Envia un  mensaje temporal a la sesión
         return render_template("users/index.html", users=[] )
 
-@login_required
-@permission_required("user_show")
+#@login_required
+#@permission_required("user_show")
 @user_bp.route('/<int:user_id>')
 def detail(user_id):
     """Informacion de un usuario """
@@ -43,8 +44,8 @@ def detail(user_id):
         flash(f'Error al cargar el usuario: {str(e)}', 'error')
         return redirect(url_for('users.index'))
 
-@login_required
-@permission_required("user_new")
+#@login_required
+#@permission_required("user_new")
 @user_bp.route("/create", methods= ["GET", "POST"])
 def create():
     """Crear un nuevo usuario"""
@@ -71,8 +72,8 @@ def create():
 
     return render_template('users/create.html', form=form)
 
-@login_required
-@permission_required("user_update")
+#@login_required
+#@permission_required("user_update")
 @user_bp.route("/<int:user_id>/edit", methods=["GET", "POST"])
 def edit(user_id):
     """Editar un usuario"""
@@ -105,8 +106,8 @@ def edit(user_id):
         flash(f"Error al editar el usuario: {str(e)}", "error")
         return redirect(url_for("users.index"))
 
-@login_required
-@permission_required("user_destroy")
+#@login_required
+#@permission_required("user_destroy")
 @user_bp.route("/<int:user_id>/delete", methods= ["POST"])
 def delete(user_id):
     """Borrar un usuario """
@@ -122,8 +123,8 @@ def delete(user_id):
 
     return redirect(url_for("users.index"))
 
-@login_required
-@permission_required("user_update")
+#@login_required
+#@permission_required("user_update")
 @user_bp.route("/<int:user_id>/restore", methods= ["POST"])
 def restore(user_id):
     """Recuperar un usuario """
@@ -139,8 +140,8 @@ def restore(user_id):
 
     return redirect(url_for("users.index"))
 
-@login_required
-@permission_required("user_update")
+#@login_required
+#@permission_required("user_update")
 @user_bp.route("/<int:user_id>/change-password", methods=["GET", "POST"])
 def change_password(user_id):
     """Cambiar la contraseña de un usuario"""

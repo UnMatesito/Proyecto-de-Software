@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-
+{% from "macros/button.html" import button %}
 {% block title %}Listado de usuarios{% endblock %}
 
 {% block header %}
@@ -17,6 +17,7 @@
                 <th class="border border-gray-400 px-4 py-2">Rol</th>
                 <th class="border border-gray-400 px-4 py-2">Estado</th>
                 <th class="border border-gray-400 px-4 py-2">Creado</th>
+                <th class="border border-gray-400 px-4 py-2">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -26,26 +27,51 @@
                 <td class="border border-gray-400 px-4 py-2">{{ user.first_name }} {{ user.last_name }}</td>
                 <td class="border border-gray-400 px-4 py-2">{{ user.email }}</td>
                 <td class="border border-gray-400 px-4 py-2">{{ user.role.name if user.role else "Sin rol" }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="border border-gray-400 px-6 py-4 whitespace-nowrap ">
                     {% if user.deleted_at %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        <span class="border border-gray-400 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                             <i class="fas fa-trash mr-1"></i>Eliminado
                         </span>
                     {% elif user.blocked %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        <span class="border border-gray-400 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                             <i class="fas fa-ban mr-1"></i>Bloqueado
                         </span>
                     {% elif user.active %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span class="border border-gray-400 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             <i class="fas fa-check mr-1"></i>Activo
                         </span>
                     {% else %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <span class="border border-gray-400 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                             <i class="fas fa-pause mr-1"></i>Inactivo
                         </span>
                     {% endif %}
                 </td>
-               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A' }}</td>
+               <td class="border border-gray-400 px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A' }}</td>
+               <td class="border border-gray-400 px-2 py-6 text-center">
+                    <div class="inline-flex space-x-10 ">
+                        <a href="{{ url_for('users.edit', user_id=user.id) }}" 
+                        class="border border-gray-400 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
+                            Editar
+                        </a>
+                        {% if user.deleted_at %}
+                        <form action="{{ url_for('users.restore', user_id=user.id) }}" method="post" style="display:inline;">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
+                                Restaurar
+                            </button>
+                        </form>
+                        {% else %}
+                        <form action="{{ url_for('users.delete', user_id=user.id) }}" method="post" style="display:inline;">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded ">
+                                Eliminar
+                            </button>
+                        </form>
+                        {% endif %}
+                        <a href="{{ url_for('users.detail', user_id=user.id) }}"
+                        class="border border-gray-400 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
+                            Detalles
+                        </a>
+                    </div>
+               </td>
             </tr>
             {% else %}
             <tr>
