@@ -23,7 +23,12 @@ def login_required(f):
 
         # Verificar que el usuario existe y puede hacer login
         user = get_current_user()
-        if not user or not user.can_login():
+        if not user:
+            session.clear()
+            flash("Usuario no encontrado. Por favor, inicie sesión nuevamente", "error")
+            return redirect(url_for("auth.login"))
+
+        if not user.is_active():
             session.clear()
             flash("Su cuenta ha sido deshabilitada", "error")
             return redirect(url_for("auth.login"))
@@ -43,7 +48,7 @@ def permission_required(permission_name):
                 abort(401)
 
             user = get_current_user()
-            if not user or not user.can_login():
+            if not user or not user.is_active():
                 session.clear()
                 abort(401)
 
@@ -71,7 +76,7 @@ def role_required(role_name):
                 abort(401)
 
             user = get_current_user()
-            if not user or not user.can_login():
+            if not user or not user.is_active():
                 abort(401)
 
             # System Admin puede hacer todo sin importar roles
@@ -79,7 +84,7 @@ def role_required(role_name):
                 return f(*args, **kwargs)
 
             if not user.has_role(role_name):
-                abort(403)
+                abort(403)  # Forbidden
 
             return f(*args, **kwargs)
 
@@ -97,7 +102,7 @@ def system_admin_required(f):
             abort(401)
 
         user = get_current_user()
-        if not user or not user.can_login():
+        if not user or not user.is_active():
             session.clear()
             abort(401)
 
