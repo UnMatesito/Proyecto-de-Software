@@ -107,6 +107,8 @@ def delete_user(user_id):
     def check_delete(user):
         if user.deleted_at is not None:
             return f"El usuario {user.first_name} ya está eliminado"
+        if user.is_admin():
+            return f"El usuario {user.first_name} es System Admin y no puede ser eliminado"
         return None
 
     return update_user_attribute(
