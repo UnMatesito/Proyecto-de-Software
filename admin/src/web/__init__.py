@@ -6,7 +6,7 @@ from core.models import User
 from core.utils.bcrypt import bcrypt
 
 from .config import get_current_config
-from .controllers import user_bp, user_management_bp
+from .controllers import user_bp, user_management_bp, tag_bp
 from .handlers import error
 
 
@@ -45,7 +45,8 @@ def create_app(env="development", static_folder="../../static"):
     # Blueprints
     app.register_blueprint(user_management_bp)
     app.register_blueprint(user_bp)
-
+    app.register_blueprint(tag_bp)
+    
     # Commands
     @app.cli.command("reset-db")
     def reset_db_command():

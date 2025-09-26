@@ -1,0 +1,58 @@
+{% macro paginate(pagination, url) %}
+    <nav class="flex gap-2 flex items-center ">
+        {% if pagination.has_prev %}
+            <a 
+            href="{{ url_for(url, sorted_by = pagination.sorted_by, 
+            order_by=pagination.order_by, page=pagination.prev_num) }}" 
+            class=" transition-colors hover:bg-gray-400 px-3 py-1 rounded">
+                <i class="fa-solid fa-arrow-left"></i> Anterior
+            </a>
+            {% if not 1 in pagination.page_range %}
+                 <a href="{{ url_for(url, sorted_by = pagination.sorted_by, order_by=pagination.order_by, page=1) }}"
+                 class=" transition-colors hover:bg-gray-400 px-3 py-1 rounded">1</a>
+                 <span>
+                    ...
+                 </span>
+            {% else %}
+            {% endif %}
+        {% endif %}
+        
+        {% for page in pagination.page_range %}
+            <a href="{{ url_for(url, sorted_by = pagination.sorted_by, order_by=pagination.order_by, page=page) }}" 
+                class="
+                transition-colors 
+                hover:bg-gray-400 
+                rounded-sm px-3 py-1
+                {% if pagination.current_page == page %}
+                border-gray-700
+                border-2
+                rounded 
+                font-semibold 
+                {% endif %}"> {{page}}
+        </a>
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            {% if 8 not in pagination.page_range %}
+                 <span>
+                    ...
+                 </span>
+                <a href="{{ url_for(url, sorted_by = pagination.sorted_by, order_by=pagination.order_by, page=pagination.pages) }}" 
+                 class="
+                 transition-colors 
+                 hover:bg-gray-400 
+                 px-3 py-1 rounded">
+                 {{pagination.pages}}
+                </a>
+            {% else %}
+            {% endif %}
+            <a href="{{ url_for(url, sorted_by = pagination.sorted_by, order_by=pagination.order_by, page=pagination.next_num) }}" 
+            class="
+            transition-colors 
+            hover:bg-gray-400 
+            px-3 py-1 rounded">
+                 Siguiente <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        {% endif %}
+        </nav>
+{% endmacro %}
