@@ -1,7 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, url_for
 
 from core.services import role_service, user_service
-from core.utils.auth import login_required, permission_required
+from web.utils.auth import login_required, permission_required
 from web.forms.user import AssignRoleForm, BlockUserForm
 
 user_management_bp = Blueprint("user_management", __name__)

@@ -1,14 +1,13 @@
-from flask import Flask, render_template, session
+from flask import Flask, render_template
 from flask_debugtoolbar import DebugToolbarExtension
 
 from core.database import db
-from core.models import User
 from core.utils.bcrypt import bcrypt
 
 from .config import get_current_config
-from .controllers import user_bp, user_management_bp, feature_flag_bp, tag_bp
-from .controllers import user_management_bp, auth_bp
+from .controllers import user_bp, user_management_bp, feature_flag_bp, tag_bp, auth_bp
 from .handlers import error
+from .utils.auth import is_authenticated
 
 
 def create_app(env="development", static_folder="../../static"):
@@ -32,8 +31,6 @@ def create_app(env="development", static_folder="../../static"):
     app.register_blueprint(user_bp)
     app.register_blueprint(tag_bp)
     app.register_blueprint(feature_flag_bp)
-
-    #app.register_blueprint(user_bp)
     app.register_blueprint(auth_bp)
 
     # Commands
@@ -83,9 +80,14 @@ def create_app(env="development", static_folder="../../static"):
             "historic_site_id": 1
         }
         update_historic_site(body)
+
+    # Métodos de jinja
+    app.jinja_env.globals.update(is_authenticated=is_authenticated)
+
     # Error handlers
     app.register_error_handler(404, error.not_found)
     app.register_error_handler(500, error.internal_server_error)
     app.register_error_handler(401, error.unauthorized)
+    app.register_error_handler(403, error.forbidden)
 
     return app

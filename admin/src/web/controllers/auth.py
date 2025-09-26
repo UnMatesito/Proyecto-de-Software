@@ -1,7 +1,7 @@
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, redirect, render_template, session, url_for
 
 from core.services import user_service
-from core.utils.auth import login_required
+from web.utils.auth import login_required
 from web.forms.auth import AuthForm
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")

@@ -7,7 +7,7 @@ from core.services.feature_flag_service import (
     
 )
 from core.services.user_service import get_user_by_id
-from core.utils.auth import system_admin_required, login_required
+from web.utils.auth import system_admin_required, login_required
 
 
 

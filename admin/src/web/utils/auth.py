@@ -134,3 +134,6 @@ def check_maintenance_mode():
         # Cualquier otro error, asumir que no está en mantenimiento
         return False, None
 """
+
+def is_authenticated():
+    return session["user_id"] is not None
