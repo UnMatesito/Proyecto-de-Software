@@ -7,6 +7,12 @@
 {% endblock %}
 
 {% block content %}
+<div>
+    <a href="/users" 
+        class="border border-gray-400 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
+        Volver
+    </a>
+ </div>
 <div class="p-4 max-w-lg mx-auto">
     <form method="POST">
         {{ form.hidden_tag() }}
