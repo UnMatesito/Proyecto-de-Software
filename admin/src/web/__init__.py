@@ -62,6 +62,7 @@ def create_app(env="development", static_folder="../../static"):
 
         print(get_paginated_tags(1, "name", "dsc"))
 
+    # TODO: Eliminar
     @app.cli.command("update_site")
     def update_site_command():
         from core.services import update_historic_site
