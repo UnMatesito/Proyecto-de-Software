@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
-from core.utils.auth import login_required, permission_required
+from web.utils.auth import login_required, permission_required
 from web.forms.user import CreateUserForm, EditUserForm, ChangePasswordForm
 
 from core.services.role_service import get_all_roles
