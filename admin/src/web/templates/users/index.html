@@ -8,6 +8,47 @@
 
 {% block content %}
 <div class="p-4">
+    <div></div>
+        <form method="get" action="{{ url_for('users.search_by_email') }}" class="mb-4">
+            <input type="text" name="email" placeholder="Buscar por email"
+            class="border px-2 py-1 rounded">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-1 rounded">
+                Buscar
+            </button>
+        </form>
+        <form method="get" action="/users" class="mb-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Estado</label>
+                <select name="active" class="border px-2 py-1 rounded">
+                    <option value="">Todos</option>
+                    <option value="1" {% if request.args.get('active') == '1' %} selected {% endif %}>Activo</option>
+                    <option value="0" {% if request.args.get('active') == '0' %} selected {% endif %}>Inactivo</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Rol</label>
+                <select name="role_id" class="border px-2 py-1 rounded">
+                    <option value="">Todos</option>
+                    {% for role in roles %}
+                        <option value="{{ role.id }}" {% if request.args.get('role_id') == role.id|string %}selected{% endif %}>
+                        {{ role.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+             <div>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-1 rounded">
+                    Aplicar filtros
+                </button>
+             </div>
+            <div>
+                <a href="/users" class="bg-gray-500 hover:bg-gray-700 text-white px-3 py-1 rounded">
+                    Quitar filtros
+                </a>
+            </div>
+        </form>
+    </div>
+
     <table class="table-auto border-collapse border border-gray-400 w-full">
         <thead>
             <tr class="bg-gray-200">

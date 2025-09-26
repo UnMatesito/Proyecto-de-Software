@@ -109,6 +109,7 @@ from .user_service import (
     get_user_by_id,
     unblock_user,
     update_user_attribute,
+    get_filtered_users
 )
 
 __all__ = [

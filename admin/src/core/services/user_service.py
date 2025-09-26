@@ -20,10 +20,20 @@ def get_user_by_email(email):
     """Obtiene un usuario por su email."""
     return User.query.filter_by(email=email).first()
 
+def get_filtered_users(active=None, role_id=None):
+    """Filtro usuarios por activo y role"""
+    query = User.query
+    if active == "1":
+        query = query.filter_by(active=True)
+    elif active == "0":
+        query = query.filter_by(active=False)
+    if role_id:
+        query = query.filter_by(role_id=int(role_id))
+    return query.all()
 
 def create_user(**kwargs):
     """Crea un nuevo usuario."""
-    if User.query.filter_by(email=kwargs.get("email")).first():
+    if User.query.filter_by(email=kwargs.get("email")).first(): #Valido que el mail no exista
         raise ValueError("Ya existe un usuario con ese email")
 
     raw_password = kwargs.pop("password", None)

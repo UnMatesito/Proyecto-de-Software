@@ -3,6 +3,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from core.utils.auth import login_required, permission_required
 from web.forms.user import CreateUserForm, EditUserForm, ChangePasswordForm
 
+from core.services.role_service import get_all_roles
+
 from core.services.user_service import (
     get_all_users,
     get_user_by_id,
@@ -11,7 +13,9 @@ from core.services.user_service import (
     delete_user,
     change_password,
     assign_role,
-    restore_user
+    restore_user,
+    get_user_by_email,
+    get_filtered_users
 )
 
 user_bp = Blueprint('users', __name__, url_prefix='/users')
@@ -22,16 +26,18 @@ user_bp = Blueprint('users', __name__, url_prefix='/users')
 def index():
     """Lista los usuarios y opciones """
     try:
-        users = get_all_users()
-        return render_template("users/index.html", users=users)
+        active_param = request.args.get("active")
+        role_id = request.args.get("role_id")
+        users = get_filtered_users(active_param, role_id)
+        roles = get_all_roles()
+        return render_template("users/index.html", users=users, roles=roles)
     except Exception as e:
-        print("ENTRE ACAAAA")
         flash(f'Error al cargar usuarios: {str(e)}', 'error') #Envia un  mensaje temporal a la sesión
         return render_template("users/index.html", users=[] )
 
 #@login_required
 #@permission_required("user_show")
-@user_bp.route('/<int:user_id>')
+@user_bp.route("/<int:user_id>")
 def detail(user_id):
     """Informacion de un usuario """
     try:
@@ -43,6 +49,17 @@ def detail(user_id):
     except Exception as e:
         flash(f'Error al cargar el usuario: {str(e)}', 'error')
         return redirect(url_for('users.index'))
+
+#@login_required
+#@permission_required("user_show")
+@user_bp.route("/search-by-mail")
+def search_by_email():
+    correo = request.args.get("email","").strip()
+    user = get_user_by_email(correo)
+    users= [user] if user else get_all_users()
+
+    return render_template("users/index.html",users=users)
+
 
 #@login_required
 #@permission_required("user_new")
@@ -102,7 +119,6 @@ def edit(user_id):
         return render_template("users/edit.html", form=form, user=user)
        
     except Exception as e:
-        print("Entre a la exception")
         flash(f"Error al editar el usuario: {str(e)}", "error")
         return redirect(url_for("users.index"))
 
