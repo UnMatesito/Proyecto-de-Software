@@ -39,6 +39,8 @@ dependencies = [
 
     # Para un logging más legible
     # "python-json-logger>=2.0.7,<3.0.0",
+
+    # Necesitemos esta librería para que geoalchemy funcione mejor y es requerida para la segunda etapa
     "shapely (>=2.1.2,<3.0.0)"
 ]
 

@@ -1,6 +1,8 @@
+from datetime import datetime, timezone
+
 from core.database import db
 from core.models import FeatureFlag
-from datetime import datetime, timezone
+
 # TODO: Agregar docstrings
 
 
@@ -42,12 +44,12 @@ def delete_feature_flag(id):
     return True
 
 
-def toggle_feature_flag(id, is_enabled,user):
+def toggle_feature_flag(id, is_enabled, user):
     feature_flag = get_feature_flag_by_id(id)
     if not feature_flag:
         return None
     feature_flag.is_enabled = is_enabled
-    feature_flag.last_modified_by= user
+    feature_flag.last_modified_by = user
     feature_flag.last_modified_at = datetime.now(timezone.utc)
     db.session.commit()
     return feature_flag

@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
 
+from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
 
 from core.database import db
 from core.models import Role, User
 from core.utils import pagination
-from sqlalchemy import desc
+
 
 def get_all_users():
     """Obtiene todos los usuarios."""
@@ -21,6 +22,7 @@ def get_user_by_email(email):
     """Obtiene un usuario por su email."""
     return User.query.filter_by(email=email).first()
 
+
 def get_filtered_users(active=None, role_id=None):
     """Filtro usuarios por activo y role"""
     query = User.query
@@ -32,7 +34,10 @@ def get_filtered_users(active=None, role_id=None):
         query = query.filter_by(role_id=int(role_id))
     return query.all()
 
-def get_paginated_users(page = 1, order_by = "created_at", sorted_by = "asc", active=None, role_id=None):
+
+def get_paginated_users(
+    page=1, order_by="created_at", sorted_by="asc", active=None, role_id=None
+):
     query = User.query
     if active == "1":
         query = query.filter_by(active=True)
@@ -46,11 +51,16 @@ def get_paginated_users(page = 1, order_by = "created_at", sorted_by = "asc", ac
         else:
             query = query.order_by(desc(User.created_at))
 
-    return pagination.paginate_query(query, page=page, order_by=order_by, sorted_by=sorted_by)
+    return pagination.paginate_query(
+        query, page=page, order_by=order_by, sorted_by=sorted_by
+    )
+
 
 def create_user(**kwargs):
     """Crea un nuevo usuario."""
-    if User.query.filter_by(email=kwargs.get("email")).first(): #Valido que el mail no exista
+    if User.query.filter_by(
+        email=kwargs.get("email")
+    ).first():  # Valido que el mail no exista
         raise ValueError("Ya existe un usuario con ese email")
 
     raw_password = kwargs.pop("password", None)
@@ -92,14 +102,41 @@ def update_user_attribute(user_id, attr_name, new_value, check_func=None):
         setattr(user, attr_name, new_value)
     else:
         raise AttributeError(f"{attr_name} no es un atributo de User")
+
     # Intento actualizar la db
     try:
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
         raise RuntimeError(f"Error al actualizar el usuario: {e}")
+
     return True
 
+
+def update_user_with_action(user_id, action_func):
+    """
+    Función genérica para ejecutar acciones sobre un usuario
+    - user_id: ID del usuario a modificar
+    - action_func: función que recibe el usuario y ejecuta la acción
+    """
+    # Checkeo si existe el usuario
+    user = User.query.get(user_id)
+    if not user:
+        raise ValueError(f"No existe el usuario con id {user_id}")
+
+    # Ejecutar la función de acción
+    msg = action_func(user)
+    if msg:
+        raise ValueError(msg)
+
+    # Intento actualizar la db
+    try:
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al actualizar el usuario: {e}")
+
+    return True
 
 def delete_user(user_id):
     """Marca un usuario como eliminado (soft delete)"""
@@ -114,39 +151,45 @@ def delete_user(user_id):
     return update_user_attribute(
         user_id, "deleted_at", datetime.now(timezone.utc), check_delete
     )
+
+
 def restore_user(user_id):
-    """Desmarca un usuario como eliminado """
+    """Desmarca un usuario como eliminado"""
 
     def check_delete(user):
         if user.deleted_at is None:
             return f"El usuario {user.first_name} no esta eliminado"
         return None
 
-    return update_user_attribute(
-        user_id, "deleted_at", None, check_delete
-    )
+    return update_user_attribute(user_id, "deleted_at", None, check_delete)
 
 
 def block_user(user_id):
     """Bloquea un usuario"""
 
-    def check_blocked(user):
+    def check_and_block(user):
         if user.blocked:
             return f"El usuario {user.first_name} ya está bloqueado"
-        return None
+        try:
+            user.block_user()
+            return None
+        except ValueError as e:
+            return str(e)
 
-    return update_user_attribute(user_id, "blocked", True, check_blocked)
+    return update_user_with_action(user_id, check_and_block)
 
 
 def unblock_user(user_id):
     """Desbloquea un usuario"""
 
-    def check_blocked(user):
+    def check_and_unblock(user):
         if not user.blocked:
             return f"El usuario {user.first_name} ya está desbloqueado"
+
+        user.unblock_user()
         return None
 
-    return update_user_attribute(user_id, "blocked", False, check_blocked)
+    return update_user_with_action(user_id, check_and_unblock)
 
 
 def change_password(user_id, old_password, new_password):

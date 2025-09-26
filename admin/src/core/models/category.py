@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from core.database import db
 
+
 class Category(db.Model):
     __tablename__ = "category"
 
@@ -13,11 +14,9 @@ class Category(db.Model):
     created_at = db.Column(
         db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
-    
+
     # Relaciones
-    historic_sites = db.relationship(
-        "HistoricSite", back_populates="category"
-    )
+    historic_sites = db.relationship("HistoricSite", back_populates="category")
 
     # Metodos
     def has_sites(self):
