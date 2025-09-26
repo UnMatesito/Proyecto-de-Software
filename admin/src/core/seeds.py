@@ -12,6 +12,11 @@ def run():
     seed_editor()
     seed_feature_flags()
     seed_tags()
+    seed_provinces_and_cities()
+    seed_consevation_states()
+    seed_categories()
+    seed_historic_sites()
+    seed_site_tags()
     print("Seed finalizado")
 
 
@@ -298,9 +303,135 @@ def seed_tags():
     from core.models import Tag
 
     print("Creando tags...")
-    tags = ["tag 1", "tag 2", "tag 3", "tag 4"]
+    tags = ["Colonial", "Patrimonial", "tag 3", "tag 4"]
 
     for t in tags:
         tag = Tag(name=t)
         db.session.add(tag)
+    db.session.commit()
+
+def seed_provinces_and_cities():
+    from core.models import Province, City
+    print("Creando provincias y ciudades")
+
+    # Provincias
+    buenos_aires = Province(name="Buenos Aires")
+    cordoba = Province(name="Córdoba")
+    mendoza = Province(name="Mendoza")
+
+    db.session.add_all([buenos_aires, cordoba, mendoza])
+    db.session.commit()
+
+    # Ciudades
+    cities = [
+        City(name="La Plata", province_id=buenos_aires.id),
+        City(name="Mar del Plata", province_id=buenos_aires.id),
+        City(name="Córdoba Capital", province_id=cordoba.id),
+        City(name="Villa Carlos Paz", province_id=cordoba.id),
+        City(name="Mendoza Capital", province_id=mendoza.id),
+        City(name="San Rafael", province_id=mendoza.id),
+    ]
+
+    db.session.add_all(cities)
+    db.session.commit()
+
+def seed_consevation_states():
+    from core.models import ConservationState
+    print("Creando estados de conservacion...")
+    states = [
+        ConservationState(state="Bueno"),
+        ConservationState(state="Regular"),
+        ConservationState(state="Malo"),
+    ]
+
+    db.session.add_all(states)
+    db.session.commit()
+
+def seed_categories():
+    from core.models import Category
+    print("Cargando categorias...")
+
+    categories = [
+        Category(name = "Arquitectura"),
+        Category(name = "Infraestructura"),
+        Category(name = "Sitio arqueológico")
+    ]
+
+    db.session.add_all(categories)
+    db.session.commit()
+
+def seed_historic_sites():
+    from datetime import datetime, timezone
+    from core.models import HistoricSite
+
+    print("Cargando sitios historicos...")
+    sites = [
+        HistoricSite(
+            name="Cabildo de Buenos Aires",
+            brief_description="Edificio histórico del periodo colonial.",
+            full_description="El Cabildo de Buenos Aires fue sede de las autoridades coloniales. "
+                             "Actualmente funciona como museo, ubicado frente a la Plaza de Mayo.",
+            latitude=-34.6083,
+            longitude=-58.3712,
+            inauguration_year=1610,
+            registration_date=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=1,
+            category_id=1,
+            conservation_state_id=1,
+            proposed_by=1
+        ),
+        HistoricSite(
+            name="Ruinas de San Ignacio Miní",
+            brief_description="Misión jesuítica guaraní en Misiones.",
+            full_description="Las Ruinas de San Ignacio Miní son Patrimonio de la Humanidad por la UNESCO "
+                             "y muestran el legado de las misiones jesuíticas en Argentina.",
+            latitude=-27.2556,
+            longitude=-55.5353,
+            inauguration_year=1632,
+            registration_date=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=2,
+            category_id=2,
+            conservation_state_id=2,
+            proposed_by=1
+        ),
+        HistoricSite(
+            name="Teatro Colón",
+            brief_description="Principal teatro de ópera de Argentina.",
+            full_description="Inaugurado en 1908, el Teatro Colón es considerado uno de los cinco mejores del mundo "
+                             "por su acústica y su trayectoria artística.",
+            latitude=-34.6012,
+            longitude=-58.3836,
+            inauguration_year=1908,
+            registration_date=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=1,
+            category_id=3,
+            conservation_state_id=1,
+            proposed_by=2
+        ),
+    ]
+
+    db.session.add_all(sites)
+
+    db.session.commit()
+
+def seed_site_tags():
+    from core.services import tag_service as TagService
+    from core.services import historic_site_service as HistorcService
+    print("Agregando relaciones Sites-Tags")
+
+    cabildo = HistorcService.get_historic_site_by_id(1)
+    san_ignacio = HistorcService.get_historic_site_by_id(2)
+
+    tag1 = TagService.get_tag_by_id(1)
+    tag2 = TagService.get_tag_by_id(2)
+
+    cabildo.tags.append(tag1)
+    san_ignacio.tags.extend([tag1, tag2])
+
     db.session.commit()
