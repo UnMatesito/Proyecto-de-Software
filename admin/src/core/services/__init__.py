@@ -40,7 +40,7 @@ from .historic_site_service import (
     update_category,
     update_city,
     update_conservation_state,
-    update_historic_site
+    update_historic_site,
 )
 
 # Permission services
@@ -106,11 +106,11 @@ from .user_service import (
     create_user,
     delete_user,
     get_all_users,
+    get_filtered_users,
     get_user_by_email,
     get_user_by_id,
     unblock_user,
     update_user_attribute,
-    get_filtered_users
 )
 
 __all__ = [

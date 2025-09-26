@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
 
+from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
 
 from core.database import db
 from core.models import Role, User
 from core.utils import pagination
-from sqlalchemy import desc
+
 
 def get_all_users():
     """Obtiene todos los usuarios."""
@@ -21,6 +22,7 @@ def get_user_by_email(email):
     """Obtiene un usuario por su email."""
     return User.query.filter_by(email=email).first()
 
+
 def get_filtered_users(active=None, role_id=None):
     """Filtro usuarios por activo y role"""
     query = User.query
@@ -32,7 +34,10 @@ def get_filtered_users(active=None, role_id=None):
         query = query.filter_by(role_id=int(role_id))
     return query.all()
 
-def get_paginated_users(page = 1, order_by = "created_at", sorted_by = "asc", active=None, role_id=None):
+
+def get_paginated_users(
+    page=1, order_by="created_at", sorted_by="asc", active=None, role_id=None
+):
     query = User.query
     if active == "1":
         query = query.filter_by(active=True)
@@ -46,11 +51,16 @@ def get_paginated_users(page = 1, order_by = "created_at", sorted_by = "asc", ac
         else:
             query = query.order_by(desc(User.created_at))
 
-    return pagination.paginate_query(query, page=page, order_by=order_by, sorted_by=sorted_by)
+    return pagination.paginate_query(
+        query, page=page, order_by=order_by, sorted_by=sorted_by
+    )
+
 
 def create_user(**kwargs):
     """Crea un nuevo usuario."""
-    if User.query.filter_by(email=kwargs.get("email")).first(): #Valido que el mail no exista
+    if User.query.filter_by(
+        email=kwargs.get("email")
+    ).first():  # Valido que el mail no exista
         raise ValueError("Ya existe un usuario con ese email")
 
     raw_password = kwargs.pop("password", None)
@@ -112,17 +122,17 @@ def delete_user(user_id):
     return update_user_attribute(
         user_id, "deleted_at", datetime.now(timezone.utc), check_delete
     )
+
+
 def restore_user(user_id):
-    """Desmarca un usuario como eliminado """
+    """Desmarca un usuario como eliminado"""
 
     def check_delete(user):
         if user.deleted_at is None:
             return f"El usuario {user.first_name} no esta eliminado"
         return None
 
-    return update_user_attribute(
-        user_id, "deleted_at", None, check_delete
-    )
+    return update_user_attribute(user_id, "deleted_at", None, check_delete)
 
 
 def block_user(user_id):

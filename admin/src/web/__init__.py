@@ -5,7 +5,7 @@ from core.database import db
 from core.utils.bcrypt import bcrypt
 
 from .config import get_current_config
-from .controllers import user_bp, user_management_bp, feature_flag_bp, tag_bp, auth_bp
+from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp
 from .handlers import error
 from .utils.auth import is_authenticated
 
@@ -65,6 +65,7 @@ def create_app(env="development", static_folder="../../static"):
     @app.cli.command("update_site")
     def update_site_command():
         from core.services import update_historic_site
+
         body = {
             "name": "Updated Obalisco",
             "brief_description": "Updated brief decription",
@@ -77,7 +78,7 @@ def create_app(env="development", static_folder="../../static"):
             "conservation_state_id": 1,
             "category_id": 1,
             "tag_ids": [1],
-            "historic_site_id": 1
+            "historic_site_id": 1,
         }
         update_historic_site(body)
 

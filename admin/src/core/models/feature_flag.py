@@ -39,7 +39,7 @@ class FeatureFlag(db.Model):
         self.last_modified_by_id = user_id
 
     def is_maintenance(self):
-        return  self.name in ["admin_maintenance_mode", "portal_maintenance_mode"]
+        return self.name in ["admin_maintenance_mode", "portal_maintenance_mode"]
 
     def __repr__(self):
         return f"<Feature_flag {self.name}>"

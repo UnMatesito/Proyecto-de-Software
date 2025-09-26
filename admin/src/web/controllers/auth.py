@@ -1,8 +1,8 @@
 from flask import Blueprint, flash, redirect, render_template, session, url_for
 
 from core.services import user_service
-from web.utils.auth import login_required
 from web.forms.auth import AuthForm
+from web.utils.auth import login_required
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -34,13 +34,13 @@ def authenticate():
     vuelve a renderizar la página de login con un mensaje de error.
 
     Returns:
-        Response: 
+        Response:
             - Si la autenticación es exitosa, redirige a la vista 'home'.
             - Si falla, renderiza nuevamente la plantilla de login con errores.
     """
     form = AuthForm()
 
-    if not form.validate_on_submit():  
+    if not form.validate_on_submit():
         return render_template("auth/login.html", form=form)
 
     email = form.email.data
@@ -49,7 +49,7 @@ def authenticate():
     if user is None or not user.check_password(form.password.data):
         flash("Email y/o contraseña incorrectos", "error")
         return render_template("auth/login.html", form=form)
-        
+
     session["user_id"] = user.id
     return redirect(url_for("home"))
 

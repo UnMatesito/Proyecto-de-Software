@@ -1,1 +1,1 @@
-from .auth_form import AuthForm 
+from .auth_form import AuthForm

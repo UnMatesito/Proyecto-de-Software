@@ -4,12 +4,17 @@ from flask import abort, flash, redirect, request, session, url_for
 
 from core.services import get_user_by_id
 
+# Funciones helper
+
 
 def get_current_user():
     """Obtiene el usuario actual de la sesión"""
     if "user_id" in session:
         return get_user_by_id(session["user_id"])
     return None
+
+
+# Decoradores
 
 
 def login_required(f):
@@ -134,6 +139,9 @@ def check_maintenance_mode():
         # Cualquier otro error, asumir que no está en mantenimiento
         return False, None
 """
+
+# Funciones para jinja2
+
 
 def is_authenticated():
     return session["user_id"] is not None
