@@ -43,7 +43,7 @@ class CreateUserForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         """Constructor"""
         super(CreateUserForm, self).__init__(*args, **kwargs)
-        self.role_id.choices = [(0, "Seleccionar rol ")]+[      #Carglo los roles en el select 
+        self.role_id.choices = [(0, "Seleccionar rol ")]+[      #Cargo los roles en el select 
             (role.id, role.name) for role in get_all_roles()    
         ]
     

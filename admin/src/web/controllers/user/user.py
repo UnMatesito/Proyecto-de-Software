@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
 from core.utils.auth import login_required, permission_required
-from web.forms.user import AssignRoleForm, CreateUserForm ## ChangePasswordForm, EditUserForm
+from web.forms.user import CreateUserForm, EditUserForm, ChangePasswordForm
 
 from core.services.user_service import (
     get_all_users,
@@ -9,8 +9,6 @@ from core.services.user_service import (
     create_user,
     update_user_attribute,
     delete_user,
-    block_user,
-    unblock_user,
     change_password,
     assign_role,
     restore_user
@@ -18,8 +16,10 @@ from core.services.user_service import (
 
 user_bp = Blueprint('users', __name__, url_prefix='/users')
 
+@login_required
+@permission_required("user_index")
 @user_bp.route("/")
-def list_users():
+def index():
     """Lista los usuarios y opciones """
     try:
         users = get_all_users()
@@ -28,6 +28,23 @@ def list_users():
         flash(f'Error al cargar usuarios: {str(e)}', 'error') #Envia un  mensaje temporal a la sesión
         return render_template("users/index.html", users=[] )
 
+@login_required
+@permission_required("user_show")
+@user_bp.route('/<int:user_id>')
+def detail(user_id):
+    """Informacion de un usuario """
+    try:
+        user=get_user_by_id(user_id)
+        if not user:
+            flash('Usuario no encontrado', 'error')
+            return redirect(url_for('users.index'))
+        return render_template("users/detail.html", user=user)
+    except Exception as e:
+        flash(f'Error al cargar el usuario: {str(e)}', 'error')
+        return redirect(url_for('users.index'))
+
+@login_required
+@permission_required("user_new")
 @user_bp.route("/create", methods= ["GET", "POST"])
 def create():
     """Crear un nuevo usuario"""
@@ -43,7 +60,6 @@ def create():
                 "system_admin": form.system_admin.data
             }
             user = create_user(**user_data)
-            user = create_user(**user_data)
             flash(f'Usuario {user.get_full_name()} creado exitosamente', 'success')
             return redirect(url_for('users.index'))
         except ValueError as e:
@@ -55,8 +71,44 @@ def create():
 
     return render_template('users/create.html', form=form)
 
+@login_required
+@permission_required("user_update")
+@user_bp.route("/<int:user_id>/edit", methods=["GET", "POST"])
+def edit(user_id):
+    """Editar un usuario"""
+    try:
+        user = get_user_by_id(user_id)
+        if not user:
+            flash("Usuario no encontrado", "error")
+            return redirect(url_for("users.index"))
+        
+        form = EditUserForm(obj=user) #Rellena los campos del form con los datos del usuario
+
+        if form.validate_on_submit():
+            # Actualizo los atributos
+            update_user_attribute(user_id, "first_name", form.first_name.data)
+            update_user_attribute(user_id, "last_name", form.last_name.data)
+            update_user_attribute(user_id, "email", form.email.data)
+            update_user_attribute(user_id, "active", form.active.data)
+            update_user_attribute(user_id, "system_admin", form.system_admin.data)
+
+            #Si cambia el rol lo actualizo
+            if user.role_id != form.role_id.data:
+                    assign_role(user_id, form.role_id.data)
+            flash("Usuario actualizado correctamente", "success")
+
+            return redirect(url_for("users.details",user=user))
+        return render_template("users/edit.html", form=form, user=user)
+       
+    except Exception as e:
+        print("Entre a la exception")
+        flash(f"Error al editar el usuario: {str(e)}", "error")
+        return redirect(url_for("users.index"))
+
+@login_required
+@permission_required("user_destroy")
 @user_bp.route("/<int:user_id>/delete", methods= ["POST"])
-def delete_user_rute(user_id):
+def delete(user_id):
     """Borrar un usuario """
     try:
         delete_user(user_id)
@@ -68,10 +120,12 @@ def delete_user_rute(user_id):
     except Exception as e:
         flash(f'Error inesperado: {str(e)}', 'error')
 
-    return redirect(url_for("users.list_users"))
+    return redirect(url_for("users.index"))
 
+@login_required
+@permission_required("user_update")
 @user_bp.route("/<int:user_id>/restore", methods= ["POST"])
-def restore_user_rute(user_id):
+def restore(user_id):
     """Recuperar un usuario """
     try:
         restore_user(user_id)
@@ -83,5 +137,33 @@ def restore_user_rute(user_id):
     except Exception as e:
         flash(f'Error inesperado: {str(e)}', 'error')
 
-    return redirect(url_for("users.list_users"))
+    return redirect(url_for("users.index"))
+
+@login_required
+@permission_required("user_update")
+@user_bp.route("/<int:user_id>/change-password", methods=["GET", "POST"])
+def change_password(user_id):
+    """Cambiar la contraseña de un usuario"""
+    try:
+        user= get_user_by_id(user_id)
+        if not user:
+            flash("Usuario no encontrado","error")
+            return redirect(url_for("users.index"))
+        
+        form = ChangePasswordForm()
+
+        if form.validate_on_submit():
+            try:
+                change_password(user_id, form.old_password.data, form.new_password.data)
+                flash("Contraseña actualizada","success")
+                return redirect(url_for("users.detail",user=user))
+            except ValueError as e:
+                flash(str(e), "warning")
+            except Exception as e:
+                flash(f"Error al cambiar contraseña: {str(e)}", "error")
+        return render_template("users/change_password.html",form=form, user=user)
+
+    except Exception as e:
+        flash(f"Error inesperado: {str(e)}", "error")
+        return redirect(url_for("users.list_users"))
 
