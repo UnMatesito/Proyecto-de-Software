@@ -11,7 +11,7 @@ from web.utils.auth import login_required, system_admin_required
 
 feature_flag_bp = Blueprint('feature-flags', __name__, url_prefix='/feature-flag')
 
-@feature_flag_bp.route("/")
+@feature_flag_bp.get("/")
 @login_required
 @system_admin_required
 def index():
@@ -19,14 +19,16 @@ def index():
     return render_template("feature_flags/index.html", flags=flags)
 
 
-@feature_flag_bp.route("/<int:flag_id>/toggle", methods=["POST"])
+@feature_flag_bp.post("/<int:flag_id>/toggle")
 @login_required
 @system_admin_required
 def toggle(flag_id):
+    """Cambiar el estado de un flag"""
     user = get_user_by_id(session["user_id"])
     flag = get_feature_flag_by_id(flag_id)
     new_state = not flag.is_enabled
-    if flag.is_maintenance() and new_state and  not flag.has_message():
+    #Si es de tipo mantenimiento y el nuevo estado es activado y no tiene mensaje
+    if flag.is_maintenance() and new_state and not flag.has_message():
         message = request.form.get("message", "").strip()
         if not message:
             flash("Debe ingresar un mensaje de mantenimiento", "error")

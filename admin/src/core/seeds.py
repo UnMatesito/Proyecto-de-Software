@@ -271,13 +271,13 @@ def seed_feature_flags():
             "name": "admin_maintenance_mode",
             "description": "Modo mantenimiento del área de administración",
             "is_enabled": False,
-            "maintenance_message": "El sistema de administración está en mantenimiento. Intente más tarde.",
+            "maintenance_message": "",
         },
         {
             "name": "portal_maintenance_mode",
             "description": "Modo mantenimiento del portal público",
             "is_enabled": False,
-            "maintenance_message": "El portal está en mantenimiento. Disculpe las molestias.",
+            "maintenance_message": "",
         },
         {
             "name": "reviews_enabled",
