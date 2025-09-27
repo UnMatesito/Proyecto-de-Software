@@ -10,6 +10,10 @@ from core.utils import pagination
 # TODO: Agregar dosctrings
 
 
+def get_all_tags():
+    return Tag.query.all()
+
+
 def get_tag_by_id(tag_id):
     tag = Tag.query.get(tag_id)
     if not tag:
@@ -24,14 +28,17 @@ def get_tag_by_name(tag_name):
     return tag
 
 
+def tag_exist(tag_name):
+    return Tag.query.filter_by(name=tag_name).first() is not None
+
+
 def validate_tag_name(tag_name):
     if len(tag_name) > 50:
         raise ValueError("El tamaño maximo para un nombre es de caracteres es 50")
     if len(tag_name) < 3:
         raise ValueError("El tamaño minimo para un nombre es de caracteres es 3")
     tag_name = tag_name.lower()
-    tag = get_tag_by_name(tag_name)
-    if tag:
+    if tag_exist(tag_name):
         raise ValueError(f"Ya existe un tag con nombre {tag_name}")
     return True
 
@@ -66,18 +73,20 @@ def update_tag(tag_id, new_name):
         raise RuntimeError(f"Error al actualizar el tag: {e}")
 
 
-def get_paginated_tags(page, order_by, sorted_by):
+def get_paginated_tags(page=1, order_by="name", sorted_by="asc"):
     if order_by == "name":
         if sorted_by == "asc":
             query = Tag.query.order_by(Tag._name)
         else:
             query = Tag.query.order_by(desc(Tag._name))
-    elif order_by == "created_date":
+    elif order_by == "created_at":
         if sorted_by == "asc":
             query = Tag.query.order_by(Tag.created_at)
         else:
             query = Tag.query.order_by(desc(Tag.created_at))
-    return pagination.paginate_query(query, page=page)
+    return pagination.paginate_query(
+        query, page=page, order_by=order_by, sorted_by=sorted_by
+    )
 
 
 def delete_tag(tag_id):

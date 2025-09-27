@@ -1,4 +1,4 @@
-def paginate_query(query, page, per_page=25):
+def paginate_query(query, page, per_page=25, order_by="id", sorted_by="asc"):
     """
     Pagina una query de SQLAlchemy
 
@@ -6,7 +6,8 @@ def paginate_query(query, page, per_page=25):
         query: Query de SQLAlchemy
         page: Número de página (base 1)
         per_page: Elementos por página
-
+        order_by: Columa de la tabla por la que se ordena le paginacion (nombre, id, etc)
+        sorted_by: Forma en la que se ordena la paginacion (asc o desc)
     Returns:
         dict con información de paginación
     """
@@ -30,6 +31,8 @@ def paginate_query(query, page, per_page=25):
         "next_num": pagination.next_num,
         "prev_num": pagination.prev_num,
         "page_range": get_page_range(pagination.page, pagination.pages),
+        "order_by": order_by,
+        "sorted_by": sorted_by,
     }
 
 

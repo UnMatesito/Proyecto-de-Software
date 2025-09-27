@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 
 from core.database import db
-from core.models import category_site
 
 historic_site_tag = db.Table(
     "historic_site_tag",
@@ -52,9 +51,8 @@ class HistoricSite(db.Model):
 
     tags = db.relationship("Tag", secondary=historic_site_tag, back_populates="sites")
 
-    categories = db.relationship(
-        "Category", secondary=category_site, back_populates="historic_sites"
-    )
+    category_id = db.Column(db.Integer, db.ForeignKey("category.id"))
+    category = db.relationship("Category", back_populates="historic_sites")
 
     proposed_by = db.Column(db.Integer, db.ForeignKey("user.id"))
     user = db.relationship("User", back_populates="historic_sites")
@@ -102,6 +100,45 @@ class HistoricSite(db.Model):
         """Elimina una etiqueta del sitio histórico si está presente."""
         if tag in self.tags:
             self.tags.remove(tag)
+
+    def same_city(self, city):
+        return city == self.city
+
+    def same_conservation_state(self, state):
+        return state == self.conservation_state
+
+    def same_category(self, category):
+        return category == self.category
+
+    def same_tags(self, tags):
+        return tags == self.tags
+
+    def same_name(self, name):
+        return name == self.name
+
+    def same_brief_description(self, brief_description):
+        return brief_description == self.brief_description
+
+    def same_full_description(self, full_description):
+        return full_description == self.full_description
+
+    def same_latitude(self, latitude):
+        return latitude == self.latitude
+
+    def same_longitude(self, longitude):
+        return longitude == self.longitude
+
+    def same_inauguration_year(self, inauguration_year):
+        return inauguration_year == self.inauguration_year
+
+    def same_registration_date(self, registration_date):
+        return registration_date == self.registration_date
+
+    def same_visibility(self, is_visible):
+        return is_visible == self.is_visible
+
+    def same_pending_validation(self, pending_validation):
+        return pending_validation == self.pending_validation
 
     def __repr__(self):
         return f"<Historic Site {self.name}>"

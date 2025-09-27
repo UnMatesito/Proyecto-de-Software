@@ -5,7 +5,9 @@ from core.database import db
 from core.utils.bcrypt import bcrypt
 
 from .config import get_current_config
+from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp
 from .handlers import error
+from .utils.auth import is_authenticated
 
 
 def create_app(env="development", static_folder="../../static"):
@@ -25,6 +27,11 @@ def create_app(env="development", static_folder="../../static"):
         return render_template("home.html")
 
     # Blueprints
+    app.register_blueprint(user_management_bp)
+    app.register_blueprint(user_bp)
+    app.register_blueprint(tag_bp)
+    app.register_blueprint(feature_flag_bp)
+    app.register_blueprint(auth_bp)
 
     # Commands
     @app.cli.command("reset-db")
@@ -39,12 +46,14 @@ def create_app(env="development", static_folder="../../static"):
 
         seed_db()
 
+    # TODO: Eliminar
     @app.cli.command("delete-tag")
     def delete_tag_command():
         from core.services import delete_tag
 
         delete_tag(1)
 
+    # TODO: Eliminar
     @app.cli.command("paginated_tag")
     def paginated_tag_command():
         from core.services import get_paginated_tags
@@ -53,9 +62,34 @@ def create_app(env="development", static_folder="../../static"):
 
         print(get_paginated_tags(1, "name", "dsc"))
 
+    # TODO: Eliminar
+    @app.cli.command("update_site")
+    def update_site_command():
+        from core.services import update_historic_site
+
+        body = {
+            "name": "Updated Obalisco",
+            "brief_description": "Updated brief decription",
+            "full_description": "Updated full description",
+            "latitude": 1111111,
+            "longitude": 22222,
+            "inauguration_year": 2025,
+            "is_visible": True,
+            "city_id": 2,
+            "conservation_state_id": 1,
+            "category_id": 1,
+            "tag_ids": [1],
+            "historic_site_id": 1,
+        }
+        update_historic_site(body)
+
+    # Métodos de jinja
+    app.jinja_env.globals.update(is_authenticated=is_authenticated)
+
     # Error handlers
     app.register_error_handler(404, error.not_found)
     app.register_error_handler(500, error.internal_server_error)
     app.register_error_handler(401, error.unauthorized)
+    app.register_error_handler(403, error.forbidden)
 
     return app
