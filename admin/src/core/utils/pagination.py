@@ -1,4 +1,4 @@
-def paginate_query(query, page, per_page=1, order_by = "id", sorted_by = "asc"):
+def paginate_query(query, page, per_page=25, order_by = "id", sorted_by = "asc"):
     """
     Pagina una query de SQLAlchemy
 

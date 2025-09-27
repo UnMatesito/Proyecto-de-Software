@@ -7,5 +7,8 @@ env:
 	eval $(poetry env activate)
 
 reset:
-	flask reset-db
-	flask seed-db
+	poetry run flask reset-db
+	poetry run flask seed-db
+
+run:
+	poetry run python app.py
