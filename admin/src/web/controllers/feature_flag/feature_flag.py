@@ -26,7 +26,7 @@ def toggle(flag_id):
     user = get_user_by_id(session["user_id"])
     flag = get_feature_flag_by_id(flag_id)
     new_state = not flag.is_enabled
-    if flag.is_maintenance() and new_state:
+    if flag.is_maintenance() and new_state and  not flag.has_message():
         message = request.form.get("message", "").strip()
         if not message:
             flash("Debe ingresar un mensaje de mantenimiento", "error")
@@ -34,9 +34,9 @@ def toggle(flag_id):
         if len(message) > 255:
             flash("El mensaje no puede superar los 255 caracteres", "error")
             return redirect(url_for("feature-flags.index"))
-        set_maintenance_message(flag_id, message, user)
+        set_maintenance_message(flag_id, message)
 
-    toggle_feature_flag(flag_id, new_state)
+    toggle_feature_flag(flag_id, new_state, user)
     flash(
         f"Flag '{flag.description}' cambiado a {'ON' if new_state else 'OFF'}",
         "success",

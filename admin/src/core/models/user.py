@@ -65,6 +65,7 @@ class User(db.Model):
         return self.system_admin
 
     def is_active(self):
+        """Devuelve si esta bloqueado"""
         return self.blocked is False
 
     def block_user(self):
@@ -78,13 +79,16 @@ class User(db.Model):
         self.blocked = False
 
     def get_full_name(self):
+        """Funcion que devuelve el nombre completo"""
         return f"{self.first_name} {self.last_name}"
 
     def delete_user(self):
+        """Funcion que setea la fecha de borrado"""
         self.deleted_at = datetime.now(timezone.utc)
         self.active = False
 
     def restore_user(self):
+        """Funcion que recupera el usuaio (setea la fecha de borrado en None)"""
         self.deleted_at = None
         self.active = True
 

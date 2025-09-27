@@ -33,13 +33,13 @@
                         {% endif %}
                     </td>
                     <td class="border px-4 py-2 text-gray-700">
-                        <span class="block">{{ flag.last_modified_by.name if flag.last_modified_by else "-" }}</span>
+                        <span class="block">{{ flag.last_modified_by.first_name ~ " " ~ flag.last_modified_by.last_name if flag.last_modified_by else "-" }}</span>
                         <span>{{ flag.last_modified_at.strftime("%d/%m/%Y %H:%M") if flag.last_modified_at else "-" }}</span>
                     </td>
                     <!-- Acciones  -->
                     <td class="border px-4 py-2 text-center">
                         <form method="POST" action="{{ url_for('feature-flags.toggle', flag_id=flag.id) }}" class="flex flex-col sm:flex-row items-start sm:items-center justify-center gap-2">
-                            {% if flag.name in ["admin_maintenance_mode", "portal_maintenance_mode"] %}
+                            {% if flag.name in ["admin_maintenance_mode", "portal_maintenance_mode"] and not flag.has_message()%}
                                 <input type="text" 
                                        name="message" 
                                        placeholder="Mensaje de mantenimiento"

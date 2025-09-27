@@ -247,7 +247,7 @@ def seed_editor():
     # Crear usuario editor
     editor_user = User(
         password="editor123",
-        email="editor@.com",
+        email="editor_editor@hotmail.com",
         first_name="EditorNomb",
         last_name="EditorApe",
         system_admin=False,

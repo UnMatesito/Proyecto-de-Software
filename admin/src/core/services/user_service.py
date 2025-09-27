@@ -36,8 +36,14 @@ def get_filtered_users(active=None, role_id=None):
 
 
 def get_paginated_users(
-    page=1, order_by="created_at", sorted_by="asc", active=None, role_id=None
+    page=1, order_by="created_at", sorted_by="asc", active=None, role_id=None, email=None
 ):
+    """Paginacion de usuarios ordenado por creacion
+        -sorted_by ordenado asc o des
+        -order_by en usuario es solo por fecha de creacion
+        -active parametro para filtrar por activo 
+        -role_id parametro para filtrar por rol
+    """
     query = User.query
     if active == "1":
         query = query.filter_by(active=True)
@@ -45,12 +51,13 @@ def get_paginated_users(
         query = query.filter_by(active=False)
     if role_id:
         query = query.filter_by(role_id=int(role_id))
+    if email:
+        query = query.filter_by(email=email)
     if order_by == "created_at":
         if sorted_by == "asc":
             query = query.order_by(User.created_at)
         else:
             query = query.order_by(desc(User.created_at))
-
     return pagination.paginate_query(
         query, page=page, order_by=order_by, sorted_by=sorted_by
     )
@@ -144,6 +151,7 @@ def delete_user(user_id):
     def check_delete(user):
         if user.deleted_at is not None:
             return f"El usuario {user.first_name} ya está eliminado"
+        #Si es system admin
         if user.is_admin():
             return f"El usuario {user.first_name} es System Admin y no puede ser eliminado"
         return None
