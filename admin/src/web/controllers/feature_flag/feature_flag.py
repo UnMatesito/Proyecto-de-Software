@@ -1,44 +1,47 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+
 from core.services.feature_flag_service import (
     get_all_feature_flags,
     get_feature_flag_by_id,
     set_maintenance_message,
-    toggle_feature_flag
-    
+    toggle_feature_flag,
 )
 from core.services.user_service import get_user_by_id
-from core.utils.auth import system_admin_required, login_required
+from web.utils.auth import login_required, system_admin_required
+
+feature_flag_bp = Blueprint("feature-flags", __name__, url_prefix="/feature-flag")
 
 
-
-feature_flag_bp = Blueprint('feature-flags', __name__, url_prefix='/feature-flag')
-
+@feature_flag_bp.get("/")
 @login_required
 @system_admin_required
-@feature_flag_bp.route("/")
 def index():
     flags = get_all_feature_flags()
-    return render_template("feature_flags/index.html",flags=flags)
+    return render_template("feature_flags/index.html", flags=flags)
 
+
+@feature_flag_bp.post("/<int:flag_id>/toggle")
 @login_required
 @system_admin_required
-@feature_flag_bp.route("/<int:flag_id>/toggle", methods=["POST"])
 def toggle(flag_id):
-    user= get_user_by_id(session['user_id'])
+    """Cambiar el estado de un flag"""
+    user = get_user_by_id(session["user_id"])
     flag = get_feature_flag_by_id(flag_id)
     new_state = not flag.is_enabled
-    if flag.is_maintenance() and new_state:
-        message = request.form.get("message","").strip()
+    # Si es de tipo mantenimiento y el nuevo estado es activado y no tiene mensaje
+    if flag.is_maintenance() and new_state and not flag.has_message():
+        message = request.form.get("message", "").strip()
         if not message:
-            flash("Debe ingresar un mensaje de mantenimiento","error")
+            flash("Debe ingresar un mensaje de mantenimiento", "error")
             return redirect(url_for("feature-flags.index"))
-        if len(message)  > 255:
-            flash("El mensaje no puede superar los 255 caracteres","error")
+        if len(message) > 255:
+            flash("El mensaje no puede superar los 255 caracteres", "error")
             return redirect(url_for("feature-flags.index"))
-        set_maintenance_message(flag_id,message, user)
-    
-    toggle_feature_flag(flag_id, new_state)
-    flash(f"Flag '{flag.description}' cambiado a {'ON' if new_state else 'OFF'}", "success")
-    return redirect(url_for("feature-flags.index"))
+        set_maintenance_message(flag_id, message)
 
-    
+    toggle_feature_flag(flag_id, new_state, user)
+    flash(
+        f"Flag '{flag.description}' cambiado a {'ON' if new_state else 'OFF'}",
+        "success",
+    )
+    return redirect(url_for("feature-flags.index"))

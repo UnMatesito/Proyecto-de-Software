@@ -12,6 +12,11 @@ class Config:
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
     SESSION_COOKIE_SECURE = True
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": 10,
+        "pool_recycle": 60,
+        "pool_pre_ping": True,
+    }
 
 
 class ProductionConfig(Config):

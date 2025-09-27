@@ -4,7 +4,12 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from core.database import db
 from core.models import HistoricSite
-from core.services import category_service, city_service, conservation_state_service, tag_service
+from core.services import (
+    category_service,
+    city_service,
+    conservation_state_service,
+    tag_service,
+)
 
 
 def get_all_historic_site():
@@ -58,27 +63,31 @@ def assign_relations_to_historic_site(
     db.session.commit()
     return historic_site
 
+
 def update_conservation_state(site, conservation_id):
     """Actualiza el estado de conservación de un sitio histórico."""
     conservation_state = conservation_state_service.get_conservation_state_by_id(
         conservation_id
     )
-    if (not site.same_conservation_state(conservation_state)):
+    if not site.same_conservation_state(conservation_state):
         site.conservation_state = conservation_state
     return site
 
+
 def update_category(site, category_id):
     category = category_service.get_category_by_id(category_id)
-    if (not site.same_category(category)):
+    if not site.same_category(category):
         site.category = category
     return site
+
 
 def update_city(site, city_id):
     """Actualiza la ciudad de un sitio histórico."""
     city = city_service.get_city_by_id(city_id)
-    if (not site.same_city(city)):
+    if not site.same_city(city):
         site.city = city
     return site
+
 
 def update_name(site, name):
     if not isinstance(name, str):
@@ -87,12 +96,14 @@ def update_name(site, name):
         site.name = name
     return site
 
+
 def update_brief_description(site, description):
     if not isinstance(description, str):
         raise ValueError("La descripcion breve debe ser un string")
     if not site.same_brief_description(description):
         site.brief_description = description
     return site
+
 
 def update_full_description(site, description):
     if not isinstance(description, str):
@@ -101,12 +112,14 @@ def update_full_description(site, description):
         site.full_description = description
     return site
 
+
 def update_latitude(site, latitude):
     if not isinstance(latitude, (int, float)):
         raise ValueError("La latitude debe ser numerica")
     if not site.same_latitude(latitude):
         site.latitude = latitude
     return site
+
 
 def update_longitude(site, longitude):
     if not isinstance(longitude, (int, float)):
@@ -115,15 +128,18 @@ def update_longitude(site, longitude):
         site.longitude = longitude
     return site
 
+
 def update_inauguration_year(site, year):
     if not site.same_inauguration_year(year):
         site.inauguration_year = year
     return site
 
+
 def update_registration_date(site, date):
     if not site.same_registration_date(date):
         site.registration_date = date
     return site
+
 
 def update_is_visible(site, visibility):
     if not isinstance(visibility, bool):
@@ -131,6 +147,7 @@ def update_is_visible(site, visibility):
     if not site.same_visibility(visibility):
         site.is_visible = visibility
     return site
+
 
 def update_tags(site, tag_ids):
     if not tag_ids:
@@ -145,6 +162,7 @@ def update_tags(site, tag_ids):
         site.remove_tag(tag)
     for tag in tags:
         site.add_tag(tag)
+
 
 def assign_tags(site_id, tag_ids):
     """Asigna una lista de tags a un sitio histórico, reemplazando los existentes."""
@@ -199,6 +217,7 @@ def delete_historic_site(site_id):
         db.session.rollback()
         raise RuntimeError(f"Error al eliminar el sitio histórico: {e}")
 
+
 def update_historic_site(body):
     try:
         print(body)
@@ -220,10 +239,10 @@ def update_historic_site(body):
 
         for key, value in body.items():
             if key in operations:
-                operations[key](site, value) 
+                operations[key](site, value)
             elif key != "historic_site_id":
                 raise ValueError("Campos invalidos enviados")
-            
+
         site.update_at = datetime.now(timezone.utc)
 
         db.session.add(site)

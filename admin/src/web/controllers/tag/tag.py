@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from core.services.tag_service import get_all_tags, create_tag, get_paginated_tags, update_tag, get_tag_by_id
 from web.forms.tag import CreateTagForm, EditTagForm
 
-tag_bp = Blueprint("tag_bp", __name__, url_prefix = "/tags")
+tag_bp = Blueprint("tag_bp", __name__, url_prefix="/tags")
+
 
 @tag_bp.route("/")
 def list_paginted_tags():
@@ -12,7 +13,9 @@ def list_paginted_tags():
         page = request.args.get("page", 1)
         tags = get_paginated_tags(page=page, order_by=order_by, sorted_by=sorted_by)
         print(tags)
-        return render_template("tags/index.html", tags = tags, order_by = order_by, sorted_by = sorted_by )
+        return render_template(
+            "tags/index.html", tags=tags, order_by=order_by, sorted_by=sorted_by
+        )
     except Exception as e:
         print(e)
         flash(f'Error al cargar tags: {str(e)}', 'error')

@@ -1,7 +1,7 @@
 {% macro button(text="", type="button", link=None, icon_left_svg="", icon_right_svg="") %}
     <div>
         {% if link %}
-            <a href="{{ link }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center mr-2 mb-2 ">
+            <a href="{{ link }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
@@ -13,7 +13,7 @@
                 {% endif %}
             </a>
         {% else %}
-            <button type="{{ type }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-semibold rounded-lg text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center inline-flex items-center mr-2 mb-2 ">
+            <button type="{{ type }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-semibold rounded-lg text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center inline-flex items-center">
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}

@@ -28,7 +28,7 @@ class HistoricSite(db.Model):
     registration_date = db.Column(db.DateTime, nullable=False)
     is_visible = db.Column(db.Boolean, default=False, nullable=False)
     pending_validation = db.Column(db.Boolean, default=True, nullable=False)
-    
+
     # Timestamps
     created_at = db.Column(
         db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
@@ -52,9 +52,7 @@ class HistoricSite(db.Model):
     tags = db.relationship("Tag", secondary=historic_site_tag, back_populates="sites")
 
     category_id = db.Column(db.Integer, db.ForeignKey("category.id"))
-    category = db.relationship(
-        "Category", back_populates="historic_sites"
-    )
+    category = db.relationship("Category", back_populates="historic_sites")
 
     proposed_by = db.Column(db.Integer, db.ForeignKey("user.id"))
     user = db.relationship("User", back_populates="historic_sites")
@@ -105,13 +103,13 @@ class HistoricSite(db.Model):
 
     def same_city(self, city):
         return city == self.city
-    
+
     def same_conservation_state(self, state):
         return state == self.conservation_state
-    
+
     def same_category(self, category):
         return category == self.category
-    
+
     def same_tags(self, tags):
         return tags == self.tags
 
@@ -141,6 +139,6 @@ class HistoricSite(db.Model):
 
     def same_pending_validation(self, pending_validation):
         return pending_validation == self.pending_validation
-    
+
     def __repr__(self):
         return f"<Historic Site {self.name}>"

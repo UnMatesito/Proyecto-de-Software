@@ -65,31 +65,46 @@ class User(db.Model):
         return self.system_admin
 
     def is_active(self):
+        """Devuelve si esta bloqueado"""
         return self.blocked is False
 
     def block_user(self):
+        """Bloquea al usuario, excepto si es administrador."""
+        if self.is_admin() or self.has_role("Administrador"):
+            raise ValueError("No se puede bloquear un administrador")
         self.blocked = True
 
+    def unblock_user(self):
+        """Desbloquea al usuario."""
+        self.blocked = False
+
     def get_full_name(self):
+        """Funcion que devuelve el nombre completo"""
         return f"{self.first_name} {self.last_name}"
 
     def delete_user(self):
+        """Funcion que setea la fecha de borrado"""
         self.deleted_at = datetime.now(timezone.utc)
         self.active = False
 
     def restore_user(self):
+        """Funcion que recupera el usuaio (setea la fecha de borrado en None)"""
         self.deleted_at = None
         self.active = True
 
     def __repr__(self):
         return f"<User {self.email}>"
-    
-    def has_role(self, role_name :str):
-        """ Funcion para comprobrar si el usuario tiene un rol en particular por nombre"""
+
+    def has_role(self, role_name: str):
+        """Funcion para comprobrar si el usuario tiene un rol en particular por nombre"""
         return self.role and self.role.name == role_name
-    
-    def has_permission(self, permission_name:str):
+
+    def has_permission(self, permission_name: str):
         """Comprueba si el rol del usuario tiene dicho permiso"""
-        if not self.role or not self.role.permissions: #Si no tiene rol o si tiene pero no tiene permisos
+        if (
+            not self.role or not self.role.permissions
+        ):  # Si no tiene rol o si tiene pero no tiene permisos
             return False
-        return any(p.name == permission_name for p in self.role.permissions) #Recorro los permisos del rol 
+        return any(
+            p.name == permission_name for p in self.role.permissions
+        )  # Recorro los permisos del rol

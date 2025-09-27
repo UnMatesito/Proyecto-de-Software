@@ -1,13 +1,13 @@
 from flask import Blueprint, flash, redirect, render_template, url_for
 
 from core.services import role_service, user_service
-from core.utils.auth import login_required, permission_required
 from web.forms.user import AssignRoleForm, BlockUserForm
+from web.utils.auth import login_required, permission_required
 
 user_management_bp = Blueprint("user_management", __name__)
 
 
-@user_management_bp.route("/users/<int:user_id>/manage")
+@user_management_bp.get("/users/<int:user_id>/manage")
 @login_required
 @permission_required("user_show")
 def manage_user(user_id):
@@ -36,7 +36,7 @@ def manage_user(user_id):
         return redirect(url_for("users.index"))
 
 
-@user_management_bp.route("/users/<int:user_id>/assign-role", methods=["POST"])
+@user_management_bp.post("/users/<int:user_id>/assign-role")
 @login_required
 @permission_required("user_update")
 def assign_role(user_id):
@@ -74,7 +74,7 @@ def assign_role(user_id):
     return redirect(url_for("user_management.manage_user", user_id=user_id))
 
 
-@user_management_bp.route("/users/<int:user_id>/remove-role", methods=["POST"])
+@user_management_bp.post("/users/<int:user_id>/remove-role")
 @login_required
 @permission_required("user_update")
 def remove_role(user_id):
@@ -107,7 +107,7 @@ def remove_role(user_id):
     return redirect(url_for("user_management.manage_user", user_id=user_id))
 
 
-@user_management_bp.route("/users/<int:user_id>/toggle-block", methods=["POST"])
+@user_management_bp.post("/users/<int:user_id>/toggle-block")
 @login_required
 @permission_required("user_update")
 def toggle_block(user_id):
@@ -154,7 +154,7 @@ def toggle_block(user_id):
     return redirect(url_for("user_management.manage_user", user_id=user_id))
 
 
-@user_management_bp.route("/users/<int:user_id>/block")
+@user_management_bp.get("/users/<int:user_id>/block")
 @login_required
 @permission_required("user_update")
 def block_user(user_id):
@@ -187,7 +187,7 @@ def block_user(user_id):
     return redirect(url_for("users.index"))
 
 
-@user_management_bp.route("/users/<int:user_id>/unblock")
+@user_management_bp.get("/users/<int:user_id>/unblock")
 @login_required
 @permission_required("user_update")
 def unblock_user(user_id):

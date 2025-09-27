@@ -1,16 +1,25 @@
 {% extends "layout.html" %}
 
 {% block title %}Editar usuario{% endblock %}
-
+<!-- Contenedor titulo -->
 {% block header %}
-<h1 class="text-2xl font-bold p-4">Editar usuario</h1>
+<h1 class="text-2xl font-bold text-center mt-6">Editar usuario</h1>
 {% endblock %}
 
 {% block content %}
+<!-- Contenedor boton volver -->
+<div class=" text-center mt-6">
+    <a href="/users" 
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" >
+        Volver
+    </a>
+ </div>
+ <!-- Contenedor general del form -->
 <div class="p-4 max-w-lg mx-auto">
+    <!-- Contenedor del form  -->
     <form method="POST">
         {{ form.hidden_tag() }}
-
+        <!-- Contenedor nombre  -->
         <div class="mb-4">
             {{ form.first_name.label(class="block font-semibold mb-1") }}
             {{ form.first_name(class="w-full border rounded p-2") }}
@@ -18,7 +27,7 @@
                 <p class="text-red-600 text-sm">{{ error }}</p>
             {% endfor %}
         </div>
-
+        <!-- Contenedor apellido -->
         <div class="mb-4">
             {{ form.last_name.label(class="block font-semibold mb-1") }}
             {{ form.last_name(class="w-full border rounded p-2") }}
@@ -26,7 +35,7 @@
                 <p class="text-red-600 text-sm">{{ error }}</p>
             {% endfor %}
         </div>
-
+        <!-- Contenedor correo -->
         <div class="mb-4">
             {{ form.email.label(class="block font-semibold mb-1") }}
             {{ form.email(class="w-full border rounded p-2") }}
@@ -34,7 +43,7 @@
                 <p class="text-red-600 text-sm">{{ error }}</p>
             {% endfor %}
         </div>
-
+        <!-- Contenedor role -->
         <div class="mb-4">
             {{ form.role_id.label(class="block font-semibold mb-1") }}
             {{ form.role_id(class="w-full border rounded p-2") }}
@@ -42,20 +51,23 @@
                 <p class="text-red-600 text-sm">{{ error }}</p>
             {% endfor %}
         </div>
-
-        <div class="mb-4 flex items-center space-x-2">
-            {{ form.system_admin() }}
-            {{ form.system_admin.label }}
-        </div>
-
+        {% if is_system_admin %}
+            <!-- Contenedor check de admin -->
+            <div class="mb-4 flex items-center space-x-2">
+                {{ form.system_admin() }}
+                {{ form.system_admin.label }}
+            </div>
+        {% endif %}
+        <!-- Contenedor check de usuario activo -->
         <div class="mb-4 flex items-center space-x-2">
             {{ form.active() }}
             {{ form.active.label }}
         </div>
-
+        <!-- Contenedor boton crear -->
         <div class="mt-6">
             {{ form.submit(class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700") }}
-            <a href="{{ url_for('users.detail', user_id=user.id) }}" 
+            <!-- Contenedor boton cancelar -->
+            <a href="{{ url_for('users.index', user_id=user.id) }}" 
                class="ml-2 text-gray-600 hover:underline">Cancelar</a>
         </div>
     </form>
