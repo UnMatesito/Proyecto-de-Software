@@ -4,8 +4,6 @@ from core.database import db
 from core.models import FeatureFlag
 
 
-
-
 def get_all_feature_flags():
     """Retorna todo los flags"""
     return FeatureFlag.query.all()
@@ -32,7 +30,7 @@ def create_feature_flag(**kwargs):
 def update_feature_flag(id, **kwargs):
     """Actualiza un flag"""
     feature_flag = get_feature_flag_by_id(id)
-    #Si no se encuentra
+    # Si no se encuentra
     if not feature_flag:
         return None
     for key, value in kwargs.items():
@@ -54,10 +52,10 @@ def delete_feature_flag(id):
 def toggle_feature_flag(id, is_enabled, user):
     """Cambia el estado de un flag y registra quien lo cambio"""
     feature_flag = get_feature_flag_by_id(id)
-    #Si no se encuentra
+    # Si no se encuentra
     if not feature_flag:
         return None
-    #Si es mantenimiento y esta activo, se borra el mensaje de estado, para ingresar otro al momento de activarlo nuevamente
+    # Si es mantenimiento y esta activo, se borra el mensaje de estado, para ingresar otro al momento de activarlo nuevamente
     if feature_flag.is_maintenance():
         if feature_flag.is_enabled:
             feature_flag.maintenance_message = ""

@@ -1,7 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-
-from web.utils.auth import login_required, permission_required
-from web.forms.user import CreateUserForm, EditUserForm, ChangePasswordForm
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 from core.services.role_service import get_all_roles
 from core.services.user_service import (
@@ -15,7 +12,11 @@ from core.services.user_service import (
     restore_user,
     update_user_attribute,
 )
+from web.forms.user import ChangePasswordForm, CreateUserForm, EditUserForm
+from web.utils.auth import login_required, permission_required
+
 user_bp = Blueprint("users", __name__, url_prefix="/users")
+
 
 @user_bp.get("/")
 @login_required
@@ -51,6 +52,7 @@ def index():
         )  # Envia un  mensaje temporal a la sesión
         return render_template("users/index.html", pagination=[])
 
+
 @user_bp.get("/<int:user_id>")
 @login_required
 @permission_required("user_show")
@@ -63,9 +65,10 @@ def detail(user_id):
             return redirect(url_for("users.index"))
         return render_template("users/detail.html", user=user)
     except Exception as e:
-        flash(f'Error al cargar el usuario: {str(e)}', 'error')
-        return redirect(url_for('users.index'))
-    
+        flash(f"Error al cargar el usuario: {str(e)}", "error")
+        return redirect(url_for("users.index"))
+
+
 @user_bp.get("/search-by-mail")
 @login_required
 @permission_required("user_show")
@@ -73,17 +76,18 @@ def search_by_email():
     correo = request.args.get("email", "").strip()
     user = get_user_by_email(correo)
     if not user:
-        return redirect(url_for('users.index'))
+        return redirect(url_for("users.index"))
     users_page = get_paginated_users(email=correo)
 
     return render_template("users/index.html", pagination=users_page)
+
 
 @user_bp.post("/create")
 @login_required
 @permission_required("user_new")
 def create_post():
     """Crear un nuevo usuario"""
-    current_user = get_user_by_id(session['user_id'])
+    current_user = get_user_by_id(session["user_id"])
     form = CreateUserForm()
     if form.validate_on_submit():
         try:
@@ -94,7 +98,7 @@ def create_post():
                 "password": form.password.data,
                 "role_id": form.role_id.data,
             }
-            #Si por alguna razon quiere que el usuario sea system admin y el que hace la peticion no es system admin, lo carga False
+            # Si por alguna razon quiere que el usuario sea system admin y el que hace la peticion no es system admin, lo carga False
             if current_user.is_admin():
                 user_data["system_admin"] = form.system_admin.data
             else:
@@ -110,24 +114,21 @@ def create_post():
         except Exception as e:
             flash(f"Error inesperado: {str(e)}", "error")
 
-    # Si no valida, vuelve a mostrar el formulario 
+    # Si no valida, vuelve a mostrar el formulario
     return render_template(
-        'users/create.html',
-        form=form,
-        is_system_admin=current_user.is_admin()
+        "users/create.html", form=form, is_system_admin=current_user.is_admin()
     )
+
 
 @user_bp.get("/create")
 @login_required
 @permission_required("user_new")
 def create_get():
     """Mostrar el formulario para crear un nuevo usuario"""
-    current_user = get_user_by_id(session['user_id'])
+    current_user = get_user_by_id(session["user_id"])
     form = CreateUserForm()
     return render_template(
-        'users/create.html',
-        form=form,
-        is_system_admin=current_user.is_admin()
+        "users/create.html", form=form, is_system_admin=current_user.is_admin()
     )
 
 
@@ -136,30 +137,33 @@ def create_get():
 @permission_required("user_update")
 def edit_get(user_id):
     """Mostrar el formulario para editar un usuario"""
-    current_user = get_user_by_id(session['user_id'])
+    current_user = get_user_by_id(session["user_id"])
     try:
         user = get_user_by_id(user_id)
         if not user:
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
 
-        form = EditUserForm(obj=user)  # Rellena los campos del form con los datos del usuario
+        form = EditUserForm(
+            obj=user
+        )  # Rellena los campos del form con los datos del usuario
         return render_template(
             "users/edit.html",
             form=form,
             user=user,
-            is_system_admin=current_user.is_admin()
+            is_system_admin=current_user.is_admin(),
         )
     except Exception as e:
         flash(f"Error al editar el usuario: {str(e)}", "error")
         return redirect(url_for("users.index"))
+
 
 @user_bp.post("/<int:user_id>/edit")
 @login_required
 @permission_required("user_update")
 def edit_post(user_id):
     """Editar un usuario"""
-    current_user = get_user_by_id(session['user_id'])
+    current_user = get_user_by_id(session["user_id"])
     try:
         user = get_user_by_id(user_id)
         if not user:
@@ -183,16 +187,17 @@ def edit_post(user_id):
             flash("Usuario actualizado correctamente", "success")
             return redirect(url_for("users.detail", user_id=user_id))
 
-        # Si no valida, vuelvo a mostrar el form 
+        # Si no valida, vuelvo a mostrar el form
         return render_template(
             "users/edit.html",
             form=form,
             user=user,
-            is_system_admin=current_user.is_admin()
+            is_system_admin=current_user.is_admin(),
         )
     except Exception as e:
         flash(f"Error al editar el usuario: {str(e)}", "error")
         return redirect(url_for("users.index"))
+
 
 @user_bp.post("/<int:user_id>/delete")
 @login_required
@@ -211,6 +216,7 @@ def delete(user_id):
 
     return redirect(url_for("users.index"))
 
+
 @user_bp.post("/<int:user_id>/restore")
 @login_required
 @permission_required("user_update")
@@ -227,6 +233,7 @@ def restore(user_id):
         flash(f"Error inesperado: {str(e)}", "error")
 
     return redirect(url_for("users.index"))
+
 
 @user_bp.post("/<int:user_id>/change-password")
 @login_required
@@ -249,11 +256,12 @@ def change_password_post(user_id):
                 flash(str(e), "warning")
             except Exception as e:
                 flash(f"Error al cambiar contraseña: {str(e)}", "error")
-        # Si el form no valida, se muestra de nuevo 
+        # Si el form no valida, se muestra de nuevo
         return render_template("users/change_password.html", form=form, user=user)
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
         return redirect(url_for("users.list_users"))
+
 
 @user_bp.get("/<int:user_id>/change-password")
 @login_required

@@ -42,7 +42,7 @@ class FeatureFlag(db.Model):
     def is_maintenance(self):
         """Devuelve si el feature_flag es de tipo mantenimiento"""
         return self.name in ["admin_maintenance_mode", "portal_maintenance_mode"]
-    
+
     def has_message(self):
         """Devuelve si el feature_flag posee un mensaje"""
         return self.maintenance_message != ""

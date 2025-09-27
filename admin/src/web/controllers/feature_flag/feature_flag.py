@@ -9,7 +9,8 @@ from core.services.feature_flag_service import (
 from core.services.user_service import get_user_by_id
 from web.utils.auth import login_required, system_admin_required
 
-feature_flag_bp = Blueprint('feature-flags', __name__, url_prefix='/feature-flag')
+feature_flag_bp = Blueprint("feature-flags", __name__, url_prefix="/feature-flag")
+
 
 @feature_flag_bp.get("/")
 @login_required
@@ -27,7 +28,7 @@ def toggle(flag_id):
     user = get_user_by_id(session["user_id"])
     flag = get_feature_flag_by_id(flag_id)
     new_state = not flag.is_enabled
-    #Si es de tipo mantenimiento y el nuevo estado es activado y no tiene mensaje
+    # Si es de tipo mantenimiento y el nuevo estado es activado y no tiene mensaje
     if flag.is_maintenance() and new_state and not flag.has_message():
         message = request.form.get("message", "").strip()
         if not message:

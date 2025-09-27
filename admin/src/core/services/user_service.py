@@ -36,13 +36,18 @@ def get_filtered_users(active=None, role_id=None):
 
 
 def get_paginated_users(
-    page=1, order_by="created_at", sorted_by="asc", active=None, role_id=None, email=None
+    page=1,
+    order_by="created_at",
+    sorted_by="asc",
+    active=None,
+    role_id=None,
+    email=None,
 ):
     """Paginacion de usuarios ordenado por creacion
-        -sorted_by ordenado asc o des
-        -order_by en usuario es solo por fecha de creacion
-        -active parametro para filtrar por activo 
-        -role_id parametro para filtrar por rol
+    -sorted_by ordenado asc o des
+    -order_by en usuario es solo por fecha de creacion
+    -active parametro para filtrar por activo
+    -role_id parametro para filtrar por rol
     """
     query = User.query
     if active == "1":
@@ -145,15 +150,18 @@ def update_user_with_action(user_id, action_func):
 
     return True
 
+
 def delete_user(user_id):
     """Marca un usuario como eliminado (soft delete)"""
 
     def check_delete(user):
         if user.deleted_at is not None:
             return f"El usuario {user.first_name} ya está eliminado"
-        #Si es system admin
+        # Si es system admin
         if user.is_admin():
-            return f"El usuario {user.first_name} es System Admin y no puede ser eliminado"
+            return (
+                f"El usuario {user.first_name} es System Admin y no puede ser eliminado"
+            )
         return None
 
     return update_user_attribute(
