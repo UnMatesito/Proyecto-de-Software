@@ -51,7 +51,15 @@ def index():
         flash(
             f"Error al cargar usuarios: {str(e)}", "error"
         )  # Envia un  mensaje temporal a la sesión
-        return render_template("users/index.html", users=[])
+        return render_template(
+            "users/index.html",
+            pagination={"items": [], "has_prev": False, "has_next": False, "page": 1, "pages": 0, "total": 0},
+            roles=[],
+            active=None,
+            role_id=None,
+            sorted_by="asc",
+            order_by="created_at"
+        )
 
 
 # @login_required

@@ -1,13 +1,19 @@
-{% from 'macros/button.html' import button, button_error %}
+{% from 'macros/button.html' import button, button_error, button_warning %}
 {% from 'macros/status.html' import active_status, blocked_status, eliminated_status, inactive_status%}
 
-{% macro table(data, columns, edit_route=None, delete_route=None, detail_route=None, empty_message="No hay datos para mostrar.", title="") %}
+{% macro table(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, empty_message="No hay datos para mostrar.", title="") %}
 <div class="relative overflow-x-auto">
   {% if title %}
     <h2 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">{{ title }}</h2>
   {% endif %}
 
-  {% set items = data.items if data is defined and data.items is defined else data %}
+{# Detectar si data es dict con clave "items", si no tomarlo directo #}
+{% if data is mapping %}
+  {% set items = data.get("items", []) %}
+{% else %}
+  {% set items = data %}
+{% endif %}
+
 
   {% if items and items|length > 0 %}
     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -28,9 +34,20 @@
             {% for col in columns %}
               <td class="px-6 py-4">
                 {% if col.render %}
-                  {{ col.render(item) }}
+                  {% if col.render == 'user_name' %}
+                    {{ item.first_name }} {{ item.last_name }}
+                  {% elif col.render == 'role' %}
+                    {{ item.role.name if item.role else "Sin rol" }}
+                  {% elif col.render == 'status' %}
+                    {{ render_status(item) }}
+                  {% elif col.render == 'date' %}
+                    {{ item.created_at.strftime('%d/%m/%Y') if item.created_at else 'N/A' }}
+                  {% else %}
+                    {{ col.render(item) }}
+                  {% endif %}
                 {% else %}
-                  {{ attribute(item, col.key) if attribute(item, col.key) is not none else '—' }}
+                  {% set value = item|attr(col.key) %}
+                  {{ value if value is not none else '—' }}
                 {% endif %}
               </td>
             {% endfor %}
@@ -54,21 +71,27 @@
 {% endmacro %}
 
 
-{% macro render_action_buttons(item, edit_route=None, delete_route=None, detail_route=None) %}
+{% macro render_action_buttons(item, edit_route=None, delete_route=None, detail_route=None, restore_route=None) %}
   <div class="flex justify-center space-x-2">
     {% if edit_route %}
-      {{ button_warning("Editar", link=url_for(edit_route, id=item.id), icon_left_svg=get_icon("edit")) }}
+      {{ button_warning("Editar", link=url_for(edit_route, user_id=item.id), icon_left_svg=get_icon("edit")) }}
     {% endif %}
 
-    {% if delete_route and not item.deleted_at %}
-      {{ button_error("Eliminar", link=url_for(delete_route, id=item.id), icon_left_svg=get_icon("delete")) }}
+    {% if item.deleted_at and restore_route %}
+      <form action="{{ url_for(restore_route, user_id=item.id) }}" method="post" class="inline"
+            onsubmit="return confirm('¿Está seguro de restaurar el usuario {{ item.first_name }} ?')">
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Restaurar</button>
+      </form>
+    {% elif delete_route and not item.deleted_at %}
+      {{ button_error("Eliminar", link=url_for(delete_route, user_id=item.id), icon_left_svg=get_icon("delete")) }}
     {% endif %}
 
     {% if detail_route %}
-      {{ button("Detalles", link=url_for(detail_route, id=item.id), icon_left_svg=get_icon("view")) }}
+      {{ button("Detalles", link=url_for(detail_route, user_id=item.id), icon_left_svg=get_icon("view")) }}
     {% endif %}
   </div>
 {% endmacro %}
+
 
 {# Macro para los tags de estado #}
 {% macro render_status(item) %}
