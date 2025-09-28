@@ -43,21 +43,6 @@
                 <p class="text-red-600 text-sm">{{ error }}</p>
             {% endfor %}
         </div>
-        <!-- Contenedor role -->
-        <div class="mb-4">
-            {{ form.role_id.label(class="block font-semibold mb-1") }}
-            {{ form.role_id(class="w-full border rounded p-2") }}
-            {% for error in form.role_id.errors %}
-                <p class="text-red-600 text-sm">{{ error }}</p>
-            {% endfor %}
-        </div>
-        {% if is_system_admin %}
-            <!-- Contenedor check de admin -->
-            <div class="mb-4 flex items-center space-x-2">
-                {{ form.system_admin() }}
-                {{ form.system_admin.label }}
-            </div>
-        {% endif %}
         <!-- Contenedor check de usuario activo -->
         <div class="mb-4 flex items-center space-x-2">
             {{ form.active() }}
