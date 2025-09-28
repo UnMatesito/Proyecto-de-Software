@@ -16,10 +16,9 @@ class AssignRoleForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(AssignRoleForm, self).__init__(*args, **kwargs)
-        # Cargar roles disponibles (Editor, Administrador)
+        # Cargar roles disponibles
         roles = role_service.get_all_roles()
         self.role_id.choices = [
             (role.id, role.name)
             for role in roles
-            if role.name in ["Editor", "Administrador"]
         ]

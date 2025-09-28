@@ -57,7 +57,7 @@ def assign_role(user_id):
 
             # Verificar que el rol existe y es válido
             role = role_service.get_role_by_id(form.role_id.data)
-            if not role or role.name not in ["Editor", "Administrador"]:
+            if not role:
                 flash("Rol no válido", "error")
                 return redirect(url_for("user_management.manage_user", user_id=user_id))
 
