@@ -18,7 +18,4 @@ class AssignRoleForm(FlaskForm):
         super(AssignRoleForm, self).__init__(*args, **kwargs)
         # Cargar roles disponibles
         roles = role_service.get_all_roles()
-        self.role_id.choices = [
-            (role.id, role.name)
-            for role in roles
-        ]
+        self.role_id.choices = [(role.id, role.name) for role in roles]
