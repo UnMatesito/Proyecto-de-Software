@@ -144,9 +144,12 @@ def edit_get(user_id):
         if not user:
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
-        #Un admin no puede editar a un system admin
-        if(user.is_admin() and not current_user.is_admin()):
-            flash("No puede modificar un System Admin si usted no es System Admin", "error")
+        # Un admin no puede editar a un system admin
+        if user.is_admin() and not current_user.is_admin():
+            flash(
+                "No puede modificar un System Admin si usted no es System Admin",
+                "error",
+            )
             return redirect(url_for("users.index"))
 
         form = EditUserForm(
@@ -173,9 +176,12 @@ def edit_post(user_id):
         if not user:
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
-        #Un admin no puede editar a un system admin
-        if(user.is_admin() and not current_user.is_admin()):
-            flash("No puede modificar un System Admin si usted no es System Admin", "error")
+        # Un admin no puede editar a un system admin
+        if user.is_admin() and not current_user.is_admin():
+            flash(
+                "No puede modificar un System Admin si usted no es System Admin",
+                "error",
+            )
             return redirect(url_for("users.index"))
         form = EditUserForm(obj=user)
         if form.validate_on_submit():

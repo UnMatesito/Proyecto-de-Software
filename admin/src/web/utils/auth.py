@@ -147,6 +147,7 @@ def is_authenticated():
     """Devuelve true si el usuario tiene la sesión iniciada"""
     return session["user_id"] is not None
 
+
 def is_system_admin():
     """Devuelve True si el usuario actual es System Admin"""
     if "user_id" not in session:
