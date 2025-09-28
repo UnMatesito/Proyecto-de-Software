@@ -54,6 +54,11 @@
                 <dt class="font-semibold text-gray-700">Creado:</dt>
                 <dd class=" text-gray-900">{{ tag.created_at.strftime('%d/%m/%Y') if tag.created_at else 'N/A' }}</dd>
             </div>
+                        <!-- Contenedor fecha creacion -->
+            <div class="py-3 grid grid-cols-2 gap-4">
+                <dt class="font-semibold text-gray-700">Creado:</dt>
+                <dd class=" text-gray-900">{{ tag.created_at.strftime('%d/%m/%Y') if tag.created_at else 'N/A' }}</dd>
+            </div>
         </dl>
     </div>
 
