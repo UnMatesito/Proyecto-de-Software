@@ -173,9 +173,9 @@ def toggle_system_admin(user_id):
         try:
             user_service.toggle_system_admin(user_id, form.system_admin.data)
             if form.system_admin.data:
-                flash("Usuario convertido en Administrador del sistema", "success")
+                flash("Usuario convertido en Administrador del sistema exitosamente", "success")
             else:
-                flash("Usuario ya no es Administrador del sistema", "warning")
+                flash("El usuario ya no es Administrador del sistema", "warning")
         except ValueError as e:
             flash(str(e), "error")
         except Exception as e:
