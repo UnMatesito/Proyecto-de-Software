@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "macros/button.html" import button %}
 
 {% block title %}Detalle de usuario{% endblock %}
 
@@ -37,7 +38,7 @@
             <!-- Contenedor nomb del rol -->
             <div class="py-3 grid grid-cols-3 gap-4">
                 <dt class="font-semibold text-gray-700">Rol:</dt>
-                <dd class="col-span-2 text-gray-900">{{ user.role.name if user.role else "Sin rol" }}</dd>
+                <dd class="col-span-2 text-gray-900">{{ get_user_role_name(user.id) or "Sin rol" }}</dd>
             </div>
             <!-- Contenedor estado -->
             <div class="py-3 grid grid-cols-3 gap-4">
@@ -68,6 +69,15 @@
                 <dd class="col-span-2 text-gray-900">{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A' }}</dd>
             </div>
         </dl>
+
+        <!-- Botón Administrar -->
+        <div class="mt-6 flex justify-center">
+            {{ button(
+                "Administrar roles y estado",
+                link=url_for('user_management.manage_user', user_id=user.id),
+                icon_left_svg='<i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>'
+            ) }}
+        </div>
     </div>
 
 </div>

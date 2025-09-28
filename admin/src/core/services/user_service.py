@@ -36,8 +36,19 @@ def get_filtered_users(active=None, role_id=None):
 
 
 def get_paginated_users(
-    page=1, order_by="created_at", sorted_by="asc", active=None, role_id=None
+    page=1,
+    order_by="created_at",
+    sorted_by="asc",
+    active=None,
+    role_id=None,
+    email=None,
 ):
+    """Paginacion de usuarios ordenado por creacion
+    -sorted_by ordenado asc o des
+    -order_by en usuario es solo por fecha de creacion
+    -active parametro para filtrar por activo
+    -role_id parametro para filtrar por rol
+    """
     query = User.query
     if active == "1":
         query = query.filter_by(active=True)
@@ -45,12 +56,13 @@ def get_paginated_users(
         query = query.filter_by(active=False)
     if role_id:
         query = query.filter_by(role_id=int(role_id))
+    if email:
+        query = query.filter_by(email=email)
     if order_by == "created_at":
         if sorted_by == "asc":
             query = query.order_by(User.created_at)
         else:
             query = query.order_by(desc(User.created_at))
-
     return pagination.paginate_query(
         query, page=page, order_by=order_by, sorted_by=sorted_by
     )
@@ -102,12 +114,40 @@ def update_user_attribute(user_id, attr_name, new_value, check_func=None):
         setattr(user, attr_name, new_value)
     else:
         raise AttributeError(f"{attr_name} no es un atributo de User")
+
     # Intento actualizar la db
     try:
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
         raise RuntimeError(f"Error al actualizar el usuario: {e}")
+
+    return True
+
+
+def update_user_with_action(user_id, action_func):
+    """
+    Función genérica para ejecutar acciones sobre un usuario
+    - user_id: ID del usuario a modificar
+    - action_func: función que recibe el usuario y ejecuta la acción
+    """
+    # Checkeo si existe el usuario
+    user = User.query.get(user_id)
+    if not user:
+        raise ValueError(f"No existe el usuario con id {user_id}")
+
+    # Ejecutar la función de acción
+    msg = action_func(user)
+    if msg:
+        raise ValueError(msg)
+
+    # Intento actualizar la db
+    try:
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al actualizar el usuario: {e}")
+
     return True
 
 
@@ -117,6 +157,11 @@ def delete_user(user_id):
     def check_delete(user):
         if user.deleted_at is not None:
             return f"El usuario {user.first_name} ya está eliminado"
+        # Si es system admin
+        if user.is_admin():
+            return (
+                f"El usuario {user.first_name} es Administrador del sistema y no puede ser eliminado"
+            )
         return None
 
     return update_user_attribute(
@@ -138,23 +183,29 @@ def restore_user(user_id):
 def block_user(user_id):
     """Bloquea un usuario"""
 
-    def check_blocked(user):
+    def check_and_block(user):
         if user.blocked:
             return f"El usuario {user.first_name} ya está bloqueado"
-        return None
+        try:
+            user.block_user()
+            return None
+        except ValueError as e:
+            return str(e)
 
-    return update_user_attribute(user_id, "blocked", True, check_blocked)
+    return update_user_with_action(user_id, check_and_block)
 
 
 def unblock_user(user_id):
     """Desbloquea un usuario"""
 
-    def check_blocked(user):
+    def check_and_unblock(user):
         if not user.blocked:
             return f"El usuario {user.first_name} ya está desbloqueado"
+
+        user.unblock_user()
         return None
 
-    return update_user_attribute(user_id, "blocked", False, check_blocked)
+    return update_user_with_action(user_id, check_and_unblock)
 
 
 def change_password(user_id, old_password, new_password):
@@ -191,3 +242,34 @@ def assign_role(user_id, role_id):
         return None
 
     return update_user_attribute(user_id, "role_id", role_id, role_check)
+
+def toggle_system_admin(user_id, make_admin: bool):
+    """
+    Convierte un usuario en System Admin o le quita ese rol.
+    Si se convierte en System Admin, también se asegura que el rol sea Administrador.
+    """
+    user = User.query.get(user_id)
+    if not user:
+        raise ValueError(f"No existe el usuario con id {user_id}")
+
+    # Evitar cambios redundantes
+    if user.system_admin == make_admin:
+        estado = "ya es" if make_admin else "ya no es"
+        raise ValueError(f"El usuario {user.first_name} {estado} System Admin")
+
+    user.system_admin = make_admin
+
+    if make_admin:
+        # Buscar rol Administrador
+        admin_role = Role.query.filter_by(name="Administrador").first()
+        if not admin_role:
+            raise RuntimeError("No se encontró el rol 'Administrador'")
+        user.role_id = admin_role.id
+
+    try:
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al actualizar el usuario: {e}")
+
+    return True

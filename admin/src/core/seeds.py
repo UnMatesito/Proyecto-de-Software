@@ -108,20 +108,24 @@ def seed_roles():
 
     roles_permissions = {
         "Editor": [
+            # Sitios
             "site_index",
             "site_new",
             "site_update",
             "site_show",
             "site_history",
+            # Tags
             "tag_index",
             "tag_new",
             "tag_update",
             "tag_destroy",
             "tag_show",
+            # Propuestas
             "proposal_index",
             "proposal_show",
             "proposal_approve",
             "proposal_reject",
+            # Reseñas
             "review_index",
             "review_show",
             "review_approve",
@@ -136,6 +140,7 @@ def seed_roles():
             "user_show",
             "user_block",
             "user_assign_role",
+            "user_change_password",
             # Sitios
             "site_index",
             "site_new",
@@ -150,17 +155,21 @@ def seed_roles():
             "tag_update",
             "tag_destroy",
             "tag_show",
-            # Propuestas y reseñas
+            # Propuestas
             "proposal_index",
             "proposal_show",
             "proposal_approve",
             "proposal_reject",
+            # Reseñas
             "review_index",
             "review_show",
             "review_approve",
             "review_reject",
         ],
-        "Usuario público": [],  # TODO: Ver bien qué permisos tiene
+        "Usuario público": [
+            "review_new",
+            "proposal_new",
+        ],
     }
 
     for role_name, perm_names in roles_permissions.items():
@@ -247,7 +256,7 @@ def seed_editor():
     # Crear usuario editor
     editor_user = User(
         password="editor123",
-        email="editor@.com",
+        email="editor_editor@hotmail.com",
         first_name="EditorNomb",
         last_name="EditorApe",
         system_admin=False,
@@ -271,13 +280,13 @@ def seed_feature_flags():
             "name": "admin_maintenance_mode",
             "description": "Modo mantenimiento del área de administración",
             "is_enabled": False,
-            "maintenance_message": "El sistema de administración está en mantenimiento. Intente más tarde.",
+            "maintenance_message": "",
         },
         {
             "name": "portal_maintenance_mode",
             "description": "Modo mantenimiento del portal público",
             "is_enabled": False,
-            "maintenance_message": "El portal está en mantenimiento. Disculpe las molestias.",
+            "maintenance_message": "",
         },
         {
             "name": "reviews_enabled",

@@ -144,4 +144,38 @@ def check_maintenance_mode():
 
 
 def is_authenticated():
+    """Devuelve true si el usuario tiene la sesión iniciada"""
     return session["user_id"] is not None
+
+def is_system_admin():
+    """Devuelve True si el usuario actual es System Admin"""
+    if "user_id" not in session:
+        return False
+    user = get_current_user()
+    return bool(user and user.system_admin)
+
+
+def get_user_role_name(user_id):
+    """Obtiene el nombre del rol del usuario dado su ID.
+    Si es System Admin, devuelve 'Administrador del sistema'."""
+    user = get_user_by_id(user_id)
+    if not user:
+        return None
+    if user.is_admin():
+        return "Administrador del sistema"
+    if user.role:
+        return user.role.name
+    return None
+
+
+def has_permission(permission_name: str) -> bool:
+    """Devuelve True si el usuario actual tiene el permiso dado"""
+    if "user_id" not in session:
+        return False
+    user = get_current_user()
+    if not user or not user.is_active():
+        return False
+    # System Admin siempre tiene todos los permisos
+    if user.system_admin:
+        return True
+    return user.has_permission(permission_name)

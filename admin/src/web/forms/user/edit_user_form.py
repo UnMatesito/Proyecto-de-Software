@@ -31,23 +31,8 @@ class EditUserForm(FlaskForm):
         ],
     )
 
-    role_id = SelectField(
-        "Rol",
-        choices=[],
-        coerce=int,
-        validators=[DataRequired(message="El rol es obligatorio")],
-    )
-
-    system_admin = BooleanField("Administrador del sistema")
 
     active = BooleanField("Usuario activo")
 
     submit = SubmitField("Crear usuario")
 
-    def __init__(self, *args, **kwargs):
-        """Constructor"""
-        super(EditUserForm, self).__init__(*args, **kwargs)
-        # Cargar roles dinámicamente
-        self.role_id.choices = [  # Cargo los roles en el select
-            (role.id, role.name) for role in get_all_roles()
-        ]
