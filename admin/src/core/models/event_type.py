@@ -9,7 +9,9 @@ class EventType(db.Model):
     name = db.Column(db.String(100), nullable=False, unique=True)
 
     # Relaciones
-    site_histories = db.relationship("SiteHistory", back_populates="event_type")
+    site_histories = db.relationship(
+        "SiteHistory", back_populates="event_type", cascade="all, delete-orphan"
+    )
 
     # Metodos
     def __repr__(self):
