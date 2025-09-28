@@ -21,7 +21,9 @@ class FeatureFlag(db.Model):
 
     # Relaciones
     last_modified_by = db.relationship("User")
-    last_modified_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    last_modified_by_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="SET NULL")
+    )
 
     # Metodos
 

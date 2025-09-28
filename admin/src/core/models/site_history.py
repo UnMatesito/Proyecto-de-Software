@@ -15,16 +15,20 @@ class SiteHistory(db.Model):
 
     # Relaciones
     historic_site_id = db.Column(
-        db.Integer, db.ForeignKey("historic_site.id"), nullable=False
+        db.Integer,
+        db.ForeignKey("historic_site.id", ondelete="CASCADE"),
+        nullable=False,
     )
     historic_site = db.relationship("HistoricSite", back_populates="site_histories")
 
     event_type_id = db.Column(
-        db.Integer, db.ForeignKey("event_type.id"), nullable=False
+        db.Integer, db.ForeignKey("event_type.id", ondelete="CASCADE"), nullable=False
     )
     event_type = db.relationship("EventType", back_populates="site_histories")
 
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
     user = db.relationship("User", back_populates="site_histories")
 
     # Metodos

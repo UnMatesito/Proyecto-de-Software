@@ -7,7 +7,12 @@ from core.utils.bcrypt import bcrypt
 from .config import get_current_config
 from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp
 from .handlers import error
-from .utils.auth import is_authenticated, is_system_admin, get_user_role_name, has_permission
+from .utils.auth import (
+    get_user_role_name,
+    has_permission,
+    is_authenticated,
+    is_system_admin,
+)
 from .utils.hooks import hook_admin_maintenance
 
 

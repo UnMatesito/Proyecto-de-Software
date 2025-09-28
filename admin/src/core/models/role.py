@@ -17,7 +17,9 @@ class Role(db.Model):
     name = db.Column(db.String(50), nullable=False, unique=True)
 
     # Relaciones
-    users = db.relationship("User", back_populates="role", lazy="dynamic")
+    users = db.relationship(
+        "User", back_populates="role", lazy="dynamic", cascade="all, delete-orphan"
+    )
     permissions = db.relationship(
         "Permission",
         secondary="role_permission",

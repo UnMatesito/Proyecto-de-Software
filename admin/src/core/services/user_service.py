@@ -159,9 +159,7 @@ def delete_user(user_id):
             return f"El usuario {user.first_name} ya está eliminado"
         # Si es system admin
         if user.is_admin():
-            return (
-                f"El usuario {user.first_name} es Administrador del sistema y no puede ser eliminado"
-            )
+            return f"El usuario {user.first_name} es Administrador del sistema y no puede ser eliminado"
         return None
 
     return update_user_attribute(
@@ -242,6 +240,7 @@ def assign_role(user_id, role_id):
         return None
 
     return update_user_attribute(user_id, "role_id", role_id, role_check)
+
 
 def toggle_system_admin(user_id, make_admin: bool):
     """

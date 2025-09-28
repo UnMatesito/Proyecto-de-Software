@@ -1,8 +1,8 @@
-from flask import Blueprint, flash, redirect, render_template, url_for, request
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from core.services import role_service, user_service
 from web.forms.user import AssignRoleForm, BlockUserForm, ToggleSystemAdminForm
-from web.utils.auth import login_required, permission_required, get_current_user
+from web.utils.auth import get_current_user, login_required, permission_required
 
 user_management_bp = Blueprint("user_management", __name__)
 
@@ -128,7 +128,10 @@ def toggle_block(user_id):
 
             # Verificar que no es System Admin o Administrador si se intenta bloquear
             if form.block.data and user.system_admin:
-                flash("No se puede bloquear a un usuario Administrador del sistema", "error")
+                flash(
+                    "No se puede bloquear a un usuario Administrador del sistema",
+                    "error",
+                )
                 return redirect(url_for("user_management.manage_user", user_id=user_id))
 
             if form.block.data and user.has_role("Administrador"):
@@ -157,6 +160,7 @@ def toggle_block(user_id):
 
     return redirect(url_for("user_management.manage_user", user_id=user_id))
 
+
 @user_management_bp.post("/users/<int:user_id>/toggle-system-admin")
 @login_required
 @permission_required("user_update")
@@ -173,7 +177,10 @@ def toggle_system_admin(user_id):
         try:
             user_service.toggle_system_admin(user_id, form.system_admin.data)
             if form.system_admin.data:
-                flash("Usuario convertido en Administrador del sistema exitosamente", "success")
+                flash(
+                    "Usuario convertido en Administrador del sistema exitosamente",
+                    "success",
+                )
             else:
                 flash("El usuario ya no es Administrador del sistema", "warning")
         except ValueError as e:
