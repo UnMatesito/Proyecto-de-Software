@@ -53,7 +53,10 @@ def create_app(env="development", static_folder="../../static"):
     def seed_db_command():
         from core.seeds import run as seed_db
 
-        seed_db()
+        import os
+        env = os.getenv("FLASK_ENV", "production")
+
+        seed_db(env)
 
     # TODO: Eliminar
     @app.cli.command("delete-tag")
