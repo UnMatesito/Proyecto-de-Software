@@ -10,7 +10,12 @@ historic_site_tag = db.Table(
         db.ForeignKey("historic_site.id", ondelete="CASCADE"),
         primary_key=True,
     ),
-    db.Column("tag_id", db.Integer, db.ForeignKey("tag.id", ondelete="CASCADE"), primary_key=True),
+    db.Column(
+        "tag_id",
+        db.Integer,
+        db.ForeignKey("tag.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
 )
 
 

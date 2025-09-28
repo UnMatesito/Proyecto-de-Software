@@ -502,10 +502,10 @@ def seed_site_tags():
     db.session.commit()
 
 
-
 def seed_users():
     """Crea usuarios adicionales usando Faker"""
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
 

@@ -51,9 +51,10 @@ def create_app(env="development", static_folder="../../static"):
 
     @app.cli.command("seed-db")
     def seed_db_command():
+        import os
+
         from core.seeds import run as seed_db
 
-        import os
         env = os.getenv("FLASK_ENV", "production")
 
         seed_db(env)
