@@ -7,7 +7,7 @@ from core.utils.bcrypt import bcrypt
 from .config import get_current_config
 from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp
 from .handlers import error
-from .utils.auth import is_authenticated
+from .utils.auth import is_authenticated, is_system_admin, get_user_role_name, has_permission
 from .utils.hooks import hook_admin_maintenance
 
 
@@ -89,6 +89,9 @@ def create_app(env="development", static_folder="../../static"):
 
     # Métodos de jinja
     app.jinja_env.globals.update(is_authenticated=is_authenticated)
+    app.jinja_env.globals.update(has_permission=has_permission)
+    app.jinja_env.globals.update(is_system_admin=is_system_admin)
+    app.jinja_env.globals.update(get_user_role_name=get_user_role_name)
 
     # Error handlers
     app.register_error_handler(404, error.not_found)

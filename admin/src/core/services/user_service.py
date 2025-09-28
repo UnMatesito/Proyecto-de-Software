@@ -242,3 +242,15 @@ def assign_role(user_id, role_id):
         return None
 
     return update_user_attribute(user_id, "role_id", role_id, role_check)
+
+def toggle_system_admin(user_id, make_admin: bool):
+    """Convierte un usuario en System Admin o le quita ese rol"""
+
+    def check_toggle(user):
+        # No tiene sentido cambiar si ya está en el mismo rol
+        if user.system_admin == make_admin:
+            rol = "ya es" if make_admin else "ya no es"
+            return f"El usuario {user.first_name} {rol} System Admin"
+        return None
+
+    return update_user_attribute(user_id, "system_admin", make_admin, check_toggle)

@@ -130,7 +130,7 @@
                     <td class="border px-4 py-2">{{ user.id }}</td>
                     <td class="border px-4 py-2">{{ user.first_name }} {{ user.last_name }}</td>
                     <td class="border px-4 py-2">{{ user.email }}</td>
-                    <td class="border px-4 py-2">{{ user.role.name if user.role else "Sin rol" }}</td>
+                    <td class="border px-4 py-2">{{ get_user_role_name(user.id) or "Sin rol" }}</td>
                     <td class="border px-4 py-2">
                         {% if user.deleted_at %}
                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">

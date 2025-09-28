@@ -1,7 +1,7 @@
-from flask import Blueprint, flash, redirect, render_template, url_for
+from flask import Blueprint, flash, redirect, render_template, url_for, request
 
 from core.services import role_service, user_service
-from web.forms.user import AssignRoleForm, BlockUserForm
+from web.forms.user import AssignRoleForm, BlockUserForm, ToggleSystemAdminForm
 from web.utils.auth import login_required, permission_required
 
 user_management_bp = Blueprint("user_management", __name__)
@@ -21,16 +21,20 @@ def manage_user(user_id):
         # Formularios
         assign_role_form = AssignRoleForm()
         block_form = BlockUserForm()
+        toggle_system_admin_form = ToggleSystemAdminForm()
 
-        # Precargar el estado actual del usuario en el formulario de bloqueo
+        # Precargar estado actual
         block_form.block.data = user.blocked
+        toggle_system_admin_form.system_admin.data = user.system_admin
 
         return render_template(
             "users/manage.html",
             user=user,
             assign_role_form=assign_role_form,
             block_form=block_form,
+            system_admin_form=toggle_system_admin_form,
         )
+
     except Exception as e:
         flash(f"Error al cargar la gestión del usuario: {str(e)}", "error")
         return redirect(url_for("users.index"))
@@ -153,53 +157,26 @@ def toggle_block(user_id):
 
     return redirect(url_for("user_management.manage_user", user_id=user_id))
 
-
-@user_management_bp.get("/users/<int:user_id>/block")
+@user_management_bp.post("/users/<int:user_id>/toggle-system-admin")
 @login_required
 @permission_required("user_update")
-def block_user(user_id):
-    """Bloquea un usuario (método directo sin formulario)"""
-    try:
-        # Verificar que el usuario existe
-        user = user_service.get_user_by_id(user_id)
-        if not user:
-            flash("Usuario no encontrado", "error")
-            return redirect(url_for("users.index"))
+def toggle_system_admin(user_id):
+    """Activa o desactiva el flag System Admin"""
+    form = ToggleSystemAdminForm()
+    if form.validate_on_submit():
+        try:
+            user_service.toggle_system_admin(user_id, form.system_admin.data)
 
-        # Verificar que no es System Admin
-        if user.system_admin:
-            flash("No se puede bloquear a un usuario System Admin", "error")
-            return redirect(url_for("users.index"))
+            if form.system_admin.data:
+                flash("Usuario convertido en System Admin exitosamente", "success")
+            else:
+                flash("El usuario ya no es System Admin", "warning")
 
-        # Verificar que no es Administrador
-        if user.has_role("Administrador"):
-            flash("No se puede bloquear a un usuario con rol Administrador", "error")
-            return redirect(url_for("users.index"))
+        except ValueError as e:
+            flash(str(e), "error")
+        except Exception as e:
+            flash(f"Error al actualizar System Admin: {str(e)}", "error")
+    else:
+        flash("Error en el formulario de System Admin", "error")
 
-        user_service.block_user(user_id)
-        flash(f"Usuario {user.email} bloqueado exitosamente", "success")
-
-    except ValueError as e:
-        flash(str(e), "error")
-    except Exception as e:
-        flash(f"Error al bloquear el usuario: {str(e)}", "error")
-
-    return redirect(url_for("users.index"))
-
-
-@user_management_bp.get("/users/<int:user_id>/unblock")
-@login_required
-@permission_required("user_update")
-def unblock_user(user_id):
-    """Desbloquea un usuario (método directo sin formulario)"""
-    try:
-        user_service.unblock_user(user_id)
-        user = user_service.get_user_by_id(user_id)
-        flash(f"Usuario {user.email} desbloqueado exitosamente", "success")
-
-    except ValueError as e:
-        flash(str(e), "error")
-    except Exception as e:
-        flash(f"Error al desbloquear el usuario: {str(e)}", "error")
-
-    return redirect(url_for("users.index"))
+    return redirect(url_for("user_management.manage_user", user_id=user_id))
