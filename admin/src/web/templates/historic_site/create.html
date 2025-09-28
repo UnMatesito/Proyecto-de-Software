@@ -1,0 +1,81 @@
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="p-2 mb-2 rounded
+                        {% if category == 'error' %}bg-red-100 text-red-700
+                        {% elif category == 'warning' %}bg-yellow-100 text-yellow-700
+                        {% elif category == 'success' %}bg-green-100 text-green-700
+                        {% else %}bg-gray-100 text-gray-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+    <div>
+        {{ form.name.label }}
+        {{ form.name() }}
+    </div>
+
+    <div>
+        {{ form.brief_description.label }}
+        {{ form.brief_description() }}
+    </div>
+    
+    <div>
+        {{ form.full_description.label }}
+        {{ form.full_description() }}
+    </div>
+    
+    <div>
+        {{ form.inauguration_year.label }}
+        {{ form.inauguration_year() }}
+    </div>
+
+    <div>
+        {{ form.province.label }}
+        {{ form.province }}
+    </div>
+
+    <div>
+        {{ form.city.label }}
+        {{ form.city }}
+    </div>
+
+    <div>
+        {{ form.conservation_state.label }}
+        {{ form.conservation_state }}
+    </div>
+
+    <div>
+        {{ form.category.label }}
+        {{ form.category }}
+    </div>
+
+    {{ form.submit }}
+</form>
+
+<script>
+document.getElementById("province").addEventListener("change", function() {
+    const provinceId = this.value;
+    fetch(`cities/${provinceId}`)
+        .then(response => response.json())
+        .then(data => {
+            const citySelect = document.getElementById("city");
+            citySelect.innerHTML = "";
+            data.forEach(city => {
+                let option = document.createElement("option");
+                option.value = city.id;
+                option.text = city.name;
+                citySelect.appendChild(option);
+            });
+        })
+});
+
+
+</script>

@@ -9,7 +9,9 @@ class Province(db.Model):
     name = db.Column(db.String(150), nullable=False)
 
     # Relaciones
-    cities = db.relationship("City", back_populates="province")
+    cities = db.relationship(
+        "City", back_populates="province", cascade="all, delete-orphan"
+    )
 
     # Metodos
     def __repr__(self):

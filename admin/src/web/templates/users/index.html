@@ -1,7 +1,6 @@
 {% extends "layout.html" %}
 {% from "macros/button.html" import button %}
 {% from "macros/paginate.html" import paginate %}
-{% from "macros/table.html" import table, render_status %}
 {% block title %}Listado de usuarios{% endblock %}
 
 {% block header %}
@@ -11,12 +10,29 @@
 {% block content %}
 <!-- Contenedor general -->
 <div class="p-6 max-w-7xl mx-auto space-y-6">
-    <!-- Contenedor del buscador -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="p-2 mb-2 rounded
+                        {% if category == 'error' %}bg-red-100 text-red-700
+                        {% elif category == 'warning' %}bg-yellow-100 text-yellow-700
+                        {% elif category == 'success' %}bg-green-100 text-green-700
+                        {% else %}bg-gray-100 text-gray-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+
+        <!-- Contenedor del buscador -->
     <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2">
         <form method="get" action="{{ url_for('users.search_by_email') }}" class="flex space-x-2 w-full max-w-md">
             <input type="text" name="email" placeholder="Buscar por email"
                    class="flex-grow border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <button type="submit"
+            <button type="submit" 
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
                 Buscar
             </button>
@@ -54,7 +70,7 @@
             </ul>
         </div>
 
-        <!-- Contenedor filtros -->
+       <!-- Contenedor filtros -->
         <form method="get" action="/users" class="flex flex-wrap items-end gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700">Estado</label>
@@ -85,16 +101,16 @@
             </div>
         </form>
 
-        <!-- Contenedor botón crear usuario -->
+        <!-- Contenedor boton crear usuario -->
         <div>
-            <a href="/users/create"
+            <a href="/users/create" 
                class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-2 rounded shadow">
                 Crear un usuario
             </a>
         </div>
     </div>
 
-    <!-- Tabla de usuarios usando macro -->
+   <!-- Contenedor tabla de usuarios -->
     <div class="bg-white shadow rounded overflow-hidden">
         {{ table(
             data=pagination,
@@ -114,9 +130,11 @@
         ) }}
     </div>
 
-    <!-- Contenedor paginación -->
+    <!-- Contenedor paginacion -->
     <div class="flex justify-center mt-4">
         {{ paginate(pagination, "users.index") }}
     </div>
 </div>
+
+
 {% endblock %}

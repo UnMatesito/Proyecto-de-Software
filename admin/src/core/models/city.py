@@ -9,10 +9,14 @@ class City(db.Model):
     name = db.Column(db.String(150), nullable=False)
 
     # Relaciones
-    province_id = db.Column(db.Integer, db.ForeignKey("province.id"))
+    province_id = db.Column(
+        db.Integer, db.ForeignKey("province.id", ondelete="CASCADE")
+    )
     province = db.relationship("Province", back_populates="cities")
 
-    historic_sites = db.relationship("HistoricSite", back_populates="city")
+    historic_sites = db.relationship(
+        "HistoricSite", back_populates="city", cascade="all, delete-orphan"
+    )
 
     # Metodos
     def __repr__(self):

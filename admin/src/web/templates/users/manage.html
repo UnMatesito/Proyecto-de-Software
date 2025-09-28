@@ -1,338 +1,164 @@
 {% extends "layout.html" %}
-{% from "macros/input.html" import text_input, email_input, checkbox_input %}
+{% from "macros/input.html" import checkbox_input, hidden_input %}
 {% from "macros/button.html" import button %}
 {% from "macros/toast.html" import toast %}
 
 {% block title %}Gestionar Usuario - {{ user.email }}{% endblock %}
 
 {% block header %}
-<nav class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
-    <div class="flex flex-wrap justify-between items-center">
-        <div class="flex justify-start items-center">
-            <button data-drawer-target="drawer-navigation" data-drawer-toggle="drawer-navigation"
-                    class="p-2 mr-2 text-gray-600 rounded-lg cursor-pointer md:hidden hover:text-gray-900 hover:bg-gray-100 focus:bg-gray-100 dark:focus:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-                </svg>
-            </button>
-            <a href="#" class="flex items-center justify-between mr-4">
-                <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Sitios Históricos</span>
-            </a>
-        </div>
-    </div>
-</nav>
+<h1 class="text-2xl font-bold text-center mt-6">Gestionar Usuario</h1>
 {% endblock %}
 
 {% block content %}
-<div class="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700 mt-16">
-    <div class="w-full mb-1">
-        <!-- Breadcrumb -->
-        <nav class="flex mb-5" aria-label="Breadcrumb">
-            <ol class="inline-flex items-center space-x-1 text-sm font-medium md:space-x-2">
-                <li class="inline-flex items-center">
-                    <a href="#" class="inline-flex items-center text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-white">
-                        <svg class="w-5 h-5 mr-2.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
-                        </svg>
-                        Dashboard
-                    </a>
-                </li>
-                <li>
-                    <div class="flex items-center">
-                        <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                        <a href="{{ url_for('users.index') }}" class="ml-1 text-gray-700 hover:text-primary-600 md:ml-2 dark:text-gray-300 dark:hover:text-white">Usuarios</a>
-                    </div>
-                </li>
-                <li>
-                    <div class="flex items-center">
-                        <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="ml-1 text-gray-400 md:ml-2 dark:text-gray-500">Gestionar</span>
-                    </div>
-                </li>
-            </ol>
-        </nav>
+<div class="max-w-3xl mx-auto mt-6 space-y-6">
 
-        <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">Gestionar Usuario</h1>
-        <p class="text-gray-500 dark:text-gray-400">Administrar roles y estado del usuario</p>
-    </div>
+    <!-- Botón volver -->
+  <div class="flex justify-start">
+    {{ button("Volver", link=url_for('users.detail', user_id=user.id), icon_left_svg='<i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i>') }}
+  </div>
 
-    <div class="flex items-center ml-auto space-x-2 sm:space-x-3">
-        {{ button("Volver", link=url_for('users.show', user_id=user.id), icon_left_svg='<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>') }}
-    </div>
-</div>
+    <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="space-y-3">
+        {% for category, message in messages %}
+          <div class="
+              p-4 rounded shadow
+              {% if category == 'success' %} bg-green-100 text-green-800
+              {% elif category == 'error' %} bg-red-100 text-red-800
+              {% elif category == 'warning' %} bg-yellow-100 text-yellow-800
+              {% else %} bg-gray-100 text-gray-800 {% endif %}
+            ">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
 
-<!-- Flash Messages -->
-<div class="fixed top-20 right-4 z-50 space-y-2">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                {{ toast(message, category, "toast-" + loop.index0|string) }}
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-</div>
 
-<div class="flex flex-col lg:flex-row gap-6 p-4">
-    <!-- Información del Usuario -->
-    <div class="lg:w-1/3">
-        <div class="bg-white shadow rounded-lg dark:bg-gray-800">
-            <div class="px-4 py-5 sm:px-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                    </svg>
-                    Información del Usuario
-                </h3>
-            </div>
-            <div class="border-t border-gray-200 px-4 py-5 sm:p-0 dark:border-gray-700">
-                <dl class="sm:divide-y sm:divide-gray-200 dark:divide-gray-700">
-                    <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 dark:text-white">{{ user.email }}</dd>
-                    </div>
-                    <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 dark:text-white">{{ user.nombre }} {{ user.apellido }}</dd>
-                    </div>
-                    <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Rol Actual</dt>
-                        <dd class="mt-1 text-sm sm:mt-0 sm:col-span-2">
-                            {% if user.role %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    {% if user.role.name == 'Administrador' %}bg-red-100 text-red-800
-                                    {% elif user.role.name == 'Editor' %}bg-yellow-100 text-yellow-800
-                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                    {{ user.role.name }}
-                                </span>
-                            {% else %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Sin rol</span>
-                            {% endif %}
-                        </dd>
-                    </div>
-                    <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Estado</dt>
-                        <dd class="mt-1 text-sm sm:mt-0 sm:col-span-2">
-                            {% if not user.blocked %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
-                                        <circle cx="4" cy="4" r="3"></circle>
-                                    </svg>
-                                    Activo
-                                </span>
-                            {% else %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                    <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
-                                        <circle cx="4" cy="4" r="3"></circle>
-                                    </svg>
-                                    Bloqueado
-                                </span>
-                            {% endif %}
-                        </dd>
-                    </div>
-                    {% if user.system_admin %}
-                    <div class="py-4 sm:py-5 sm:px-6">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                            </svg>
-                            System Admin
-                        </span>
-                    </div>
-                    {% endif %}
-                </dl>
-            </div>
+    <!-- Card con info básica -->
+  <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
+    <dl class="divide-y divide-gray-200">
+      <div class="py-3 grid grid-cols-3 gap-4">
+        <dt class="font-semibold text-gray-700">Email:</dt>
+        <dd class="col-span-2 text-gray-900">{{ user.email }}</dd>
+      </div>
+      <div class="py-3 grid grid-cols-3 gap-4">
+        <dt class="font-semibold text-gray-700">Nombre:</dt>
+        <dd class="col-span-2 text-gray-900">{{ user.first_name }} {{ user.last_name }}</dd>
+      </div>
+      <div class="py-3 grid grid-cols-3 gap-4">
+        <dt class="font-semibold text-gray-700">Rol actual:</dt>
+        <dd class="col-span-2 space-x-2">
+          {% if user.role %}
+            {% if user.system_admin %}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              Administrador del sistema
+            </span>
+            {% else %}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+              {% if user.role.name == 'Administrador' %}bg-red-100 text-red-800
+              {% elif user.role.name == 'Editor' %}bg-yellow-100 text-yellow-800
+              {% else %}bg-gray-100 text-gray-800{% endif %}">
+              {{ user.role.name }}
+            </span>
+          {% endif %}
+          {% else %}
+            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Sin rol</span>
+          {% endif %}
+
+
+        </dd>
+      </div>
+      <div class="py-3 grid grid-cols-3 gap-4">
+        <dt class="font-semibold text-gray-700">Estado:</dt>
+        <dd class="col-span-2">
+          {% if not user.blocked %}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              Activo
+            </span>
+          {% else %}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+              Bloqueado
+            </span>
+          {% endif %}
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+
+  <!-- Card gestión de roles -->
+  <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Gestión de Roles</h3>
+    <form method="POST" action="{{ url_for('user_management.assign_role', user_id=user.id) }}" class="space-y-4">
+      {{ assign_role_form.hidden_tag() }}
+      <label for="role_id" class="block text-sm font-medium text-gray-700">Rol</label>
+      <select id="role_id" name="role_id" class="w-full rounded-md border-gray-300">
+        <option value="">Seleccionar rol...</option>
+        {% for value, label in assign_role_form.role_id.choices %}
+          <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+      <div class="flex justify-center">
+        {{ button("Asignar Rol", type="submit", icon_left_svg='<i class="fa-solid fa-user-plus mr-2" aria-hidden="true"></i>') }}
+      </div>
+    </form>
+  </div>
+
+    {% if is_system_admin() %}
+    <!-- Cards gestión de estado + system admin -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- Card gestión de estado -->
+    <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Gestión de Estado</h3>
+      <form method="POST" action="{{ url_for('user_management.toggle_block', user_id=user.id) }}" class="space-y-4">
+        {{ block_form.hidden_tag() }}
+        <div class="flex items-center">
+          {{ checkbox_input(name="block", id="block", checked=block_form.block.data, aria_label="Bloquear usuario") }}
+          <label for="block" class="ml-2 text-sm text-gray-900"><strong>Bloquear usuario</strong></label>
         </div>
+        <p class="text-sm text-gray-500">Los usuarios bloqueados no podrán iniciar sesión.</p>
+        <div class="flex justify-center">
+          {{ button("Actualizar Estado", type="submit", icon_left_svg='<i class="fa-solid fa-lock mr-2" aria-hidden="true"></i>') }}
+        </div>
+      </form>
     </div>
 
-    <div class="lg:w-2/3 space-y-6">
-        <!-- Gestión de Roles -->
-        <div class="bg-white shadow rounded-lg dark:bg-gray-800">
-            <div class="px-4 py-5 sm:px-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Gestión de Roles
-                </h3>
-            </div>
-            <div class="border-t border-gray-200 px-4 py-5 dark:border-gray-700">
-                {% if user.system_admin %}
-                    <div class="rounded-md bg-blue-50 p-4">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-blue-700">
-                                    Este usuario es System Admin y tiene acceso completo al sistema.
-                                    No es necesario asignar roles adicionales.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Asignar Rol -->
-                        <div>
-                            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Asignar Nuevo Rol</h4>
-                            <form method="POST" action="{{ url_for('user_management.assign_role', user_id=user.id) }}" class="space-y-4">
-                                {{ assign_role_form.hidden_tag() }}
-
-                                <div>
-                                    <label for="role_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Rol</label>
-                                    <select name="role_id" id="role_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                        <option value="">Seleccionar rol...</option>
-                                        {% for value, label in assign_role_form.role_id.choices %}
-                                            <option value="{{ value }}">{{ label }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    {% if assign_role_form.role_id.errors %}
-                                        <p class="mt-2 text-sm text-red-600">
-                                            {% for error in assign_role_form.role_id.errors %}{{ error }}{% endfor %}
-                                        </p>
-                                    {% endif %}
-                                </div>
-
-                                {{ button("Asignar Rol", type="submit", icon_left_svg='<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>') }}
-                            </form>
-                        </div>
-
-                        <!-- Quitar Rol -->
-                        <div>
-                            {% if user.role and user.role.name in ['Editor', 'Administrador'] %}
-                                <div class="border-l-4 border-yellow-400 bg-yellow-50 p-4">
-                                    <div class="flex">
-                                        <div class="flex-shrink-0">
-                                            <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                            </svg>
-                                        </div>
-                                        <div class="ml-3">
-                                            <p class="text-sm text-yellow-700 mb-3">
-                                                Quitar el rol actual convertirá al usuario en "Usuario público"
-                                            </p>
-                                            <form method="POST" action="{{ url_for('user_management.remove_role', user_id=user.id) }}"
-                                                  onsubmit="return confirm('¿Está seguro de quitar el rol {{ user.role.name }} a este usuario?')">
-                                                <button type="submit" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                                                    </svg>
-                                                    Quitar Rol
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
+    <!-- Card gestión de System Admin -->
+    <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Gestión de System Admin</h3>
+      <form method="POST" action="{{ url_for('user_management.toggle_system_admin', user_id=user.id) }}" class="space-y-4">
+        {{ system_admin_form.hidden_tag() }}
+        <div class="flex items-center">
+          {{ system_admin_form.system_admin(class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded") }}
+          <label for="{{ system_admin_form.system_admin.id }}" class="ml-2 text-sm text-gray-900"><strong>Administrador del sistema</strong></label>
         </div>
-
-        <!-- Gestión de Estado -->
-        <div class="bg-white shadow rounded-lg dark:bg-gray-800">
-            <div class="px-4 py-5 sm:px-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
-                    </svg>
-                    Gestión de Estado
-                </h3>
-            </div>
-            <div class="border-t border-gray-200 px-4 py-5 dark:border-gray-700">
-                {% if user.system_admin %}
-                    <div class="rounded-md bg-yellow-50 p-4">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-yellow-700">
-                                    Los usuarios System Admin no pueden ser bloqueados.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                {% elif user.role and user.role.name == 'Administrador' %}
-                    <div class="rounded-md bg-yellow-50 p-4">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-yellow-700">
-                                    Los usuarios con rol Administrador no pueden ser bloqueados.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                {% else %}
-                    <form method="POST" action="{{ url_for('user_management.toggle_block', user_id=user.id) }}" class="space-y-4">
-                        {{ block_form.hidden_tag() }}
-
-                        <div class="flex items-center">
-                            <input type="checkbox" name="block" id="block" {% if block_form.block.data %}checked{% endif %}
-                                   class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
-                            <label for="block" class="ml-2 block text-sm text-gray-900 dark:text-white">
-                                <strong>Bloquear usuario</strong>
-                            </label>
-                        </div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Los usuarios bloqueados no podrán iniciar sesión en el sistema
-                        </p>
-
-                        <div class="flex space-x-3">
-                            {{ button("Actualizar Estado", type="submit", icon_left_svg='<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>') }}
-
-                            {% if user.activo %}
-                                <a href="{{ url_for('user_management.block_user', user_id=user.id) }}"
-                                   onclick="return confirm('¿Está seguro de bloquear a este usuario?')"
-                                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
-                                    </svg>
-                                    Bloquear
-                                </a>
-                            {% else %}
-                                <a href="{{ url_for('user_management.unblock_user', user_id=user.id) }}"
-                                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
-                                    </svg>
-                                    Desbloquear
-                                </a>
-                            {% endif %}
-                        </div>
-                    </form>
-                {% endif %}
-            </div>
+        <p class="text-sm text-gray-500">Un Administrador del sistema tiene acceso total al sistema.</p>
+        <div class="flex justify-center">
+          {{ button("Actualizar", type="submit", icon_left_svg='<i class="fa-solid fa-shield-halved mr-2" aria-hidden="true"></i>') }}
         </div>
+      </form>
     </div>
+      {% else %}
+      <!-- Card gestión de estado -->
+    <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Gestión de Estado</h3>
+      <form method="POST" action="{{ url_for('user_management.toggle_block', user_id=user.id) }}" class="space-y-4">
+        {{ block_form.hidden_tag() }}
+        <div class="flex items-center">
+          {{ checkbox_input(name="block", id="block", checked=block_form.block.data, aria_label="Bloquear usuario") }}
+          <label for="block" class="ml-2 text-sm text-gray-900"><strong>Bloquear usuario</strong></label>
+        </div>
+        <p class="text-sm text-gray-500">Los usuarios bloqueados no podrán iniciar sesión.</p>
+        <div class="flex justify-center">
+          {{ button("Actualizar Estado", type="submit", icon_left_svg='<i class="fa-solid fa-lock mr-2" aria-hidden="true"></i>') }}
+        </div>
+      </form>
+    </div>
+    {% endif %}
+  </div>
 </div>
-
-<script>
-// Auto-hide toasts after 5 seconds
-document.addEventListener('DOMContentLoaded', function() {
-    const toasts = document.querySelectorAll('[id^="toast-"]');
-    toasts.forEach(function(toast) {
-        setTimeout(function() {
-            toast.style.opacity = '0';
-            setTimeout(function() {
-                toast.remove();
-            }, 300);
-        }, 5000);
-    });
-});
-</script>
 {% endblock %}
