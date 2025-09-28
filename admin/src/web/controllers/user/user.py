@@ -19,12 +19,6 @@ from web.utils.hooks import hook_admin_maintenance
 user_bp = Blueprint("users", __name__, url_prefix="/users")
 
 
-@user_bp.before_request
-def check_admin_hook():
-    """Check de flag antes de una request"""
-    return hook_admin_maintenance()
-
-
 @user_bp.get("/")
 @login_required
 @permission_required("user_index")

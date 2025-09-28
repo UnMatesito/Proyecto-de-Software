@@ -1,9 +1,10 @@
-from flask import render_template, session, request
+from flask import render_template, request, session
 
 from core.services import get_feature_flag_by_name, get_user_by_id
 
 EXEMPT_PATHS = ["/static/", "/auth/"]
 EXEMPT_ENDPOINTS = ["auth.login", "auth.logout", "auth.authenticate"]
+
 
 def hook_admin_maintenance():
     """Bloquea la administración si el flag admin_maintenance está ON, menos al system admin"""
@@ -26,10 +27,7 @@ def hook_admin_maintenance():
         return
 
     # Bloqueo para todos los demás
-    return render_template(
-        "maintenance.html",
-        message=flag.maintenance_message
-    ), 503
+    return render_template("maintenance.html", message=flag.maintenance_message), 503
 
 
 def hook_portal_maintenance():

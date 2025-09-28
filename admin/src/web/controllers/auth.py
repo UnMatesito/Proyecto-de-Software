@@ -7,11 +7,6 @@ from web.utils.hooks import hook_admin_maintenance
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
-@auth_bp.before_request
-def check_admin_hook():
-    """Check de flag antes de una request"""
-    return hook_admin_maintenance()
-
 
 @auth_bp.get("/")
 def login():
