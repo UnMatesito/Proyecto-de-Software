@@ -2,7 +2,7 @@ from flask import Blueprint, flash, redirect, render_template, url_for, request
 
 from core.services import role_service, user_service
 from web.forms.user import AssignRoleForm, BlockUserForm, ToggleSystemAdminForm
-from web.utils.auth import login_required, permission_required
+from web.utils.auth import login_required, permission_required, get_current_user
 
 user_management_bp = Blueprint("user_management", __name__)
 
@@ -128,7 +128,7 @@ def toggle_block(user_id):
 
             # Verificar que no es System Admin o Administrador si se intenta bloquear
             if form.block.data and user.system_admin:
-                flash("No se puede bloquear a un usuario System Admin", "error")
+                flash("No se puede bloquear a un usuario Administrador del sistema", "error")
                 return redirect(url_for("user_management.manage_user", user_id=user_id))
 
             if form.block.data and user.has_role("Administrador"):
@@ -161,22 +161,26 @@ def toggle_block(user_id):
 @login_required
 @permission_required("user_update")
 def toggle_system_admin(user_id):
-    """Activa o desactiva el flag System Admin"""
+    """Activa o desactiva el flag System Admin de un usuario"""
     form = ToggleSystemAdminForm()
+
     if form.validate_on_submit():
+        current_user = get_current_user()
+        if not current_user or not current_user.system_admin:
+            flash("Solo un Administrador del sistema puede cambiar este valor", "error")
+            return redirect(url_for("user_management.manage_user", user_id=user_id))
+
         try:
             user_service.toggle_system_admin(user_id, form.system_admin.data)
-
             if form.system_admin.data:
-                flash("Usuario convertido en System Admin exitosamente", "success")
+                flash("Usuario convertido en Administrador del sistema", "success")
             else:
-                flash("El usuario ya no es System Admin", "warning")
-
+                flash("Usuario ya no es Administrador del sistema", "warning")
         except ValueError as e:
             flash(str(e), "error")
         except Exception as e:
-            flash(f"Error al actualizar System Admin: {str(e)}", "error")
+            flash(f"Error al actualizar Administrador del sistema: {str(e)}", "error")
     else:
-        flash("Error en el formulario de System Admin", "error")
+        flash("Error en el formulario de Administrador del sistema", "error")
 
     return redirect(url_for("user_management.manage_user", user_id=user_id))
