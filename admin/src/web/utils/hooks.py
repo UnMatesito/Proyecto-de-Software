@@ -1,21 +1,35 @@
-from flask import render_template, session
+from flask import render_template, session, request
 
 from core.services import get_feature_flag_by_name, get_user_by_id
 
+EXEMPT_PATHS = ["/static/", "/auth/"]
+EXEMPT_ENDPOINTS = ["auth.login", "auth.logout", "auth.authenticate"]
 
 def hook_admin_maintenance():
-    """Verifica el estado del flag admin_maintenance, en caso de estar on y no ser system admin, redirige"""
+    """Bloquea la administración si el flag admin_maintenance está ON, menos al system admin"""
     flag = get_feature_flag_by_name("admin_maintenance_mode")
 
-    if flag and flag.is_enabled:
-        user_id = session.get("user_id")
-        user = get_user_by_id(user_id) if user_id else None
+    # Si el flag no existe o está apagado, no bloquear nada
+    if not flag or not flag.is_enabled:
+        return
 
-        if not (user and user.is_admin()):
-            return (
-                render_template("maintenance.html", message=flag.maintenance_message),
-                503,
-            )
+    # Excluir rutas estáticas o auth
+    if any(request.path.startswith(p) for p in EXEMPT_PATHS):
+        return
+    if request.endpoint in EXEMPT_ENDPOINTS:
+        return
+
+    # Permitir acceso a system admins
+    user_id = session.get("user_id")
+    user = get_user_by_id(user_id) if user_id else None
+    if user and user.is_admin():
+        return
+
+    # Bloqueo para todos los demás
+    return render_template(
+        "maintenance.html",
+        message=flag.maintenance_message
+    ), 503
 
 
 def hook_portal_maintenance():

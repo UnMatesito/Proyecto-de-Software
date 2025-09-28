@@ -3,8 +3,14 @@ from flask import Blueprint, flash, redirect, render_template, session, url_for
 from core.services import user_service
 from web.forms.auth import AuthForm
 from web.utils.auth import login_required
+from web.utils.hooks import hook_admin_maintenance
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+
+@auth_bp.before_request
+def check_admin_hook():
+    """Check de flag antes de una request"""
+    return hook_admin_maintenance()
 
 
 @auth_bp.get("/")
