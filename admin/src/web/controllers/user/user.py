@@ -14,6 +14,7 @@ from core.services.user_service import (
 )
 from web.forms.user import ChangePasswordForm, CreateUserForm, EditUserForm
 from web.utils.auth import login_required, permission_required
+from web.utils.hooks import hook_admin_maintenance
 
 user_bp = Blueprint("users", __name__, url_prefix="/users")
 
@@ -143,6 +144,13 @@ def edit_get(user_id):
         if not user:
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
+        # Un admin no puede editar a un system admin
+        if user.is_admin() and not current_user.is_admin():
+            flash(
+                "No puede modificar un System Admin si usted no es System Admin",
+                "error",
+            )
+            return redirect(url_for("users.index"))
 
         form = EditUserForm(
             obj=user
@@ -151,7 +159,6 @@ def edit_get(user_id):
             "users/edit.html",
             form=form,
             user=user,
-            is_system_admin=current_user.is_admin(),
         )
     except Exception as e:
         flash(f"Error al editar el usuario: {str(e)}", "error")
@@ -169,7 +176,13 @@ def edit_post(user_id):
         if not user:
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
-
+        # Un admin no puede editar a un system admin
+        if user.is_admin() and not current_user.is_admin():
+            flash(
+                "No puede modificar un System Admin si usted no es System Admin",
+                "error",
+            )
+            return redirect(url_for("users.index"))
         form = EditUserForm(obj=user)
         if form.validate_on_submit():
             # Actualizo los atributos

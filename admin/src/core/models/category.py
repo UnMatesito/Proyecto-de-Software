@@ -16,7 +16,9 @@ class Category(db.Model):
     )
 
     # Relaciones
-    historic_sites = db.relationship("HistoricSite", back_populates="category")
+    historic_sites = db.relationship(
+        "HistoricSite", back_populates="category", cascade="all, delete-orphan"
+    )
 
     # Metodos
     def has_sites(self):
