@@ -8,6 +8,7 @@ from .config import get_current_config
 from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp
 from .handlers import error
 from .utils.auth import is_authenticated
+from .utils.hooks import hook_admin_maintenance
 
 
 def create_app(env="development", static_folder="../../static"):
@@ -25,6 +26,9 @@ def create_app(env="development", static_folder="../../static"):
     @app.route("/")
     def home():
         return render_template("home.html")
+
+    # Hooks
+    app.before_request(hook_admin_maintenance)
 
     # Blueprints
     app.register_blueprint(user_management_bp)
