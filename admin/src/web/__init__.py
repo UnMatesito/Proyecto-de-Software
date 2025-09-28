@@ -6,7 +6,7 @@ from core.database import db
 from core.utils.bcrypt import bcrypt
 
 from .config import get_current_config
-from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp
+from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp, site_bp
 from .handlers import error
 from .utils.auth import (
     get_user_role_name,
@@ -44,6 +44,7 @@ def create_app(env="development", static_folder="../../static"):
     app.register_blueprint(tag_bp)
     app.register_blueprint(feature_flag_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(site_bp)
 
     # Commands
     @app.cli.command("reset-db")
