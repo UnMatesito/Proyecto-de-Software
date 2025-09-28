@@ -160,7 +160,7 @@ def delete_user(user_id):
         # Si es system admin
         if user.is_admin():
             return (
-                f"El usuario {user.first_name} es System Admin y no puede ser eliminado"
+                f"El usuario {user.first_name} es Administrador del sistema y no puede ser eliminado"
             )
         return None
 
