@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_debugtoolbar import DebugToolbarExtension
+from flask_session import Session
 
 from core.database import db
 from core.utils.bcrypt import bcrypt
@@ -15,6 +16,7 @@ from .utils.auth import (
 )
 from .utils.hooks import hook_admin_maintenance
 
+session = Session()
 
 def create_app(env="development", static_folder="../../static"):
     app = Flask(__name__, static_folder=static_folder)
@@ -26,6 +28,7 @@ def create_app(env="development", static_folder="../../static"):
     # Inicializar extensiones
     bcrypt.init_app(app)
     db.init_app(app)
+    session.init_app(app)
 
     # Rutas
     @app.route("/")
@@ -51,9 +54,13 @@ def create_app(env="development", static_folder="../../static"):
 
     @app.cli.command("seed-db")
     def seed_db_command():
+        import os
+
         from core.seeds import run as seed_db
 
-        seed_db()
+        env = os.getenv("FLASK_ENV", "production")
+
+        seed_db(env)
 
     # TODO: Eliminar
     @app.cli.command("delete-tag")
