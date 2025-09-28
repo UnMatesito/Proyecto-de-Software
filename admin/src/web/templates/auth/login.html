@@ -80,19 +80,5 @@
     </div>
 </div>
 
-<script>
-    // Auto-hide toasts after 5 seconds
-    document.addEventListener('DOMContentLoaded', function () {
-        const toasts = document.querySelectorAll('[id^="toast-"]');
-        toasts.forEach(function (toast) {
-            setTimeout(function () {
-                toast.style.opacity = '0';
-                setTimeout(function () {
-                    toast.remove();
-                }, 300);
-            }, 5000);
-        });
-    });
-</script>
 
 {% endblock %}
