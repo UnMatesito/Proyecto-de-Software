@@ -13,7 +13,6 @@ def list_paginted_tags():
         sorted_by = request.args.get("sorted_by", "asc")
         page = request.args.get("page", 1)
         pagination = get_paginated_tags(page=page, order_by=order_by, sorted_by=sorted_by)
-        print(pagination)
         columns = [
             {"key": "_name", "label": "Nombre"},
             {"key": "slug", "label": "Slug"},
@@ -30,7 +29,6 @@ def list_paginted_tags():
             deleteForm = deleteForm
         )
     except Exception as e:
-        print(e)
         flash(f'Error al cargar tags: {str(e)}', 'error')
         return render_template("tags/index.html", tags = [], order_by = "name", sorted_by = "asc", urls=urls)
     
@@ -39,7 +37,6 @@ def create_tags():
     form = CreateTagForm()
     if form.validate_on_submit():
         try:
-            print(form.name.data)
             create_tag(name=form.name.data)
             flash(f"Tag creado correctamente!", "success")
             return redirect("/tags")
@@ -90,7 +87,6 @@ def show_edit_tag(tag_id):
 @tag_bp.get("/datail/<int:tag_id>")
 def detail_tag(tag_id):
     try:
-        print(tag_id)
         tag = get_tag_by_id(tag_id)
         return render_template("tags/detail.html", tag=tag), 200
     except Exception as e:

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from core.services.historic_site_service import get_historic_site_by_id
-from core.services import get_province_by_id, create_historic_site
+from core.services import get_province_by_id, create_historic_site, get_paginated_tags
 from web.forms.historic_site import CreateSiteForm
 
 site_bp = Blueprint("site_bp", __name__, url_prefix="/sites")
@@ -12,7 +12,6 @@ def list_paginted_sites():
         sorted_by = request.args.get("sorted_by", "asc")
         page = request.args.get("page", 1)
         pagination = get_paginated_tags(page=page, order_by=order_by, sorted_by=sorted_by)
-        print(pagination)
         columns = [
             {"key": "name", "label": "Nombre"},
             {"key": "city", "label": "Ciudad"},
@@ -49,7 +48,6 @@ def get_create():
         form = CreateSiteForm()
         return render_template("historic_site/create.html", form=form)
     except Exception as e:
-        print(e)
         flash(f"Error al cargar el formulario {e}", "error")
         return redirect("/home"), 400
     
@@ -64,7 +62,6 @@ def post_create():
     form = CreateSiteForm()
     if (form.validate_on_submit()):
         try:
-            print(form.data)
             site = {
                 "name": form.name.data,
                 "brief_description": form.brief_description.data,
@@ -78,11 +75,8 @@ def post_create():
             create_historic_site(form.name)
             return redirect("/create"), 200
         except Exception as e:  
-            print(e)
             flash("Error al crear el sitio, {e}", "error")
             return redirect("/sites/create"), 400
     else:
-        print(form.city.data)
-        print(f"errro {form.errors}")
         flash(f"Error al crear el sitio", "error")
         return render_template("historic_site/create.html", form=form), 400

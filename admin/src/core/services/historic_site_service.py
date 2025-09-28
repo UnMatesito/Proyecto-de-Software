@@ -220,7 +220,6 @@ def delete_historic_site(site_id):
 
 def update_historic_site(body):
     try:
-        print(body)
         site = get_historic_site_by_id(body["historic_site_id"])
         operations = {
             "name": update_name,
