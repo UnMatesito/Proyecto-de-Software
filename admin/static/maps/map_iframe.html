@@ -17,7 +17,7 @@
             <meta name="viewport" content="width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             <style>
-                #map_c4465f3097102110f84ea80198a56e3b {
+                #map_9a42bdef1d963e4e196669d1402f1419 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -57,7 +57,7 @@
         <script>
         (function() {
             function attach() {
-                var mapObj = window["map_c4465f3097102110f84ea80198a56e3b"];
+                var mapObj = window["map_9a42bdef1d963e4e196669d1402f1419"];
                 if (typeof mapObj === "undefined") {
                     setTimeout(attach, 50);
                     return;
@@ -73,14 +73,14 @@
         </script>
         
     
-            <div class="folium-map" id="map_c4465f3097102110f84ea80198a56e3b" ></div>
+            <div class="folium-map" id="map_9a42bdef1d963e4e196669d1402f1419" ></div>
         
 </body>
 <script>
     
     
-            var map_c4465f3097102110f84ea80198a56e3b = L.map(
-                "map_c4465f3097102110f84ea80198a56e3b",
+            var map_9a42bdef1d963e4e196669d1402f1419 = L.map(
+                "map_9a42bdef1d963e4e196669d1402f1419",
                 {
                     center: [-34.6037, -58.3816],
                     crs: L.CRS.EPSG3857,
@@ -97,7 +97,7 @@
 
         
     
-            var tile_layer_8fec3ccde05bf38c4ee28c3a3c7e4232 = L.tileLayer(
+            var tile_layer_c1f88a41097b29beca340a41d2f99615 = L.tileLayer(
                 "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                 {
   "minZoom": 0,
@@ -114,18 +114,18 @@
             );
         
     
-            tile_layer_8fec3ccde05bf38c4ee28c3a3c7e4232.addTo(map_c4465f3097102110f84ea80198a56e3b);
+            tile_layer_c1f88a41097b29beca340a41d2f99615.addTo(map_9a42bdef1d963e4e196669d1402f1419);
         
     
-                var lat_lng_popup_58ea241955c22a26737af8ecb5f7588e = L.popup();
+                var lat_lng_popup_9c0e3030c3f012c32ea0b2009e7fc201 = L.popup();
                 function latLngPop(e) {
-                    lat_lng_popup_58ea241955c22a26737af8ecb5f7588e
+                    lat_lng_popup_9c0e3030c3f012c32ea0b2009e7fc201
                         .setLatLng(e.latlng)
                         .setContent("Latitude: " + e.latlng.lat.toFixed(4) +
                                     "<br>Longitude: " + e.latlng.lng.toFixed(4))
-                        .openOn(map_c4465f3097102110f84ea80198a56e3b);
+                        .openOn(map_9a42bdef1d963e4e196669d1402f1419);
                     }
-                map_c4465f3097102110f84ea80198a56e3b.on('click', latLngPop);
+                map_9a42bdef1d963e4e196669d1402f1419.on('click', latLngPop);
             
 </script>
 </html>
