@@ -128,7 +128,8 @@ __all__ = [
     "get_city_by_id",
     "get_city_by_province",
     # Conservation state services
-    "get_all_conservation_state" "get_conservation_state_by_id",
+    "get_all_conservation_state",
+    "get_conservation_state_by_id",
     # Feature flag services
     "create_feature_flag",
     "delete_feature_flag",
@@ -150,7 +151,6 @@ __all__ = [
     "get_historic_site_by_id",
     "get_pending_historic_sites",
     "get_published_historic_sites",
-    "update_category_site",
     "update_city",
     "update_conservation_state",
     "update_historic_site",
@@ -202,7 +202,7 @@ __all__ = [
     "get_tag_by_name",
     "update_tag",
     "validate_tag_name",
-    "get_all_tags"
+    "get_all_tags",
     # User services
     "assign_role",
     "block_user",
