@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-
+from geoalchemy2.elements import WKTElement
 from sqlalchemy.exc import SQLAlchemyError
 
 from core.database import db
@@ -35,7 +35,21 @@ def get_pending_historic_sites():
 
 def create_historic_site(**kwargs):
     """Crea un nuevo sitio histórico."""
-    historic_site = HistoricSite(**kwargs)
+    name = kwargs.get("name")
+    brief_description = kwargs.get("brief_description")
+    full_description = kwargs.get("full_description")
+    inauguration_year = kwargs.get("inauguration_year")
+    longitude = kwargs.get("longitude")
+    latitude = kwargs.get("latitude")
+    location = WKTElement(f'POINT({longitude},{latitude})', srid=4326)
+    registration_date = kwargs.get("registration_date")
+
+    historic_site = HistoricSite(name=name, 
+                                 brief_description=brief_description, 
+                                 full_description=full_description, 
+                                 location=location,
+                                 registration_date=registration_date,
+                                 inauguration_year=inauguration_year)
     db.session.add(historic_site)
     db.session.commit()
     return historic_site

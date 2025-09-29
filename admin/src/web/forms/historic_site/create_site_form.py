@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, SelectField
+from wtforms import StringField, SubmitField, SelectField, FloatField, SelectMultipleField
 from wtforms.validators import DataRequired
-from core.services import get_all_conservation_state, get_all_categories, get_all_provinces
+from core.services import get_all_conservation_state, get_all_categories, get_all_provinces, get_all_tags
 
 class CreateSiteForm(FlaskForm):
     name = StringField(
@@ -66,8 +66,18 @@ class CreateSiteForm(FlaskForm):
         ]    
     )
 
-    submit = SubmitField("Crear")
+    latitude = FloatField("Latitud",  
+                            render_kw={'readonly': True}, 
+                            validators=[DataRequired()])
 
+    longitude = FloatField("Longitud", 
+                            render_kw={'readonly': True}, 
+                            validators=[DataRequired()])
+
+    tags = SelectMultipleField("Seleccionar Tags",
+                               validators=[DataRequired()])
+    
+    submit = SubmitField("Crear")
 
     def __init__(self, *args, **kwargs):
         """Constructor"""
@@ -83,7 +93,10 @@ class CreateSiteForm(FlaskForm):
             (state.id, state.state) for state in get_all_conservation_state()
         ]
         self.category.choices = [
-            (0, "Seleccionar categoria de conservacion ")
+            (0, "Seleccionar categoria")
         ] + [  # Cargo las categortias en el select
             (category.id, category.name) for category in get_all_categories()
+        ]
+        self.tags.choices = [  # Cargo las categortias en el select
+            (tag.id, tag.name) for tag in get_all_tags()
         ]

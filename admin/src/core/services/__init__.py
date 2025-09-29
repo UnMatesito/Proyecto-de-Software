@@ -96,6 +96,7 @@ from .tag_service import (
     get_tag_by_name,
     update_tag,
     validate_tag_name,
+    get_all_tags
 )
 
 # User services
@@ -197,6 +198,7 @@ __all__ = [
     "get_tag_by_name",
     "update_tag",
     "validate_tag_name",
+    "get_all_tags"
     # User services
     "assign_role",
     "block_user",

@@ -1,5 +1,5 @@
 from core.database import db
-
+from geoalchemy2.elements import WKTElement
 
 def run(env="production"):
     """Ejecuta los seeders necesarios según el entorno.
@@ -270,8 +270,7 @@ def seed_system_admin():
 
     db.session.add(admin_user)
     db.session.commit()
-
-
+    
 def seed_editor():
     """
     Crea un usuario editor
@@ -443,6 +442,7 @@ def seed_historic_sites():
             category_id=1,
             conservation_state_id=1,
             proposed_by=1,
+            location=WKTElement("POINT(-57.9561 -34.9226)")
         ),
         HistoricSite(
             name="Ruinas de San Ignacio Miní",
@@ -459,6 +459,7 @@ def seed_historic_sites():
             category_id=2,
             conservation_state_id=2,
             proposed_by=1,
+            location=WKTElement("POINT(-57.9319 -34.9085)")
         ),
         HistoricSite(
             name="Teatro Colón",
@@ -475,6 +476,7 @@ def seed_historic_sites():
             category_id=3,
             conservation_state_id=1,
             proposed_by=2,
+            location=WKTElement("POINT(-57.9543 -34.9216)")
         ),
     ]
 

@@ -1,11 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from core.services.tag_service import get_all_tags, create_tag, get_paginated_tags, update_tag, get_tag_by_id, delete_tag
 from web.forms.tag import CreateTagForm, EditTagForm, DeleteTagForm
+from web.utils.auth import login_required, permission_required
 
 tag_bp = Blueprint("tag_bp", __name__, url_prefix="/tags")
 
 
 @tag_bp.route("/")
+@login_required
 def list_paginted_tags():
     try:
         deleteForm = DeleteTagForm()
@@ -35,6 +37,7 @@ def list_paginted_tags():
         return render_template("tags/index.html", tags = [], order_by = "name", sorted_by = "asc", urls=urls)
     
 @tag_bp.post("/create")
+@login_required
 def create_tags():
     form = CreateTagForm()
     if form.validate_on_submit():
@@ -51,11 +54,13 @@ def create_tags():
         return render_template("tags/create.html", form=form), 400
 
 @tag_bp.get("/create")
+@login_required
 def show_create_tags():
     form = CreateTagForm()
     return render_template("tags/create.html", form = form), 200
 
 @tag_bp.post("/delete/<int:tag_id>")
+@login_required
 def delete(tag_id):
         try:
             delete_tag(tag_id)
@@ -66,6 +71,7 @@ def delete(tag_id):
             return redirect("/tags")
 
 @tag_bp.post("/edit/<int:tag_id>")
+@login_required
 def edit_tag(tag_id):
     form = EditTagForm()
     if (form.validate_on_submit()):
@@ -78,6 +84,7 @@ def edit_tag(tag_id):
             return redirect("/tags") 
         
 @tag_bp.get("/edit/<int:tag_id>")
+@login_required
 def show_edit_tag(tag_id): 
     try:
         form = EditTagForm()
@@ -88,6 +95,8 @@ def show_edit_tag(tag_id):
         return redirect("/tags")
     
 @tag_bp.get("/datail/<int:tag_id>")
+@login_required
+@permission_required("user_show")
 def detail_tag(tag_id):
     try:
         print(tag_id)
