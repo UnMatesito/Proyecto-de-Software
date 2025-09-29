@@ -1,12 +1,19 @@
 from flask import Flask, render_template
 from flask_debugtoolbar import DebugToolbarExtension
-from flask_session import Session
 
 from core.database import db
 from core.utils.bcrypt import bcrypt
+from flask_session import Session
 
 from .config import get_current_config
-from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp, site_bp
+from .controllers import (
+    auth_bp,
+    feature_flag_bp,
+    site_bp,
+    tag_bp,
+    user_bp,
+    user_management_bp,
+)
 from .handlers import error
 from .utils.auth import (
     get_user_role_name,
@@ -17,6 +24,7 @@ from .utils.auth import (
 from .utils.hooks import hook_admin_maintenance
 
 session = Session()
+
 
 def create_app(env="development", static_folder="../../static"):
     app = Flask(__name__, static_folder=static_folder)

@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+
 from geoalchemy2 import Geometry
 from geoalchemy2.shape import to_shape
 
@@ -33,23 +34,23 @@ class HistoricSite(db.Model):
     is_visible = db.Column(db.Boolean, default=False, nullable=False)
     pending_validation = db.Column(db.Boolean, default=True, nullable=False)
     location = db.Column(Geometry(geometry_type="POINT", srid=4326), nullable=False)
-    
-    #Latitud
+
+    # Latitud
     @property
     def latitude(self) -> float:
-        if self.location: 
+        if self.location:
             punto = to_shape(self.location)
             return punto.y
         return None
-    
-    #Longitud
+
+    # Longitud
     @property
     def longitude(self) -> float:
         if self.location:
             punto = to_shape(self.location)
             return punto.x
         return None
-    
+
     # Timestamps
     created_at = db.Column(
         db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False

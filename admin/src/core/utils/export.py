@@ -2,6 +2,7 @@ import csv
 from datetime import datetime
 from io import StringIO
 
+
 def export_sites_to_csv(sites):
     """
     Exporta sitios históricos a formato CSV según los requisitos del enunciado.
@@ -34,9 +35,17 @@ def export_sites_to_csv(sites):
                 "Nombre": site.name,
                 "Descripción Breve": site.brief_description,
                 "Ciudad": site.city.name if site.city else "",
-                "Provincia": site.city.province.name if site.city and site.city.province else "",
-                "Estado de Conservación": site.conservation_state.state if site.conservation_state else "",
-                "Fecha de Registro": site.registration_date.strftime("%Y-%m-%d %H:%M:%S") if site.registration_date else "",
+                "Provincia": (
+                    site.city.province.name if site.city and site.city.province else ""
+                ),
+                "Estado de Conservación": (
+                    site.conservation_state.state if site.conservation_state else ""
+                ),
+                "Fecha de Registro": (
+                    site.registration_date.strftime("%Y-%m-%d %H:%M:%S")
+                    if site.registration_date
+                    else ""
+                ),
                 "Latitud": site.latitude,
                 "Longitud": site.longitude,
                 "Tags": tags_str,

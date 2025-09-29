@@ -292,7 +292,8 @@ def change_password_get(user_id):
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
         return redirect(url_for("users.list_users"))
-    
+
+
 @user_bp.get("/change-password")
 @login_required
 def change_self_password_get():
@@ -303,11 +304,14 @@ def change_self_password_get():
             flash("Usuario no encontrado", "error")
             return redirect(url_for("home"))
         form = ChangePasswordForm()
-        return render_template("users/change_password.html", form=form, user=current_user)
+        return render_template(
+            "users/change_password.html", form=form, user=current_user
+        )
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
-        return redirect(url_for("home")) #Lo mando al home en caso de error 
-    
+        return redirect(url_for("home"))  # Lo mando al home en caso de error
+
+
 @user_bp.post("/change-password")
 @login_required
 def change_self_password_post():
@@ -321,7 +325,9 @@ def change_self_password_post():
         form = ChangePasswordForm()
         if form.validate_on_submit():
             try:
-                change_password(session["user_id"], form.old_password.data, form.new_password.data)
+                change_password(
+                    session["user_id"], form.old_password.data, form.new_password.data
+                )
                 flash("Contraseña actualizada", "success")
                 return redirect(url_for("users.detail", user_id=session["user_id"]))
             except ValueError as e:
@@ -329,9 +335,9 @@ def change_self_password_post():
             except Exception as e:
                 flash(f"Error al cambiar contraseña: {str(e)}", "error")
         # Si el form no valida, se muestra de nuevo
-        return render_template("users/change_password.html", form=form, user=current_user)
+        return render_template(
+            "users/change_password.html", form=form, user=current_user
+        )
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
-        return redirect(url_for("home")) #Lo mando al home en caso de error
-
-
+        return redirect(url_for("home"))  # Lo mando al home en caso de error

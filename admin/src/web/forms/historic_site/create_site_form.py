@@ -1,53 +1,66 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, SelectField, FloatField, SelectMultipleField
-from wtforms.validators import DataRequired
-from core.services import get_all_conservation_state, get_all_categories, get_all_provinces, get_all_tags
+from wtforms import (
+    FloatField,
+    SelectField,
+    SelectMultipleField,
+    StringField,
+    SubmitField,
+)
+from wtforms.validators import DataRequired, Length, NumberRange
+
+from core.services import (
+    get_all_categories,
+    get_all_conservation_state,
+    get_all_provinces,
+    get_all_tags,
+)
+
 
 class CreateSiteForm(FlaskForm):
     name = StringField(
         "Nombre del sitio",
         validators=[
-            DataRequired(message="El nombre del site es obligatorio"),
-        ]
+            DataRequired(message="El nombre del sitio es obligatorio"),
+        ],
     )
 
     brief_description = StringField(
-        "Descripcion brebe del sitio",
+        "Descripcion breve del sitio",
         validators=[
-            DataRequired(message="El descripcion brebe del site es obligatoria"),
-        ]
+            DataRequired(message="El descripcion brebe del sitio es obligatoria"),
+        ],
     )
 
     full_description = StringField(
         "Descripcion completa del sitio",
         validators=[
-            DataRequired(message="La descripcion completa del site es obligatoria"),
-        ]
+            DataRequired(message="La descripcion completa del sitio es obligatoria"),
+        ],
     )
 
     inauguration_year = StringField(
         "Año de inaguracion del sitio",
         validators=[
-            DataRequired(message="El año de inaguracion del site es obligatorio"),
-        ]
+            DataRequired(message="El año de inaguracion del sitio es obligatorio"),
+        ],
     )
-    
-    province =  SelectField(
+
+    province = SelectField(
         "Provincia",
         coerce=int,
         validators=[
             DataRequired(message="La provincia es obligatoria"),
-        ]    
+        ],
     )
 
-    city =  SelectField(
+    city = SelectField(
         "Ciudad",
         coerce=int,
         choices=[],
         validators=[
             DataRequired(message="La ciudad es obligatoria"),
         ],
-        validate_choice=False
+        validate_choice=False,
     )
 
     conservation_state = SelectField(
@@ -55,7 +68,7 @@ class CreateSiteForm(FlaskForm):
         coerce=int,
         validators=[
             DataRequired(message="El estado de conservacion es obligatorio"),
-        ]    
+        ],
     )
 
     category = SelectField(
@@ -63,33 +76,48 @@ class CreateSiteForm(FlaskForm):
         coerce=int,
         validators=[
             DataRequired(message="La categoria es obligatoria"),
-        ]    
+        ],
     )
 
-    latitude = FloatField("Latitud",  
-                            render_kw={'readonly': True}, 
-                            validators=[DataRequired()])
+    latitude = FloatField(
+        "Latitud",
+        render_kw={"readonly": True},
+        validators=[
+            DataRequired("La latitud es obligatoria"),
+            NumberRange(
+                min=-90,
+                max=90,
+                message="La latitud se debe encontrar en un rago de -90 a 90",
+            ),
+        ],
+    )
 
-    longitude = FloatField("Longitud", 
-                            render_kw={'readonly': True}, 
-                            validators=[DataRequired()])
+    longitude = FloatField(
+        "Longitud",
+        render_kw={"readonly": True},
+        validators=[
+            DataRequired("La longitud es obligatoria"),
+            NumberRange(
+                min=-180,
+                max=180,
+                message="La latitud se debe encontrar en un rago de -180 a 180",
+            ),
+        ],
+    )
 
-    tags = SelectMultipleField("Seleccionar Tags",
-                               validators=[DataRequired()])
-    
+    tags = SelectMultipleField(
+        "Seleccionar Tags", validators=[DataRequired("Al menos un tag es necesario")]
+    )
+
     submit = SubmitField("Crear")
 
     def __init__(self, *args, **kwargs):
         """Constructor"""
         super(CreateSiteForm, self).__init__(*args, **kwargs)
-        self.province.choices = [
-            (0, "Seleccionar provincia")
-        ] + [  # Cargo las provincias en el select
+        self.province.choices = [  # Cargo las provincias en el select
             (province.id, province.name) for province in get_all_provinces()
         ]
-        self.conservation_state.choices = [
-            (0, "Seleccionar estado de conservacion ")
-        ] + [  # Cargo los estados en el select
+        self.conservation_state.choices = [  # Cargo los estados en el select
             (state.id, state.state) for state in get_all_conservation_state()
         ]
         self.category.choices = [

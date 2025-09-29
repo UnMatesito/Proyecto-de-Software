@@ -1322,6 +1322,14 @@ select {
   width: 100%;
 }
 
+.w-80 {
+  width: 20rem;
+}
+
+.w-10 {
+  width: 2.5rem;
+}
+
 .max-w-2xl {
   max-width: 42rem;
 }

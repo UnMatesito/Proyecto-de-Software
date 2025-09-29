@@ -10,7 +10,10 @@ from .city_service import (
 )
 
 # Conservation state services
-from .conservation_state_service import get_conservation_state_by_id, get_all_conservation_state
+from .conservation_state_service import (
+    get_all_conservation_state,
+    get_conservation_state_by_id,
+)
 
 # Feature flag services
 from .feature_flag_service import (
@@ -41,6 +44,7 @@ from .historic_site_service import (
     update_city,
     update_conservation_state,
     update_historic_site,
+    get_sites_filtered
 )
 
 # Permission services
@@ -91,12 +95,12 @@ from .role_service import (
 from .tag_service import (
     create_tag,
     delete_tag,
+    get_all_tags,
     get_paginated_tags,
     get_tag_by_id,
     get_tag_by_name,
     update_tag,
     validate_tag_name,
-    get_all_tags
 )
 
 # User services
@@ -124,8 +128,7 @@ __all__ = [
     "get_city_by_id",
     "get_city_by_province",
     # Conservation state services
-    "get_all_conservation_state"
-    "get_conservation_state_by_id",
+    "get_all_conservation_state" "get_conservation_state_by_id",
     # Feature flag services
     "create_feature_flag",
     "delete_feature_flag",
@@ -151,6 +154,7 @@ __all__ = [
     "update_city",
     "update_conservation_state",
     "update_historic_site",
+    "get_sites_filtered",
     # Permission services
     "create_multiple_permissions",
     "create_permission",
