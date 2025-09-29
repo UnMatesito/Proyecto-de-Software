@@ -1,6 +1,8 @@
 {% extends "layout.html" %}
-{% from "macros/button.html" import button %}
+{% from "macros/button.html" import button, button_blank %}
 {% from "macros/paginate.html" import paginate %}
+{% from "macros/table.html" import table %}
+{% from "macros/input.html" import text_input %}
 {% block title %}Listado de usuarios{% endblock %}
 
 {% block header %}
@@ -10,37 +12,17 @@
 {% block content %}
 <!-- Contenedor general -->
 <div class="p-6 max-w-7xl mx-auto space-y-6">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="mb-4">
-                {% for category, message in messages %}
-                    <div class="p-2 mb-2 rounded
-                        {% if category == 'error' %}bg-red-100 text-red-700
-                        {% elif category == 'warning' %}bg-yellow-100 text-yellow-700
-                        {% elif category == 'success' %}bg-green-100 text-green-700
-                        {% else %}bg-gray-100 text-gray-700{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
-
-
-        <!-- Contenedor del buscador -->
-    <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2">
-        <form method="get" action="{{ url_for('users.search_by_email') }}" class="flex space-x-2 w-full max-w-md">
-            <input type="text" name="email" placeholder="Buscar por email"
-                   class="flex-grow border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <button type="submit" 
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-                Buscar
-            </button>
+    <!-- Contenedor del buscador -->
+    <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2 flex-col">
+        <h3 class="text-lg font-semibold mb-2">Buscar por correo electronico</h3>
+        <form method="get" action="{{ url_for('users.search_by_email') }}" class="flex space-x-2 w-full max-w-md items-center">
+            {{ text_input('email', 'email', 'Ingresar Correo', value=request.args.get('email', ''), required=True, class="w-80") }}
+            {{ button('Buscar', type='submit', icon_left_svg='<i class="fa-solid fa-magnifying-glass mr-1"></i>') }}
         </form>
     </div>
 
     <!-- Contenedor filtro y ordenamiento -->
-    <div class="bg-white shadow rounded p-4 flex flex-wrap items-end justify-between gap-4">
+    <div class="bg-white shadow rounded p-4 flex flex-wrap flex-row items-end justify-between gap-4">
         <!-- Contenedor ordenamiento -->
         <div>
             <h3 class="text-lg font-semibold mb-2">Ordenar Usuarios</h3>
@@ -92,40 +74,25 @@
                 </select>
             </div>
             <div class="flex space-x-2">
-                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-                    Aplicar filtros
-                </button>
-                <a href="/users" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
-                    Quitar filtros
-                </a>
+                {{ button('Aplicar filtros', type='submit', icon_left_svg='<i class="fa-solid fa-filter mr-1"></i>') }}
+                {{ button_blank('Quitar filtros', link=url_for('users.index'), icon_left_svg='<i class="fa-solid fa-rotate-left mr-1"></i>') }}
             </div>
         </form>
 
         <!-- Contenedor boton crear usuario -->
-        <div>
-            <a href="/users/create" 
-               class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-2 rounded shadow">
-                Crear un usuario
-            </a>
-        </div>
+        {{ button('Crear Usuario', link=url_for('users.create_get'), icon_left_svg='<i class="fa-solid fa-user-plus mr-1"></i>') }}
     </div>
 
    <!-- Contenedor tabla de usuarios -->
     <div class="bg-white shadow rounded overflow-hidden">
         {{ table(
             data=pagination,
-            columns=[
-                {'key': 'id', 'label': 'ID'},
-                {'key': 'full_name', 'label': 'Usuario', 'render': 'user_name'},
-                {'key': 'email', 'label': 'Correo'},
-                {'key': 'role', 'label': 'Rol', 'render': 'role'},
-                {'key': 'status', 'label': 'Estado', 'render': 'status'},
-                {'key': 'created_at', 'label': 'Creado', 'render': 'date'}
-            ],
-            edit_route='users.edit',
+            columns=columns,
+            edit_route='users.edit_get',
             delete_route='users.delete',
             detail_route='users.detail',
             restore_route='users.restore',
+            id_param='user_id',
             empty_message="No hay usuarios cargados."
         ) }}
     </div>

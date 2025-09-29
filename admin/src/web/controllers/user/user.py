@@ -12,6 +12,7 @@ from core.services.user_service import (
     restore_user,
     update_user_attribute,
 )
+from web.utils.auth import get_user_role_name
 from web.forms.user import ChangePasswordForm, CreateUserForm, EditUserForm
 from web.utils.auth import login_required, permission_required
 from web.utils.hooks import hook_admin_maintenance
@@ -30,6 +31,14 @@ def index():
         page = request.args.get("page", 1)
         active_param = request.args.get("active", None)
         role_id = request.args.get("role_id", None)
+        columns = [
+                {'key': 'id', 'label': 'ID'},
+                {'key': 'full_name', 'label': 'Usuario', 'render': 'user_name'},
+                {'key': 'email', 'label': 'Correo'},
+                {'key': 'role', 'label': 'Rol', 'render': lambda user: get_user_role_name(user.id) or 'Sin rol'},
+                {'key': 'status', 'label': 'Estado', 'render': 'status'},
+                {'key': 'created_at', 'label': 'Creado', 'render': 'date'}
+        ]
         users_page = get_paginated_users(
             page=page,
             order_by=order_by,
@@ -41,6 +50,7 @@ def index():
         return render_template(
             "users/index.html",
             pagination=users_page,
+            columns=columns,
             roles=roles,
             active=active_param,
             role_id=role_id,
@@ -51,7 +61,7 @@ def index():
         flash(
             f"Error al cargar usuarios: {str(e)}", "error"
         )  # Envia un  mensaje temporal a la sesión
-        return render_template("users/index.html", pagination=[])
+        return render_template("users/index.html", pagination=[], columns=[])
 
 
 @user_bp.get("/<int:user_id>")

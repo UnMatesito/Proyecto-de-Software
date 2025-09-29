@@ -1,60 +1,87 @@
 {% macro paginate(pagination = None, url = None) %}
     {% if pagination %}
-    <nav class="flex gap-2 flex items-center ">
-        {% if pagination.has_prev %}
-            <a 
-            href="{{ url_for(url, sorted_by = pagination.sorted_by, 
-            order_by=pagination.order_by, page=pagination.prev_num) }}" 
-            class=" transition-colors hover:bg-gray-400 px-3 py-1 rounded">
-                <i class="fa-solid fa-arrow-left"></i> Anterior
-            </a>
-            {% if not 1 in pagination.page_range %}
-                 <a href="{{ url_for(url, sorted_by = pagination.sorted_by, order_by=pagination.order_by, page=1) }}"
-                 class=" transition-colors hover:bg-gray-400 px-3 py-1 rounded">1</a>
-                 <span>
-                    ...
-                 </span>
+    <nav aria-label="Page navigation">
+        <ul class="inline-flex -space-x-px text-sm">
+            <!-- Botón Previous -->
+            {% if pagination.has_prev %}
+                <li>
+                    <a href="{{ url_for(url, sorted_by=pagination.sorted_by, order_by=pagination.order_by, page=pagination.prev_num) }}"
+                       class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Previous
+                    </a>
+                </li>
             {% else %}
+                <li>
+                    <span class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-300 bg-gray-100 border border-e-0 border-gray-300 rounded-s-lg cursor-not-allowed dark:bg-gray-600 dark:border-gray-700 dark:text-gray-500">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Previous
+                    </span>
+                </li>
             {% endif %}
-        {% endif %}
-        
-        {% for page in pagination.page_range %}
-            <a href="{{ url_for(url, sorted_by = pagination.sorted_by, order_by=pagination.order_by, page=page) }}" 
-                class="
-                transition-colors 
-                hover:bg-gray-400 
-                rounded-sm px-3 py-1
-                {% if pagination.current_page == page %}
-                border-gray-700
-                border-2
-                rounded 
-                font-semibold 
-                {% endif %}"> {{page}}
-        </a>
-        {% endfor %}
 
-        {% if pagination.has_next %}
-            {% if 8 not in pagination.page_range %}
-                 <span>
-                    ...
-                 </span>
-                <a href="{{ url_for(url, sorted_by = pagination.sorted_by, order_by=pagination.order_by, page=pagination.pages) }}" 
-                 class="
-                 transition-colors 
-                 hover:bg-gray-400 
-                 px-3 py-1 rounded">
-                 {{pagination.pages}}
-                </a>
-            {% else %}
+            <!-- Primera página y ellipsis si es necesario -->
+            {% if pagination.has_prev and 1 not in pagination.page_range %}
+                <li>
+                    <a href="{{ url_for(url, sorted_by=pagination.sorted_by, order_by=pagination.order_by, page=1) }}"
+                       class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                        1
+                    </a>
+                </li>
+                <li>
+                    <span class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">
+                        ...
+                    </span>
+                </li>
             {% endif %}
-            <a href="{{ url_for(url, sorted_by = pagination.sorted_by, order_by=pagination.order_by, page=pagination.next_num) }}" 
-            class="
-            transition-colors 
-            hover:bg-gray-400 
-            px-3 py-1 rounded">
-                 Siguiente <i class="fa-solid fa-arrow-right"></i>
-            </a>
-        {% endif %}
-        </nav>
+
+            <!-- Páginas del rango -->
+            {% for page in pagination.page_range %}
+                <li>
+                    {% if pagination.current_page == page %}
+                        <a href="{{ url_for(url, sorted_by=pagination.sorted_by, order_by=pagination.order_by, page=page) }}"
+                           aria-current="page"
+                           class="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">
+                            {{ page }}
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for(url, sorted_by=pagination.sorted_by, order_by=pagination.order_by, page=page) }}"
+                           class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                            {{ page }}
+                        </a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+
+            <!-- Ellipsis y última página si es necesario -->
+            {% if pagination.has_next and pagination.pages not in pagination.page_range %}
+                <li>
+                    <span class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">
+                        ...
+                    </span>
+                </li>
+                <li>
+                    <a href="{{ url_for(url, sorted_by=pagination.sorted_by, order_by=pagination.order_by, page=pagination.pages) }}"
+                       class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                        {{ pagination.pages }}
+                    </a>
+                </li>
+            {% endif %}
+
+            <!-- Botón Next -->
+            {% if pagination.has_next %}
+                <li>
+                    <a href="{{ url_for(url, sorted_by=pagination.sorted_by, order_by=pagination.order_by, page=pagination.next_num) }}"
+                       class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                        Next <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li>
+                    <span class="flex items-center justify-center px-3 h-8 leading-tight text-gray-300 bg-gray-100 border border-gray-300 rounded-e-lg cursor-not-allowed dark:bg-gray-600 dark:border-gray-700 dark:text-gray-500">
+                        Next <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
     {% endif %}
 {% endmacro %}
