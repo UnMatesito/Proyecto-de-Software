@@ -32,9 +32,8 @@
                 {% endif %}"> {{page}}
         </a>
         {% endfor %}
-
         {% if pagination.has_next %}
-            {% if 8 not in pagination.page_range %}
+            {% if pagination.pages not in pagination.page_range %}
                  <span>
                     ...
                  </span>
