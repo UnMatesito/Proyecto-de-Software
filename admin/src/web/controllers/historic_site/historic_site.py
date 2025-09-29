@@ -14,7 +14,6 @@ def list_paginted_sites():
         sorted_by = request.args.get("sorted_by", "asc")
         page = request.args.get("page", 1)
         pagination = get_paginated_tags(page=page, order_by=order_by, sorted_by=sorted_by)
-        print(pagination)
         columns = [
             {"key": "name", "label": "Nombre"},
             {"key": "city", "label": "Ciudad"},
@@ -83,7 +82,6 @@ def get_create():
         form = CreateSiteForm()
         return render_template("historic_site/create.html", form=form)
     except Exception as e:
-        print(e)
         flash(f"Error al cargar el formulario {e}", "error")
         return redirect("/home"), 400
     
@@ -98,7 +96,6 @@ def post_create():
     form = CreateSiteForm()
     if (form.validate_on_submit()):
         try:
-            print(form.data)
             site = {
                 "name": form.name.data,
                 "brief_description": form.brief_description.data,
@@ -117,11 +114,8 @@ def post_create():
             assign_relations_to_historic_site(conservation_state=conservation_state, category=category, city=city, user=current_user, tags=tags)
             return redirect("/create"), 200
         except Exception as e:  
-            print(e)
             flash("Error al crear el sitio, {e}", "error")
             return redirect("/sites/create"), 400
     else:
-        print(form.city.data)
-        print(f"errro {form.errors}")
         flash(f"Error al crear el sitio", "error")
         return render_template("historic_site/create.html", form=form), 400

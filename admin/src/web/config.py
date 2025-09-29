@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 
 from dotenv import load_dotenv
@@ -12,6 +13,7 @@ class Config:
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
     SESSION_COOKIE_SECURE = True
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_size": 10,
         "pool_recycle": 60,

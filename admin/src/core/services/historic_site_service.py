@@ -10,6 +10,8 @@ from core.services import (
     conservation_state_service,
     tag_service,
 )
+from core.utils.pagination import paginate_query
+from core.utils.search import build_search_query, apply_ordering
 
 
 def get_all_historic_site():
@@ -234,7 +236,6 @@ def delete_historic_site(site_id):
 
 def update_historic_site(body):
     try:
-        print(body)
         site = get_historic_site_by_id(body["historic_site_id"])
         operations = {
             "name": update_name,
@@ -265,3 +266,41 @@ def update_historic_site(body):
     except SQLAlchemyError as e:
         db.session.rollback()
         raise RuntimeError(f"Error al editar el sitio histórico: {e}")
+
+def get_sites_filtered(
+    filters=None,
+    order_by: str = "name",
+    sorted_by: str = "asc",
+    paginate: bool = True,
+    page: int = 1,
+    per_page: int = 25,
+):
+    """
+    Devuelve sitios históricos filtrados, ordenados y opcionalmente paginados.
+    Usa GenericSearchBuilder para filtros genéricos y paginate_query para paginación.
+
+    Args:
+        filters (dict): filtros a aplicar (ej: {"city_id": 1, "visible": True})
+        order_by (str): columna para ordenar
+        sorted_by (str): 'asc' o 'desc'
+        paginate (bool): si True devuelve dict con paginación, si False lista completa
+        page (int): número de página (si paginate=True)
+        per_page (int): tamaño de página (si paginate=True)
+
+    Returns:
+        dict de paginación o lista de objetos HistoricSite
+    """
+    filters = filters or {}
+
+    # Construir query con filtros genéricos
+    query = build_search_query(HistoricSite, filters)
+
+    # Ordenar
+    query = apply_ordering(query, HistoricSite, order_by, sorted_by)
+
+    if paginate:
+        return paginate_query(
+            query, page=page, per_page=per_page, order_by=order_by, sorted_by=sorted_by
+        )
+    else:
+        return query.all()

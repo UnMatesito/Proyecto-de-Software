@@ -32,7 +32,6 @@ def tag_exist(tag_name):
 
 
 def validate_tag_name(tag_name):
-    print(tag_name)
     if len(tag_name) > 50:
         raise ValueError("El tamaño maximo para un nombre es de caracteres es 50")
     if len(tag_name) < 3:
