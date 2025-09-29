@@ -10,7 +10,7 @@ from .city_service import (
 )
 
 # Conservation state services
-from .conservation_state_service import get_conservation_state_by_id
+from .conservation_state_service import get_conservation_state_by_id, get_all_conservation_state
 
 # Feature flag services
 from .feature_flag_service import (
@@ -123,6 +123,7 @@ __all__ = [
     "get_city_by_id",
     "get_city_by_province",
     # Conservation state services
+    "get_all_conservation_state"
     "get_conservation_state_by_id",
     # Feature flag services
     "create_feature_flag",

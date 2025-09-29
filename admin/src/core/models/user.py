@@ -31,7 +31,9 @@ class User(db.Model):
     )
 
     # Relaciones
-    site_histories = db.relationship("SiteHistory", back_populates="user")
+    site_histories = db.relationship(
+        "SiteHistory", back_populates="user", cascade="all, delete-orphan"
+    )
     historic_sites = db.relationship(
         "HistoricSite", back_populates="user", cascade="all, delete-orphan"
     )

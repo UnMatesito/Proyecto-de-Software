@@ -1,15 +1,22 @@
 from flask import Flask, render_template
 from flask_debugtoolbar import DebugToolbarExtension
+from flask_session import Session
 
 from core.database import db
 from core.utils.bcrypt import bcrypt
 
 from .config import get_current_config
-from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp
+from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp, site_bp
 from .handlers import error
-from .utils.auth import is_authenticated, is_system_admin, get_user_role_name, has_permission
+from .utils.auth import (
+    get_user_role_name,
+    has_permission,
+    is_authenticated,
+    is_system_admin,
+)
 from .utils.hooks import hook_admin_maintenance
 
+session = Session()
 
 def create_app(env="development", static_folder="../../static"):
     app = Flask(__name__, static_folder=static_folder)
@@ -21,6 +28,7 @@ def create_app(env="development", static_folder="../../static"):
     # Inicializar extensiones
     bcrypt.init_app(app)
     db.init_app(app)
+    session.init_app(app)
 
     # Rutas
     @app.route("/")
@@ -36,6 +44,7 @@ def create_app(env="development", static_folder="../../static"):
     app.register_blueprint(tag_bp)
     app.register_blueprint(feature_flag_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(site_bp)
 
     # Commands
     @app.cli.command("reset-db")
@@ -46,9 +55,13 @@ def create_app(env="development", static_folder="../../static"):
 
     @app.cli.command("seed-db")
     def seed_db_command():
+        import os
+
         from core.seeds import run as seed_db
 
-        seed_db()
+        env = os.getenv("FLASK_ENV", "production")
+
+        seed_db(env)
 
     # TODO: Eliminar
     @app.cli.command("delete-tag")

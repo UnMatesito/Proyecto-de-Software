@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block title %}Detalle del tag{% endblock %}
+
+{% block header %}
+<h1 class="text-2xl font-bold text-center mt-6">Detalle del tag</h1>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-6 space-y-6">
+
+    <!-- Boton volver -->
+    <div>
+        <a href="/tags" 
+            class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow">
+            ← Volver
+        </a>
+    </div>
+
+    <!-- Card con los detalless -->
+    <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
+        <dl class="divide-y divide-gray-200">
+            <div class="py-3 grid grid-cols-2 gap-4">
+                <dt class="font-semibold text-gray-700">ID:</dt>
+                <dd class=" text-gray-900">{{ tag.id }}</dd>
+            </div>
+            <!-- Contenedor nombre completo del usuario -->
+            <div class="py-3 grid grid-cols-2 gap-4">
+                <dt class="font-semibold text-gray-700">Nombre:</dt>
+                <dd class=" text-gray-900">{{ tag.name }}</dd>
+            </div>
+            <!-- Contenedor correo del usuario -->
+            <div class="py-3 grid grid-cols-2 gap-4">
+                <dt class="font-semibold text-gray-700">Slug:</dt>
+                <dd class=" text-gray-900">{{ tag.slug }}</dd>
+            </div>
+            <!-- Contenedor estado -->
+            <div class="py-3 grid grid-cols-2 gap-4">
+                <dt class="font-semibold text-gray-700">Estado:</dt>
+                <dd class="">
+                    {% if tag.deleted_at %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                            Eliminado
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                            Activo
+                        </span>
+                    {% endif %}
+                </dd>
+            </div>
+            <!-- Contenedor fecha creacion -->
+            <div class="py-3 grid grid-cols-2 gap-4">
+                <dt class="font-semibold text-gray-700">Creado:</dt>
+                <dd class=" text-gray-900">{{ tag.created_at.strftime('%d/%m/%Y') if tag.created_at else 'N/A' }}</dd>
+            </div>
+                        <!-- Contenedor fecha creacion -->
+            <div class="py-3 grid grid-cols-2 gap-4">
+                <dt class="font-semibold text-gray-700">Creado:</dt>
+                <dd class=" text-gray-900">{{ tag.created_at.strftime('%d/%m/%Y') if tag.created_at else 'N/A' }}</dd>
+            </div>
+        </dl>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,8 +1,8 @@
-from flask import Blueprint, flash, redirect, render_template, url_for, request
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from core.services import role_service, user_service
 from web.forms.user import AssignRoleForm, BlockUserForm, ToggleSystemAdminForm
-from web.utils.auth import login_required, permission_required, get_current_user
+from web.utils.auth import get_current_user, login_required, permission_required
 
 user_management_bp = Blueprint("user_management", __name__)
 
@@ -57,7 +57,7 @@ def assign_role(user_id):
 
             # Verificar que el rol existe y es válido
             role = role_service.get_role_by_id(form.role_id.data)
-            if not role or role.name not in ["Editor", "Administrador"]:
+            if not role:
                 flash("Rol no válido", "error")
                 return redirect(url_for("user_management.manage_user", user_id=user_id))
 
@@ -128,7 +128,10 @@ def toggle_block(user_id):
 
             # Verificar que no es System Admin o Administrador si se intenta bloquear
             if form.block.data and user.system_admin:
-                flash("No se puede bloquear a un usuario Administrador del sistema", "error")
+                flash(
+                    "No se puede bloquear a un usuario Administrador del sistema",
+                    "error",
+                )
                 return redirect(url_for("user_management.manage_user", user_id=user_id))
 
             if form.block.data and user.has_role("Administrador"):
@@ -157,6 +160,7 @@ def toggle_block(user_id):
 
     return redirect(url_for("user_management.manage_user", user_id=user_id))
 
+
 @user_management_bp.post("/users/<int:user_id>/toggle-system-admin")
 @login_required
 @permission_required("user_update")
@@ -173,9 +177,12 @@ def toggle_system_admin(user_id):
         try:
             user_service.toggle_system_admin(user_id, form.system_admin.data)
             if form.system_admin.data:
-                flash("Usuario convertido en Administrador del sistema", "success")
+                flash(
+                    "Usuario convertido en Administrador del sistema exitosamente",
+                    "success",
+                )
             else:
-                flash("Usuario ya no es Administrador del sistema", "warning")
+                flash("El usuario ya no es Administrador del sistema", "warning")
         except ValueError as e:
             flash(str(e), "error")
         except Exception as e:

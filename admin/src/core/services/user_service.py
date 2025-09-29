@@ -159,9 +159,7 @@ def delete_user(user_id):
             return f"El usuario {user.first_name} ya está eliminado"
         # Si es system admin
         if user.is_admin():
-            return (
-                f"El usuario {user.first_name} es Administrador del sistema y no puede ser eliminado"
-            )
+            return f"El usuario {user.first_name} es Administrador del sistema y no puede ser eliminado"
         return None
 
     return update_user_attribute(
@@ -243,14 +241,34 @@ def assign_role(user_id, role_id):
 
     return update_user_attribute(user_id, "role_id", role_id, role_check)
 
+
 def toggle_system_admin(user_id, make_admin: bool):
-    """Convierte un usuario en System Admin o le quita ese rol"""
+    """
+    Convierte un usuario en System Admin o le quita ese rol.
+    Si se convierte en System Admin, también se asegura que el rol sea Administrador.
+    """
+    user = User.query.get(user_id)
+    if not user:
+        raise ValueError(f"No existe el usuario con id {user_id}")
 
-    def check_toggle(user):
-        # No tiene sentido cambiar si ya está en el mismo rol
-        if user.system_admin == make_admin:
-            rol = "ya es" if make_admin else "ya no es"
-            return f"El usuario {user.first_name} {rol} System Admin"
-        return None
+    # Evitar cambios redundantes
+    if user.system_admin == make_admin:
+        estado = "ya es" if make_admin else "ya no es"
+        raise ValueError(f"El usuario {user.first_name} {estado} System Admin")
 
-    return update_user_attribute(user_id, "system_admin", make_admin, check_toggle)
+    user.system_admin = make_admin
+
+    if make_admin:
+        # Buscar rol Administrador
+        admin_role = Role.query.filter_by(name="Administrador").first()
+        if not admin_role:
+            raise RuntimeError("No se encontró el rol 'Administrador'")
+        user.role_id = admin_role.id
+
+    try:
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al actualizar el usuario: {e}")
+
+    return True

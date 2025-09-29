@@ -7,10 +7,15 @@ historic_site_tag = db.Table(
     db.Column(
         "historic_site_id",
         db.Integer,
-        db.ForeignKey("historic_site.id"),
+        db.ForeignKey("historic_site.id", ondelete="CASCADE"),
         primary_key=True,
     ),
-    db.Column("tag_id", db.Integer, db.ForeignKey("tag.id"), primary_key=True),
+    db.Column(
+        "tag_id",
+        db.Integer,
+        db.ForeignKey("tag.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
 )
 
 
@@ -39,11 +44,11 @@ class HistoricSite(db.Model):
     deleted_at = db.Column(db.DateTime, default=None, nullable=True)
 
     # Relaciones
-    city_id = db.Column(db.Integer, db.ForeignKey("city.id"))
+    city_id = db.Column(db.Integer, db.ForeignKey("city.id", ondelete="CASCADE"))
     city = db.relationship("City", back_populates="historic_sites")
 
     conservation_state_id = db.Column(
-        db.Integer, db.ForeignKey("conservation_state.id")
+        db.Integer, db.ForeignKey("conservation_state.id", ondelete="CASCADE")
     )
     conservation_state = db.relationship(
         "ConservationState", back_populates="historic_sites"
@@ -51,13 +56,17 @@ class HistoricSite(db.Model):
 
     tags = db.relationship("Tag", secondary=historic_site_tag, back_populates="sites")
 
-    category_id = db.Column(db.Integer, db.ForeignKey("category.id"))
+    category_id = db.Column(
+        db.Integer, db.ForeignKey("category.id", ondelete="CASCADE")
+    )
     category = db.relationship("Category", back_populates="historic_sites")
 
-    proposed_by = db.Column(db.Integer, db.ForeignKey("user.id"))
+    proposed_by = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
     user = db.relationship("User", back_populates="historic_sites")
 
-    site_histories = db.relationship("SiteHistory", back_populates="historic_site")
+    site_histories = db.relationship(
+        "SiteHistory", back_populates="historic_site", cascade="all, delete-orphan"
+    )
 
     # Metodos
     def is_deleted(self):

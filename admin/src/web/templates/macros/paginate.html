@@ -1,4 +1,5 @@
-{% macro paginate(pagination, url) %}
+{% macro paginate(pagination = None, url = None) %}
+    {% if pagination %}
     <nav class="flex gap-2 flex items-center ">
         {% if pagination.has_prev %}
             <a 
@@ -55,4 +56,5 @@
             </a>
         {% endif %}
         </nav>
+    {% endif %}
 {% endmacro %}

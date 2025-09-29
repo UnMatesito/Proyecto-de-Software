@@ -1,6 +1,6 @@
 {% from 'macros/button.html' import button %}
 
-{% macro render_table(data, columns=None, title="", empty_message="No hay datos para mostrar.", detail_action=None, show_details_button=true) %}
+{% macro render_table(data, columns=None, title="", empty_message="No hay datos para mostrar.", detail_action=None, show_details_button=true, deleteForm = None) %}
     <div class="relative overflow-x-auto">
         {# Titulo (Puede no tener) #}
         {% if title %}
@@ -34,8 +34,12 @@
                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                   {% if columns %}
                     {% for col in columns %}
-                      {% set value = item[col.key] if item is mapping else getattr(item, col.key, '') %}
-                      <td class="px-6 py-4">{{ value }}</td>
+                      {% set value = item[col.key] if item is mapping else item[col.key] %}
+                      {% if col.key == "deleted_at" %}
+                        <td class="px-6 py-4 font-medium ">{{ "Active" if value == None else "Borrado" }}</td>
+                      {% else %}
+                        <td class="px-6 py-4">{{ value }}</td>
+                      {% endif %}
                     {% endfor %}
                   {% else %}
                     {% if item is mapping %}
@@ -44,13 +48,16 @@
                       {% endfor %}
                     {% endif %}
                   {% endif %}
-
-                  {# Columna de acciones - extraída a macro helper #}
-                  {% if show_details_button %}
-                    <td class="px-6 py-4">
-                      {{ details_button(item, detail_action) }}
-                    </td>
-                  {% endif %}
+                        <td>
+                            <form action="{{ url_for('tag_bp.delete', tag_id=item.id) }}" method="post" class="inline" 
+                            onsubmit="return confirm('¿Está seguro de eliminar el tag {{ item.name }} ?')">
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
+                                    Eliminar
+                                </button>
+                            </form>
+                            {{ button("Detalle", link=url_for('tag_bp.detail_tag', tag_id=item.id), icon_left_svg='<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>') }}
+                            {{ button("Editar", link=url_for('tag_bp.show_edit_tag', tag_id=item.id), icon_left_svg='<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>') }}
+                        </td>
                 </tr>
               {% endfor %}
             </tbody>
@@ -63,6 +70,7 @@
 
 {# Macro helper para el botón de detalles #}
 {% macro details_button(item, detail_action) %}
+  
   {% set details_icon %}
     <svg class="w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
       <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
@@ -71,7 +79,7 @@
 
   {% if detail_action %}
     {% set item_id = item.id if item is mapping else getattr(item, 'id', '') %}
-    {% set button_url = url_for(detail_action, id=item_id) if detail_action and item_id else '#' %}
+    {% set button_url = url_for(detail_action, tag_id=item_id) if detail_action and item_id else '#' %}
     {{ button("Ver Detalles", icon_left_svg=details_icon, link=button_url, type="button") }}
   {% endif %}
 {% endmacro %}

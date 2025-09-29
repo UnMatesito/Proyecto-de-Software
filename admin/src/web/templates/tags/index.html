@@ -1,6 +1,8 @@
 {% extends "layout.html" %}
-
+{% from "macros/button.html" import button %}
 {% from "macros/paginate.html" import paginate %}
+{% from "macros/table.html" import render_table %}
+{% from "macros/toast.html" import toast %}
 {% block title %}Listado de tags{% endblock %}
 
 {% block header %}
@@ -8,101 +10,82 @@
 {% endblock %}
 
 {% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    {{toast(message=message, type=category)}}
+                {% endfor %}
+            </div>
+        {% endif %}
+{% endwith %}
 
 <div class="flex flex-col justify-center items-center">
-<div class="p-4 flex gap-4">
-<div class="w-64 p-4 border-2 border-gray-300 rounded shadow-lg flex-none space-x-4">
-    <h3 class="text-lg font-semibold mb-2">Ordenar Tags</h3>
-    <ul class="space-y-2">
-        <li>
-            <a href="{{ url_for('tag_bp.list_paginted_tags', sorted_by='asc', order_by='name') }}"
-               class="
-               block px-3 py-2 rounded
-               {% if order_by == 'name' and sorted_by == 'asc' %}
-                bg-green-300
-                font-semibold
-               {% else %}
-               bg-green-100  hover:bg-green-200
-               {% endif %}">
-                Ordenar A-Z
-            </a>
-        </li>
-        <li>
-            <a href="{{ url_for('tag_bp.list_paginted_tags', sorted_by='desc', order_by='name') }}"
+    <div class="p-4 flex gap-4">
+    <div class="w-64 p-4 border-2 border-gray-300 rounded shadow-lg flex-none space-x-4">
+        <h3 class="text-lg font-semibold mb-2">Ordenar Tags</h3>
+        <ul class="space-y-2">
+            <li>
+                <a href="{{ url_for('tag_bp.list_paginted_tags', sorted_by='asc', order_by='name') }}"
                 class="
                 block px-3 py-2 rounded
-                {% if order_by == 'name' and sorted_by == 'desc' %}
-                bg-green-300
-                font-semibold
+                {% if order_by == 'name' and sorted_by == 'asc' %}
+                    bg-green-300
+                    font-semibold
                 {% else %}
                 bg-green-100  hover:bg-green-200
                 {% endif %}">
-                Ordenar Z-A
-            </a>
-        </li>
-        <li>
-            <a href="{{ url_for('tag_bp.list_paginted_tags', sorted_by='desc', order_by='created_at') }}"
-                class="
-                block px-3 py-2 rounded
-                {% if order_by == 'created_at' and sorted_by == 'desc' %}
-                bg-green-300
-                font-semibold
-                {% else %}
-                bg-green-100  hover:bg-green-200
-                {% endif %}">
-                Ordenar Últimas creaciones
-            </a>
-        </li>
-        <li>
-            <a href="{{ url_for('tag_bp.list_paginted_tags', sorted_by='asc', order_by='created_at') }}"
-                class="
-                block px-3 py-2 rounded
-                {% if order_by == 'created_at' and sorted_by == 'asc' %}
-                bg-green-300
-                font-semibold
-                {% else %}
-                bg-green-100  hover:bg-green-200
-                {% endif %}">
-                Ordenar Primeras creaciones
-            </a>
-        </li>
-    </ul>
-</div>
-    <table class="table-auto border-collapse border border-gray-400 w-full">
-        <thead>
-            <tr class="bg-gray-200">
-                <th class="border border-gray-400 px-2 py-1">ID</th>
-                <th class="border border-gray-400 px-4 py-2">Tag</th>
-                <th class="border border-gray-400 px-4 py-2">Slug</th>
-                <th class="border border-gray-400 px-4 py-2">Estado</th>
-                <th class="border border-gray-400 px-4 py-2">Creado</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for tag in tags["items"]%}
-            <tr>
-                <td class="border border-gray-400 px-2 text-center">{{ tag.id }}</td>
-                <td class="border border-gray-400 px-2 text-center">{{ tag.name }}</td>
-                <td class="border border-gray-400 px-2 text-center">{{ tag.slug }}</td>
-                <td class="border border-gray-400 px-2 text-center whitespace-nowrap">
-                    {% if tag.deleted_at %}
-                        <span class="border border-gray-400 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            <i class="fas fa-trash mr-1"></i>Eliminado
-                        </span>
+                    Ordenar A-Z
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('tag_bp.list_paginted_tags', sorted_by='desc', order_by='name') }}"
+                    class="
+                    block px-3 py-2 rounded
+                    {% if order_by == 'name' and sorted_by == 'desc' %}
+                    bg-green-300
+                    font-semibold
                     {% else %}
-                        <span class="border border-gray-400 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <i class="fas fa-check mr-1"></i>Activo
-                        </span>
-                    {% endif %}
-                </td>
-                <td class=  "px-6 py-4 whitespace-nowrap text-sm text-gray-500 border border-gray-400 px-4 py-2">
-                        {{ tag.created_at.strftime('%d/%m/%Y') if tag.created_at else 'N/A' }}
-                </td>
-            </tr>
-            {% endfor %}
-    </tbody>
-</table>
-</div>
-{{paginate(tags, 'tag_bp.list_paginted_tags')}}
+                    bg-green-100  hover:bg-green-200
+                    {% endif %}">
+                    Ordenar Z-A
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('tag_bp.list_paginted_tags', sorted_by='desc', order_by='created_at') }}"
+                    class="
+                    block px-3 py-2 rounded
+                    {% if order_by == 'created_at' and sorted_by == 'desc' %}
+                    bg-green-300
+                    font-semibold
+                    {% else %}
+                    bg-green-100  hover:bg-green-200
+                    {% endif %}">
+                    Ordenar Últimas creaciones
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('tag_bp.list_paginted_tags', sorted_by='asc', order_by='created_at') }}"
+                    class="
+                    block px-3 py-2 rounded
+                    {% if order_by == 'created_at' and sorted_by == 'asc' %}
+                    bg-green-300
+                    font-semibold
+                    {% else %}
+                    bg-green-100  hover:bg-green-200
+                    {% endif %}">
+                    Ordenar Primeras creaciones
+                </a>
+            </li>
+        </ul>
+    </div>
+    {{ button("Crear", link=url_for('tag_bp.show_create_tags'), icon_left_svg='<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>') }}                   
+    {{render_table(
+        data=tags,
+        columns=columns,
+        title="Lista de Tags (" + tags|length|string + " encontrados)", 
+        empty_message="No se encontraron tags",
+        deleteForm=deleteForm)}}
+    {{paginate(pagination=pagination, url='tag_bp.list_paginted_tags')}}
 </div>
 {% endblock %}

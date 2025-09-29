@@ -1,27 +1,40 @@
 from core.database import db
 
 
-def run():
-    """Ejecuta todos los seeds en orden"""
+def run(env="production"):
+    """Ejecuta los seeders necesarios según el entorno.
+
+    - Producción:
+      Solo datos estrictamente necesarios (tags, provincias/ciudades, estados de conservación, categorías, feature_flags, usuario system admin).
+
+    - Desarrollo:
+      Además de lo anterior, incluye seeds de permisos, roles, editores, usuarios públicos, sitios históricos de ejemplo y relaciones con tags.
+    """
     print("Iniciando seeders...")
 
+    # Siempre en todos los entornos
     seed_permissions()
     seed_roles()
-    # seed_event_types()
     seed_system_admin()
-    seed_editor()
     seed_feature_flags()
     seed_tags()
     seed_provinces_and_cities()
     seed_consevation_states()
     seed_categories()
-    seed_historic_sites()
-    seed_site_tags()
+    # seed_event_types()
+
+    # Solo si estamos en development
+    if env == "development":
+        seed_editor()
+        seed_historic_sites()
+        seed_site_tags()
+        seed_users()
+
     print("Seed finalizado")
 
 
 def seed_permissions():
-    """Crea los permisos básicos del sistema siguiendo el patrón modulo_accion"""
+    """Crea los permisos básicos del sistema siguiendo el patrón modulo_accion."""
     from core.services import permission_service as PermissionService
 
     print("Creando permisos...")
@@ -97,7 +110,16 @@ def seed_permissions():
 
 
 def seed_roles():
-    """Crea los roles del sistema según los requerimientos del TI"""
+    """
+    Crea los roles del sistema según los requerimientos del enunciado.
+    Roles definidos:
+    - Usuario público: puede proponer sitios y crear reseñas.
+    - Editor: administra sitios, tags, propuestas y reseñas.
+    - Administrador: incluye funciones de editor y además gestiona usuarios y roles.
+    - Administrador del sistema:
+        * Incluye todas las funciones del sistema y además gestión de feature flags.
+        * Aunque este rol no se cargue, se identifica con un boolean en el modelo del usuario
+    """
     from core.models import Permission
     from core.services import role_service as RoleService
 
@@ -108,20 +130,24 @@ def seed_roles():
 
     roles_permissions = {
         "Editor": [
+            # Sitios
             "site_index",
             "site_new",
             "site_update",
             "site_show",
             "site_history",
+            # Tags
             "tag_index",
             "tag_new",
             "tag_update",
             "tag_destroy",
             "tag_show",
+            # Propuestas
             "proposal_index",
             "proposal_show",
             "proposal_approve",
             "proposal_reject",
+            # Reseñas
             "review_index",
             "review_show",
             "review_approve",
@@ -136,6 +162,7 @@ def seed_roles():
             "user_show",
             "user_block",
             "user_assign_role",
+            "user_change_password",
             # Sitios
             "site_index",
             "site_new",
@@ -150,17 +177,21 @@ def seed_roles():
             "tag_update",
             "tag_destroy",
             "tag_show",
-            # Propuestas y reseñas
+            # Propuestas
             "proposal_index",
             "proposal_show",
             "proposal_approve",
             "proposal_reject",
+            # Reseñas
             "review_index",
             "review_show",
             "review_approve",
             "review_reject",
         ],
-        "Usuario público": [],  # TODO: Ver bien qué permisos tiene
+        "Usuario público": [
+            "review_new",
+            "proposal_new",
+        ],
     }
 
     for role_name, perm_names in roles_permissions.items():
@@ -210,7 +241,14 @@ def seed_event_types():
 
 
 def seed_system_admin():
-    """Crea un usuario System Admin por defecto"""
+    """
+    Crea un usuario System Admin por defecto
+    Este usuario tiene:
+    - Rol Administrador.
+    - Acceso total al sistema.
+    - Email: admin@sistema.com
+    - Contraseña: admin123
+    """
     from core.models import User
     from core.services import role_service as RoleService
 
@@ -235,7 +273,12 @@ def seed_system_admin():
 
 
 def seed_editor():
-    """Crea un usuario editor"""
+    """
+    Crea un usuario editor
+    Este usuario permite probar la administración de sitios y tags.
+    - Email: editor_editor@hotmail.com
+    - Contraseña: editor123
+    """
     from core.models import User
     from core.services import role_service as RoleService
 
@@ -260,7 +303,13 @@ def seed_editor():
 
 
 def seed_feature_flags():
-    """Crea los feature flags iniciales del sistema"""
+    """Crea los feature flags iniciales del sistema.
+
+    Flags incluidos:
+    - admin_maintenance_mode: Modo mantenimiento del área de administración.
+    - portal_maintenance_mode: Modo mantenimiento del portal público.
+    - reviews_enabled: Controla la creación y visualización de reseñas.
+    """
     from core.models import FeatureFlag
 
     print("Creando feature flags...")
@@ -300,6 +349,7 @@ def seed_feature_flags():
 
 
 def seed_tags():
+    """Crea un conjunto inicial de tags para clasificar sitios históricos"""
     from core.models import Tag
 
     print("Creando tags...")
@@ -312,6 +362,7 @@ def seed_tags():
 
 
 def seed_provinces_and_cities():
+    """Crea provincias y sus ciudades asociadas"""
     from core.models import City, Province
 
     print("Creando provincias y ciudades")
@@ -339,6 +390,7 @@ def seed_provinces_and_cities():
 
 
 def seed_consevation_states():
+    """Crea los estados de conservación posibles para los sitios históricos"""
     from core.models import ConservationState
 
     print("Creando estados de conservacion...")
@@ -353,6 +405,7 @@ def seed_consevation_states():
 
 
 def seed_categories():
+    """Crea las categorías iniciales de los sitios históricos"""
     from core.models import Category
 
     print("Cargando categorias...")
@@ -368,6 +421,7 @@ def seed_categories():
 
 
 def seed_historic_sites():
+    """Carga un conjunto de sitios históricos iniciales"""
     from datetime import datetime, timezone
 
     from core.models import HistoricSite
@@ -430,6 +484,7 @@ def seed_historic_sites():
 
 
 def seed_site_tags():
+    """Asocia sitios históricos con tags de clasificación"""
     from core.services import historic_site_service as HistorcService
     from core.services import tag_service as TagService
 
@@ -444,4 +499,80 @@ def seed_site_tags():
     cabildo.tags.append(tag1)
     san_ignacio.tags.extend([tag1, tag2])
 
+    db.session.commit()
+
+
+def seed_users():
+    """Crea usuarios adicionales usando Faker"""
+    from faker import Faker
+
+    from core.models import User
+    from core.services import role_service as RoleService
+
+    print("Creando usuarios con Faker...")
+
+    fake = Faker("es_AR")  # localización Argentina
+
+    # Traer roles ya creados
+    roles = {
+        "publico": RoleService.get_role_by_name("Usuario público"),
+        "editor": RoleService.get_role_by_name("Editor"),
+        "admin": RoleService.get_role_by_name("Administrador"),
+    }
+
+    cant_usuarios_publicos = 30
+    cant_usuarios_editores = 10
+    cant_usuarios_administradores = 5
+
+    usuarios = []
+
+    # Usuarios públicos
+    print("Creando usuarios públicos")
+    for _ in range(cant_usuarios_publicos):
+        usuarios.append(
+            User(
+                email=fake.unique.email(),
+                first_name=fake.first_name(),
+                last_name=fake.last_name(),
+                password="password123",
+                role_id=roles["publico"].id,
+                system_admin=False,
+                active=True,
+            )
+        )
+
+    # Editores
+    print("Creando editores")
+    for _ in range(cant_usuarios_editores):
+        usuarios.append(
+            User(
+                email=fake.unique.email(),
+                first_name=fake.first_name(),
+                last_name=fake.last_name(),
+                password="editor123",
+                role_id=roles["editor"].id,
+                system_admin=False,
+                active=True,
+            )
+        )
+
+    # Administradores no system admin
+    print("Creando administradores")
+    for _ in range(cant_usuarios_administradores):
+        usuarios.append(
+            User(
+                email=fake.unique.email(),
+                first_name=fake.first_name(),
+                last_name=fake.last_name(),
+                password="admin123",
+                role_id=roles["admin"].id,
+                system_admin=False,
+                active=True,
+            )
+        )
+
+    # Insertar en DB
+    from core.database import db
+
+    db.session.add_all(usuarios)
     db.session.commit()
