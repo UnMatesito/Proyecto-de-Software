@@ -118,56 +118,59 @@
 </div>
 <div class="flex items-center justify-center flex-col mt-2">
     <h3 class="block font-semibold text-gray-700 mb-1">Seleccione la ubicación en el mapa!</h3>
-    <iframe id="mapframe"
-            src="{{ url_for('static', filename='maps/map_iframe.html') }}"
-            width="80%" height="500" style="border:1px solid #ccc;">
-    </iframe>
+    <div id="map-container">
+        {{ map_html|safe }}
+    </div>
 </div>
 
 <script>
-     document.addEventListener("DOMContentLoaded", function() {
-    new MultiSelectTag('tags', {
-      rounded: true,   // estilos bonitos
-      shadow: true,
-      placeholder: "Seleccionar tags",
-      onChange: function(selected) {
-        console.log("Seleccionados:", selected);
-      }
-    });
+    document.addEventListener("DOMContentLoaded", function() {
+        new MultiSelectTag('tags', {
+        rounded: true,   // estilos bonitos
+        shadow: true,
+        placeholder: "Seleccionar tags",
+        onChange: function(selected) {
+            console.log("Seleccionados:", selected);
+        }
+        });
+
         document.getElementById("tag-input").className = "w-full"
 
+
+        //Obtener la ciudades de la prov seleccionada
+        document.getElementById("province").addEventListener("change", function() {
+            const provinceId = this.value;
+            fetch(`cities/${provinceId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const citySelect = document.getElementById("city");
+                    citySelect.innerHTML = "";
+                    data.forEach(city => {
+                        let option = document.createElement("option");
+                        option.value = city.id;
+                        option.text = city.name;
+                        citySelect.appendChild(option);
+                    });
+                })
+        });
     });
 
-    // Escuchamos mensajes del iframe (postMessage)
-    window.addEventListener("message", function(event) {
-      // Seguridad: opcionalmente verificar event.origin
-      // if (event.origin !== window.location.origin) return;
-
-      const data = event.data;
-      if (!data) return;
-      // Esperamos un objeto con lat y lng numéricos
-      if (typeof data.lat === "number" && typeof data.lng === "number") {
-        document.getElementById("latitude").value = data.lat;
-        document.getElementById("longitude").value = data.lng;
-        console.log("Coordenadas recibidas:", data);
-      }
-    }, false);
-
-    //Obtener la ciudades de la prov seleccionada
-    document.getElementById("province").addEventListener("change", function() {
-        const provinceId = this.value;
-        fetch(`cities/${provinceId}`)
-            .then(response => response.json())
-            .then(data => {
-                const citySelect = document.getElementById("city");
-                citySelect.innerHTML = "";
-                data.forEach(city => {
-                    let option = document.createElement("option");
-                    option.value = city.id;
-                    option.text = city.name;
-                    citySelect.appendChild(option);
-                });
-            })
-    });
+    function initMapClick() {
+    const mapName = "{{ map_name }}";  // ej: "map_abc123"
+    console.log(mapName)
+    if (typeof window[mapName] !== 'undefined') {
+        console.log("Mapa encontrado, agregando listener...");
+        
+        window[mapName].on("click", function(e) {
+            document.getElementById("latitude").value = e.latlng.lat;
+            document.getElementById("longitude").value = e.latlng.lng;
+            console.log("Click en mapa:", e.latlng);
+        });
+    } else {
+        console.log("Mapa no disponible, reintentando...");
+        setTimeout(initMapClick, 100);
+    }
+}
+      
 </script>
 {% endblock %}

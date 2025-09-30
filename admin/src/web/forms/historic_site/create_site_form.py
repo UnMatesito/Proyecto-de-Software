@@ -27,7 +27,7 @@ class CreateSiteForm(FlaskForm):
     brief_description = StringField(
         "Descripcion breve del sitio",
         validators=[
-            DataRequired(message="El descripcion brebe del sitio es obligatoria"),
+            DataRequired(message="La descripcion breve del sitio es obligatoria"),
         ],
     )
 
@@ -41,7 +41,7 @@ class CreateSiteForm(FlaskForm):
     inauguration_year = StringField(
         "Año de inaguracion del sitio",
         validators=[
-            DataRequired(message="El año de inaguracion del sitio es obligatorio"),
+            DataRequired(message="El año de inauguración del sitio es obligatorio"),
         ],
     )
 
@@ -106,7 +106,7 @@ class CreateSiteForm(FlaskForm):
     )
 
     tags = SelectMultipleField(
-        "Seleccionar Tags", validators=[DataRequired("Al menos un tag es necesario")]
+        "Seleccionar Tags", coerce=int, validators=[DataRequired("Al menos un tag es necesario")]
     )
 
     submit = SubmitField("Crear")
@@ -120,9 +120,7 @@ class CreateSiteForm(FlaskForm):
         self.conservation_state.choices = [  # Cargo los estados en el select
             (state.id, state.state) for state in get_all_conservation_state()
         ]
-        self.category.choices = [
-            (0, "Seleccionar categoria")
-        ] + [  # Cargo las categortias en el select
+        self.category.choices = [  # Cargo las categortias en el select
             (category.id, category.name) for category in get_all_categories()
         ]
         self.tags.choices = [  # Cargo las categortias en el select

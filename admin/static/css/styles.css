@@ -1282,6 +1282,10 @@ select {
   height: 100vh;
 }
 
+.max-h-2 {
+  max-height: 0.5rem;
+}
+
 .min-h-\[calc\(100vh-100px\)\] {
   min-height: calc(100vh - 100px);
 }
@@ -1320,14 +1324,6 @@ select {
 
 .w-full {
   width: 100%;
-}
-
-.w-80 {
-  width: 20rem;
-}
-
-.w-10 {
-  width: 2.5rem;
 }
 
 .max-w-2xl {
@@ -1467,6 +1463,15 @@ select {
 
 .gap-6 {
   gap: 1.5rem;
+}
+
+.gap-x-8 {
+  -moz-column-gap: 2rem;
+       column-gap: 2rem;
+}
+
+.gap-y-6 {
+  row-gap: 1.5rem;
 }
 
 .space-x-2 > :not([hidden]) ~ :not([hidden]) {

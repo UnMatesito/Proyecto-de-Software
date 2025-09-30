@@ -128,7 +128,8 @@ __all__ = [
     "get_city_by_id",
     "get_city_by_province",
     # Conservation state services
-    "get_all_conservation_state" "get_conservation_state_by_id",
+    "get_all_conservation_state",
+    "get_conservation_state_by_id",
     # Feature flag services
     "create_feature_flag",
     "delete_feature_flag",

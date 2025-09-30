@@ -30,7 +30,7 @@ class HistoricSite(db.Model):
     name = db.Column(db.String(255), nullable=False)
     brief_description = db.Column(db.String, nullable=False)
     full_description = db.Column(db.String, nullable=False)
-    inauguration_year = db.Column(db.Integer, nullable=False)
+    inauguration_year = db.Column(db.String, nullable=False)
     is_visible = db.Column(db.Boolean, default=False, nullable=False)
     pending_validation = db.Column(db.Boolean, default=True, nullable=False)
     location = db.Column(Geometry(geometry_type="POINT", srid=4326), nullable=False)

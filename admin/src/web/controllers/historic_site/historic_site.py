@@ -1,5 +1,5 @@
 import os
-
+from bs4 import BeautifulSoup
 import folium
 from flask import (
     Blueprint,
@@ -71,13 +71,20 @@ def list_paginated_sites():
         return redirect("/home"), 400
 
 # Ver el detalle del site#
-@site_bp.get("/datail/<int:site_id>")
+@site_bp.get("/detail/<int:site_id>")
 def detail(site_id):
     try:
         site = get_historic_site_by_id(site_id)
-        return render_template("historic_site/detail.html", site=site), 200
+        province = get_province_by_id(site.city.province.id)
+        lon = float(site.longitude)
+        lat = float(site.latitude)
+        map = folium.Map(location=[lat, lon], zoom_start=17)
+        folium.Marker(location=[lat, lon], popup=folium.Popup(site.name, show=True)).add_to(map)
+        map_html = map._repr_html_()
+        return render_template("historic_site/detail.html", site=site, map=map_html, province=province), 200
     except Exception as e:
-        flash(f"Error al intentar ver detalle del tag, error: {e}", 400)
+        print(e)
+        flash(f"Error al intentar ver detalle del tag, error: {e}", "error")
         return redirect("/sites")
 
 
@@ -85,42 +92,15 @@ def detail(site_id):
 @login_required
 def get_create():
     try:
-        # --- Generar el mapa y guardarlo en static/maps/map_iframe.html ---
-        map_dir = os.path.join("static", "maps")
-        os.makedirs(map_dir, exist_ok=True)
-        map_path = os.path.join(map_dir, "map_iframe.html")
-        # Crear mapa
-
         m = folium.Map(location=[-34.9205, -57.9536], zoom_start=12)
         m.add_child(folium.LatLngPopup())
         map_name = m.get_name()
 
-        m.get_root().html.add_child(
-            folium.Element(
-                f"""
-        <script>
-        (function() {{
-            function attach() {{
-                var mapObj = window["{map_name}"];
-                if (typeof mapObj === "undefined") {{
-                    setTimeout(attach, 50);
-                    return;
-                }}
-                // Al hacer click en el mapa enviamos las coordenadas al padre
-                mapObj.on('click', function(e) {{
-                    // En producción reemplazá "*" por el origen seguro del padre
-                    window.parent.postMessage({{lat: e.latlng.lat, lng: e.latlng.lng}}, "*");
-                }});
-            }}
-            attach();
-        }})();
-        </script>
-        """
-            )
-        )
-        m.save(map_path)
+        map_html = m.get_root().render()
+        # Extraer solo el contenido del body (mapa + scripts)
+        print(map_html)
         form = CreateSiteForm()
-        return render_template("historic_site/create.html", form=form)
+        return render_template("historic_site/create.html", form=form, map_html=map_html, map_name=map_name)
     except Exception as e:
         flash(f"Error al cargar el formulario {e}", "error")
         return redirect("/home"), 400
@@ -156,7 +136,7 @@ def post_create():
             for tag_id in form.tags.data:
                 tags.append(get_tag_by_id(tag_id))
             site = create_historic_site(**site)
-            flash("Se creo correctamente el sitio", "succes")
+            flash("Se creo correctamente el sitio", "success")
             assign_relations_to_historic_site(
                 historic_site=site,
                 conservation_state=conservation_state,
@@ -166,9 +146,9 @@ def post_create():
                 tags=tags,
             )
             return redirect(url_for("site_bp.list_paginated_sites"))
-        except Exception as e:
+        except Exception as e:  
             print(e)
-            flash("Error al crear el sitio, {e}", "error")
+            flash(f"Error al crear el sitio, {e}", "error")
             return redirect("/sites/create"), 400
     else:
         flash(f"Error al crear el sitio", "error")
