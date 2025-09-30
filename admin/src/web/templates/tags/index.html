@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% from "macros/button.html" import button %}
 {% from "macros/paginate.html" import paginate %}
-{% from "macros/table.html" import render_table %}
+{% from "macros/table.html" import table %}
 {% from "macros/toast.html" import toast %}
 {% block title %}Listado de tags{% endblock %}
 
@@ -77,15 +77,26 @@
                     Ordenar Primeras creaciones
                 </a>
             </li>
+            <div class="border-t border-2"></div>
+            <li>
+                {{ button("Crear Tag", link=url_for('tag_bp.show_create_tags'), icon_left_svg='<i class="fa-solid fa-plus mr-1"></i>', class="w-full h-14") }}
+            </li>
         </ul>
     </div>
-    {{ button("Crear", link=url_for('tag_bp.show_create_tags'), icon_left_svg='<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>') }}                   
-    {{render_table(
+
+    <div class="flex flex-col items-center gap-y-3">
+        {{ table(
         data=tags,
         columns=columns,
-        title="Lista de Tags (" + tags|length|string + " encontrados)", 
+        title="Lista de Tags (" + tags|length|string + " encontrados)",
         empty_message="No se encontraron tags",
-        deleteForm=deleteForm)}}
-    {{paginate(pagination=pagination, url='tag_bp.list_paginted_tags')}}
+        delete_route='tag_bp.delete',
+        edit_route='tag_bp.edit_tag',
+        detail_route='tag_bp.detail_tag',
+        id_param='tag_id'
+        ) }}
+
+        {{ paginate(pagination=pagination, url='tag_bp.list_paginted_tags') }}
+    </div>
 </div>
 {% endblock %}

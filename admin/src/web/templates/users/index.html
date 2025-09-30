@@ -1,6 +1,8 @@
 {% extends "layout.html" %}
-{% from "macros/button.html" import button %}
+{% from "macros/button.html" import button, button_blank %}
 {% from "macros/paginate.html" import paginate %}
+{% from "macros/table.html" import table %}
+{% from "macros/input.html" import text_input %}
 {% block title %}Listado de usuarios{% endblock %}
 
 {% block header %}
@@ -10,37 +12,17 @@
 {% block content %}
 <!-- Contenedor general -->
 <div class="p-6 max-w-7xl mx-auto space-y-6">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="mb-4">
-                {% for category, message in messages %}
-                    <div class="p-2 mb-2 rounded
-                        {% if category == 'error' %}bg-red-100 text-red-700
-                        {% elif category == 'warning' %}bg-yellow-100 text-yellow-700
-                        {% elif category == 'success' %}bg-green-100 text-green-700
-                        {% else %}bg-gray-100 text-gray-700{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
-
-
-        <!-- Contenedor del buscador -->
-    <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2">
-        <form method="get" action="{{ url_for('users.search_by_email') }}" class="flex space-x-2 w-full max-w-md">
-            <input type="text" name="email" placeholder="Buscar por email"
-                   class="flex-grow border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <button type="submit" 
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-                Buscar
-            </button>
+    <!-- Contenedor del buscador -->
+    <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2 flex-col">
+        <h3 class="text-lg font-semibold mb-2">Buscar por correo electronico</h3>
+        <form method="get" action="{{ url_for('users.search_by_email') }}" class="flex space-x-2 w-full max-w-md items-center">
+            {{ text_input('email', 'email', 'Ingresar Correo', value=request.args.get('email', ''), required=True, class="w-80") }}
+            {{ button('Buscar', type='submit', icon_left_svg='<i class="fa-solid fa-magnifying-glass mr-1"></i>') }}
         </form>
     </div>
 
     <!-- Contenedor filtro y ordenamiento -->
-    <div class="bg-white shadow rounded p-4 flex flex-wrap items-end justify-between gap-4">
+    <div class="bg-white shadow rounded p-4 flex flex-wrap flex-row items-end justify-between gap-4">
         <!-- Contenedor ordenamiento -->
         <div>
             <h3 class="text-lg font-semibold mb-2">Ordenar Usuarios</h3>
@@ -92,100 +74,27 @@
                 </select>
             </div>
             <div class="flex space-x-2">
-                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-                    Aplicar filtros
-                </button>
-                <a href="/users" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
-                    Quitar filtros
-                </a>
+                {{ button('Aplicar filtros', type='submit', icon_left_svg='<i class="fa-solid fa-filter mr-1"></i>') }}
+                {{ button_blank('Quitar filtros', link=url_for('users.index'), icon_left_svg='<i class="fa-solid fa-rotate-left mr-1"></i>') }}
             </div>
         </form>
 
         <!-- Contenedor boton crear usuario -->
-        <div>
-            <a href="/users/create" 
-               class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-2 rounded shadow">
-                Crear un usuario
-            </a>
-        </div>
+        {{ button('Crear Usuario', link=url_for('users.create_get'), icon_left_svg='<i class="fa-solid fa-user-plus mr-1"></i>') }}
     </div>
 
    <!-- Contenedor tabla de usuarios -->
     <div class="bg-white shadow rounded overflow-hidden">
-        <table class="table-auto border-collapse border border-gray-200 w-full text-sm">
-            <thead class="bg-gray-100 text-gray-700">
-                <tr>
-                    <th class="border px-4 py-2">ID</th>
-                    <th class="border px-4 py-2">Usuario</th>
-                    <th class="border px-4 py-2">Correo</th>
-                    <th class="border px-4 py-2">Rol</th>
-                    <th class="border px-4 py-2">Estado</th>
-                    <th class="border px-4 py-2">Creado</th>
-                    <th class="border px-4 py-2">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in pagination["items"] %}
-                <tr class="hover:bg-gray-50">
-                    <td class="border px-4 py-2">{{ user.id }}</td>
-                    <td class="border px-4 py-2">{{ user.first_name }} {{ user.last_name }}</td>
-                    <td class="border px-4 py-2">{{ user.email }}</td>
-                    <td class="border px-4 py-2">{{ get_user_role_name(user.id) or "Sin rol" }}</td>
-                    <td class="border px-4 py-2">
-                        {% if user.deleted_at %}
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                Eliminado
-                            </span>
-                        {% elif user.blocked %}
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                Bloqueado
-                            </span>
-                        {% elif user.active %}
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Activo
-                            </span>
-                        {% else %}
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                Inactivo
-                            </span>
-                        {% endif %}
-                    </td>
-                    <td class="border px-4 py-2">{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A' }}</td>
-                    <td class="border px-4 py-2 text-center">
-                        <div class="flex justify-center space-x-2">
-                            <a href="{{ url_for('users.edit_get', user_id=user.id) }}" 
-                               class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
-                                Editar
-                            </a>
-                            {% if user.deleted_at %}
-                            <form action="{{ url_for('users.restore', user_id=user.id) }}" method="post" class="inline"
-                            onsubmit="return confirm('¿Está seguro de restaurar el usuario {{ user.first_name }} ?')">
-                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
-                                    Restaurar
-                                </button>
-                            </form>
-                            {% else %}
-                            <form action="{{ url_for('users.delete', user_id=user.id) }}" method="post" class="inline" 
-                            onsubmit="return confirm('¿Está seguro de eliminar el usuario {{ user.first_name }} ?')">
-                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
-                                    Eliminar
-                                </button>
-                            </form>
-                            {% endif %}
-                            <a href="{{ url_for('users.detail', user_id=user.id) }}"
-                               class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
-                                Detalles
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="7" class="text-center p-4 text-gray-500">No hay usuarios cargados.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {{ table(
+            data=pagination,
+            columns=columns,
+            edit_route='users.edit_get',
+            delete_route='users.delete',
+            detail_route='users.detail',
+            restore_route='users.restore',
+            id_param='user_id',
+            empty_message="No hay usuarios cargados."
+        ) }}
     </div>
 
     <!-- Contenedor paginacion -->

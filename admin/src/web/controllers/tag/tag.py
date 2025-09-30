@@ -26,10 +26,10 @@ def list_paginted_tags():
             page=page, order_by=order_by, sorted_by=sorted_by
         )
         columns = [
-            {"key": "_name", "label": "Nombre"},
+            {"key": "name", "label": "Nombre"},
             {"key": "slug", "label": "Slug"},
             {"key": "created_at", "label": "Creado"},
-            {"key": "deleted_at", "label": "Estado"},
+            {"key": "deleted_at", "label": "Estado", "render": 'status'}
         ]
         return render_template(
             "tags/index.html",
@@ -38,15 +38,11 @@ def list_paginted_tags():
             sorted_by=sorted_by,
             pagination=pagination,
             columns=columns,
-            deleteForm=deleteForm,
         )
     except Exception as e:
-        flash(f"Error al cargar tags: {str(e)}", "error")
-        return render_template(
-            "tags/index.html", tags=[], order_by="name", sorted_by="asc", urls=urls
-        )
-
-
+        flash(f'Error al cargar tags: {str(e)}', 'error')
+        return render_template("tags/index.html", tags = [], order_by = "name", sorted_by = "asc")
+    
 @tag_bp.post("/create")
 @login_required
 def create_tags():
