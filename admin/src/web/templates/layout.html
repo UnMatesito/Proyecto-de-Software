@@ -9,16 +9,16 @@
     <title>{% block title %}Header de la pagina{% endblock %}</title>
 </head>
 
-<body>
-    <header>
+<body class="flex flex-col min-h-screen">
+    <header class="bg-gray-700 text-white">
         {% block header %}{% endblock %}
     </header>
 
-    <main>
+    <main class="flex-grow p-6">
         {% block content %}{% endblock %}
     </main>
-    
-    <footer class="bg-gray-700 text-white text-center p-4 fixed bottom-0 left-0 w-full z-50">
+
+    <footer class="bg-gray-700 text-white text-center p-6">
         <h3> Proyecto de software - Grupo 09</h3>
     </footer>
 

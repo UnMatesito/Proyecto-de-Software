@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+{% from "macros/button.html" import button, button_blank %}
+{% from "macros/paginate.html" import paginate %}
+{% from "macros/table.html" import table %}
+{% from "macros/input.html" import text_input %}
+{% block title %}Listado de usuarios{% endblock %}
+
+{% block header %}
+<h1 class="text-2xl font-bold p-4 text-center">Usuarios</h1>
+{% endblock %}
+
+{% block content %}
+<!-- Contenedor general -->
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+    <!-- Contenedor del buscador -->
+    <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2 flex-col">
+        <h3 class="text-lg font-semibold mb-2">Buscar por correo electronico</h3>
+        <form method="get" action="{{ url_for('users.search_by_email') }}" class="flex space-x-2 w-full max-w-md items-center">
+            {{ text_input('email', 'email', 'Ingresar Correo', value=request.args.get('email', ''), required=True, class="w-80") }}
+            {{ button('Buscar', type='submit', icon_left_svg='<i class="fa-solid fa-magnifying-glass mr-1"></i>') }}
+        </form>
+    </div>
+
+    <!-- Contenedor filtro y ordenamiento -->
+    <div class="bg-white shadow rounded p-4 flex flex-wrap flex-row items-end justify-between gap-4">
+        <!-- Contenedor ordenamiento -->
+        <div>
+            <h3 class="text-lg font-semibold mb-2">Ordenar Usuarios</h3>
+            <ul class="space-y-2">
+                <li>
+                    <a href="{{ url_for('users.index', sorted_by='desc', active=active, role_id=role_id, order_by='created_at') }}"
+                       class="block px-3 py-2 rounded text-center
+                              {% if order_by == 'created_at' and sorted_by == 'desc' %}
+                                bg-green-300 font-semibold
+                              {% else %}
+                                bg-green-100 hover:bg-green-200
+                              {% endif %}">
+                        Últimas creaciones
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('users.index', sorted_by='asc', active=active, role_id=role_id, order_by='created_at') }}"
+                       class="block px-3 py-2 rounded text-center
+                              {% if order_by == 'created_at' and sorted_by == 'asc' %}
+                                bg-green-300 font-semibold
+                              {% else %}
+                                bg-green-100 hover:bg-green-200
+                              {% endif %}">
+                        Primeras creaciones
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+       <!-- Contenedor filtros -->
+        <form method="get" action="/users" class="flex flex-wrap items-end gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Estado</label>
+                <select name="active" class="border px-3 py-2 rounded">
+                    <option value="">Todos</option>
+                    <option value="1" {% if request.args.get('active') == '1' %} selected {% endif %}>Activo</option>
+                    <option value="0" {% if request.args.get('active') == '0' %} selected {% endif %}>Inactivo</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Rol</label>
+                <select name="role_id" class="border px-3 py-2 rounded">
+                    <option value="">Todos</option>
+                    {% for role in roles %}
+                        <option value="{{ role.id }}" {% if request.args.get('role_id') == role.id|string %}selected{% endif %}>
+                            {{ role.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex space-x-2">
+                {{ button('Aplicar filtros', type='submit', icon_left_svg='<i class="fa-solid fa-filter mr-1"></i>') }}
+                {{ button_blank('Quitar filtros', link=url_for('users.index'), icon_left_svg='<i class="fa-solid fa-rotate-left mr-1"></i>') }}
+            </div>
+        </form>
+
+        <!-- Contenedor boton crear usuario -->
+        {{ button('Crear Usuario', link=url_for('users.create_get'), icon_left_svg='<i class="fa-solid fa-user-plus mr-1"></i>') }}
+    </div>
+
+   <!-- Contenedor tabla de usuarios -->
+    <div class="bg-white shadow rounded overflow-hidden">
+        {{ table(
+            data=pagination,
+            columns=columns,
+            edit_route='users.edit_get',
+            delete_route='users.delete',
+            detail_route='users.detail',
+            restore_route='users.restore',
+            id_param='user_id',
+            empty_message="No hay usuarios cargados."
+        ) }}
+    </div>
+
+    <!-- Contenedor paginacion -->
+    <div class="flex justify-center mt-4">
+        {{ paginate(pagination, "users.index") }}
+    </div>
+</div>
+
+
+{% endblock %}

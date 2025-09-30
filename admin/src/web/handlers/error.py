@@ -33,6 +33,15 @@ def unauthorized(e):
     error = HTTPError(
         code=401,
         message="No autorizado",
-        description="No tienes permiso para acceder a este recurso.",
+        description="No tienes una sesión iniciada para poder acceder a este recurso.",
     )
     return render_template("error.html", error=error), 401
+
+
+def forbidden(e):
+    error = HTTPError(
+        code=403,
+        message="Sin permisos",
+        description="No tienes los permisos necesarios para acceder a este recurso.",
+    )
+    return render_template("error.html", error=error), 403

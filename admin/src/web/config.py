@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 
 from dotenv import load_dotenv
@@ -11,6 +12,14 @@ class Config:
     SESSION_TYPE = os.getenv("SESSION_TYPE", "filesystem")
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
+    SESSION_COOKIE_SECURE = True
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": 10,
+        "pool_recycle": 60,
+        "pool_pre_ping": True,
+    }
+
 
 class ProductionConfig(Config):
     DEBUG = False
@@ -22,7 +31,9 @@ class DevelopmentConfig(Config):
     DEBUG_TB_INTERCEPT_REDIRECTS = (
         False  # Para evitar que el debugbar se detenga en los redirects
     )
+    SESSION_COOKIE_SECURE = False
     pass
+
 
 class TestingConfig(Config):
     TESTING = True
@@ -34,5 +45,8 @@ config = {
     "testing": TestingConfig,
 }
 
-env = os.getenv("FLASK_ENV", "development")
-current_config = config.get(env, DevelopmentConfig)
+
+def get_current_config(env=None):
+    if env is None:
+        env = os.getenv("FLASK_ENV", "production")
+    return config.get(env, ProductionConfig)
