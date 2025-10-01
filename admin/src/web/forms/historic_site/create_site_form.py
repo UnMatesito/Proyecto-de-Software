@@ -5,9 +5,10 @@ from wtforms import (
     SelectMultipleField,
     StringField,
     SubmitField,
+    IntegerField
 )
 from wtforms.validators import DataRequired, Length, NumberRange
-
+from datetime import datetime, timezone
 from core.services import (
     get_all_categories,
     get_all_conservation_state,
@@ -38,11 +39,17 @@ class CreateSiteForm(FlaskForm):
         ],
     )
 
-    inauguration_year = StringField(
+    inauguration_year = IntegerField(
         "Año de inaguracion del sitio",
         validators=[
             DataRequired(message="El año de inauguración del sitio es obligatorio"),
+             NumberRange(
+                min=1000,
+                max= datetime.now(timezone.utc).year,
+                message="La latitud se debe encontrar en un rago de -90 a 90",
+            ),
         ],
+        
     )
 
     province = SelectField(
@@ -64,10 +71,10 @@ class CreateSiteForm(FlaskForm):
     )
 
     conservation_state = SelectField(
-        "Estado de conservacion",
+        "Estado de conservación",
         coerce=int,
         validators=[
-            DataRequired(message="El estado de conservacion es obligatorio"),
+            DataRequired(message="El estado de conservación es obligatorio"),
         ],
     )
 
@@ -114,15 +121,26 @@ class CreateSiteForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         """Constructor"""
         super(CreateSiteForm, self).__init__(*args, **kwargs)
-        self.province.choices = [  # Cargo las provincias en el select
+
+        self.province.choices = [
+            (0, "Seleccionar provincia ")
+        ] + [  # Cargo las provincias en el select
             (province.id, province.name) for province in get_all_provinces()
         ]
-        self.conservation_state.choices = [  # Cargo los estados en el select
+
+        self.conservation_state.choices = [
+            (0, "Seleccionar estado de conservación")
+        ] + [  # Cargo los estados en el select
             (state.id, state.state) for state in get_all_conservation_state()
         ]
-        self.category.choices = [  # Cargo las categortias en el select
+
+        self.category.choices = [
+            (0, "Seleccionar category")
+        ] + [  # Cargo las categorias en el select
             (category.id, category.name) for category in get_all_categories()
         ]
-        self.tags.choices = [  # Cargo las categortias en el select
+
+        self.tags.choices = [  # Cargo las tags en el select
             (tag.id, tag.name) for tag in get_all_tags()
         ]
+
