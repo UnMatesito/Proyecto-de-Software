@@ -1,5 +1,3 @@
-import os
-from bs4 import BeautifulSoup
 import folium
 from flask import (
     Blueprint,

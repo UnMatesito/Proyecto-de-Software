@@ -71,42 +71,18 @@ def create_app(env="development", static_folder="../../static"):
 
         seed_db(env)
 
-    # TODO: Eliminar
-    @app.cli.command("delete-tag")
-    def delete_tag_command():
-        from core.services import delete_tag
+    # Inicialización automática para producción
+    with app.app_context():
+        if env == "development":
+            from core.seeds import run as seed_db
+            from core.database import reset_db
 
-        delete_tag(1)
+            # Borra y crea la base de datos
+            reset_db(app)
 
-    # TODO: Eliminar
-    @app.cli.command("paginated_tag")
-    def paginated_tag_command():
-        from core.services import get_paginated_tags
+            # Corre los seeds
+            seed_db(app)
 
-        print(get_paginated_tags(1, "name", "asc"))
-
-        print(get_paginated_tags(1, "name", "dsc"))
-
-    # TODO: Eliminar
-    @app.cli.command("update_site")
-    def update_site_command():
-        from core.services import update_historic_site
-
-        body = {
-            "name": "Updated Obalisco",
-            "brief_description": "Updated brief decription",
-            "full_description": "Updated full description",
-            "latitude": 1111111,
-            "longitude": 22222,
-            "inauguration_year": 2025,
-            "is_visible": True,
-            "city_id": 2,
-            "conservation_state_id": 1,
-            "category_id": 1,
-            "tag_ids": [1],
-            "historic_site_id": 1,
-        }
-        update_historic_site(body)
 
     # Métodos de jinja
     app.jinja_env.globals.update(is_authenticated=is_authenticated)
