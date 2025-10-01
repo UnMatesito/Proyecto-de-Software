@@ -1,18 +1,15 @@
-from flask import Flask, render_template, session, flash, redirect, url_for
+from flask import Flask
 from flask_debugtoolbar import DebugToolbarExtension
 
 from core.database import db
-from core.services import get_user_by_id
 from core.utils.bcrypt import bcrypt
-from web.forms.auth import AuthForm
 from flask_session import Session
 
 from .config import get_current_config
-from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp, site_bp
-from .forms.auth import AuthForm
 from .controllers import (
     auth_bp,
     feature_flag_bp,
+    main_bp,
     site_bp,
     tag_bp,
     user_bp,
@@ -42,40 +39,11 @@ def create_app(env="development", static_folder="../../static"):
     db.init_app(app)
     session.init_app(app)
 
-    # Rutas
-    @app.route("/")
-    def home():
-        if not is_authenticated():
-            return render_template("auth/login.html", form=AuthForm())
-
-        user_id = session.get("user_id")
-        if not user_id:
-            flash("No hay usuario en sesión", "error")
-            return redirect(url_for("auth.login"))
-
-        user = get_user_by_id(int(user_id))
-
-        return render_template("home.html", user=user)
-
-    @app.route("/profile")
-    def profile():
-        if not is_authenticated():
-            return render_template("auth/login.html", form=AuthForm())
-
-        user_id = session.get("user_id")
-        if not user_id:
-            flash("No hay usuario en sesión", "error")
-            return redirect(url_for("auth.login"))
-
-        user = get_user_by_id(int(user_id))
-
-        # Render the user detail template directly
-        return render_template("users/detail.html", user=user)
-
     # Hooks
     app.before_request(hook_admin_maintenance)
 
     # Blueprints
+    app.register_blueprint(main_bp)
     app.register_blueprint(user_management_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(tag_bp)
@@ -103,15 +71,14 @@ def create_app(env="development", static_folder="../../static"):
     # Inicialización automática para producción
     with app.app_context():
         if env == "development":
-            from core.seeds import run as seed_db
             from core.database import reset_db
+            from core.seeds import run as seed_db
 
             # Borra y crea la base de datos
             reset_db(app)
 
             # Corre los seeds
             seed_db(app)
-
 
     # Métodos de jinja
     app.jinja_env.globals.update(is_authenticated=is_authenticated)

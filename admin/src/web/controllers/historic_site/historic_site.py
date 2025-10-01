@@ -1,6 +1,7 @@
 import folium
 from flask import (
     Blueprint,
+    Response,
     flash,
     jsonify,
     redirect,
@@ -8,7 +9,6 @@ from flask import (
     request,
     session,
     url_for,
-    Response
 )
 
 from core.services import (
@@ -17,17 +17,18 @@ from core.services import (
     get_category_by_id,
     get_city_by_id,
     get_conservation_state_by_id,
+    get_historic_site_by_id,
     get_province_by_id,
+    get_sites_filtered,
     get_tag_by_id,
     get_user_by_id,
-    get_sites_filtered,
-    get_historic_site_by_id
 )
 from core.utils.export import export_sites_to_csv, get_csv_filename
 from web.forms.historic_site import CreateSiteForm
 from web.utils.auth import login_required, permission_required
 
 site_bp = Blueprint("site_bp", __name__, url_prefix="/sites")
+
 
 @site_bp.get("/")
 def list_paginated_sites():
@@ -68,6 +69,7 @@ def list_paginated_sites():
         flash(f"Error al cargar los sitios: {e}", "error")
         return redirect("/home"), 400
 
+
 # Ver el detalle del site#
 @site_bp.get("/detail/<int:site_id>")
 def detail(site_id):
@@ -77,9 +79,16 @@ def detail(site_id):
         lon = float(site.longitude)
         lat = float(site.latitude)
         map = folium.Map(location=[lat, lon], zoom_start=17)
-        folium.Marker(location=[lat, lon], popup=folium.Popup(site.name, show=True)).add_to(map)
+        folium.Marker(
+            location=[lat, lon], popup=folium.Popup(site.name, show=True)
+        ).add_to(map)
         map_html = map._repr_html_()
-        return render_template("historic_site/detail.html", site=site, map=map_html, province=province), 200
+        return (
+            render_template(
+                "historic_site/detail.html", site=site, map=map_html, province=province
+            ),
+            200,
+        )
     except Exception as e:
         print(e)
         flash(f"Error al intentar ver detalle del tag, error: {e}", "error")
@@ -98,7 +107,9 @@ def get_create():
         # Extraer solo el contenido del body (mapa + scripts)
         print(map_html)
         form = CreateSiteForm()
-        return render_template("historic_site/create.html", form=form, map_html=map_html, map_name=map_name)
+        return render_template(
+            "historic_site/create.html", form=form, map_html=map_html, map_name=map_name
+        )
     except Exception as e:
         flash(f"Error al cargar el formulario {e}", "error")
         return redirect("/home"), 400
@@ -144,13 +155,14 @@ def post_create():
                 tags=tags,
             )
             return redirect(url_for("site_bp.list_paginated_sites"))
-        except Exception as e:  
+        except Exception as e:
             print(e)
             flash(f"Error al crear el sitio, {e}", "error")
             return redirect("/sites/create"), 400
     else:
-        flash(f"Error al crear el sitio", "error")
+        flash("Error al crear el sitio", "error")
         return render_template("historic_site/create.html", form=form), 400
+
 
 @site_bp.get("/export")
 @login_required

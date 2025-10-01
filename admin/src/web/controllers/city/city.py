@@ -1,5 +1,6 @@
 from flask import (
     Blueprint,
+    Response,
     flash,
     jsonify,
     redirect,
@@ -7,12 +8,12 @@ from flask import (
     request,
     session,
     url_for,
-    Response
 )
 
 from core.services import get_province_by_id
 
 city_bp = Blueprint("city_bp", __name__, url_prefix="/cities")
+
 
 @city_bp.get("/<int:province_id>")
 def get_cities(province_id):

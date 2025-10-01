@@ -12,9 +12,8 @@ from core.services.user_service import (
     restore_user,
     update_user_attribute,
 )
-from web.utils.auth import get_user_role_name
 from web.forms.user import ChangePasswordForm, CreateUserForm, EditUserForm
-from web.utils.auth import login_required, permission_required
+from web.utils.auth import get_user_role_name, login_required, permission_required
 from web.utils.hooks import hook_admin_maintenance
 
 user_bp = Blueprint("users", __name__, url_prefix="/users")
@@ -32,12 +31,16 @@ def index():
         active_param = request.args.get("active", None)
         role_id = request.args.get("role_id", None)
         columns = [
-                {'key': 'id', 'label': 'ID'},
-                {'key': 'full_name', 'label': 'Usuario', 'render': 'user_name'},
-                {'key': 'email', 'label': 'Correo'},
-                {'key': 'role', 'label': 'Rol', 'render': lambda user: get_user_role_name(user.id) or 'Sin rol'},
-                {'key': 'status', 'label': 'Estado', 'render': 'status'},
-                {'key': 'created_at', 'label': 'Creado', 'render': 'date'}
+            {"key": "id", "label": "ID"},
+            {"key": "full_name", "label": "Usuario", "render": "user_name"},
+            {"key": "email", "label": "Correo"},
+            {
+                "key": "role",
+                "label": "Rol",
+                "render": lambda user: get_user_role_name(user.id) or "Sin rol",
+            },
+            {"key": "status", "label": "Estado", "render": "status"},
+            {"key": "created_at", "label": "Creado", "render": "date"},
         ]
         users_page = get_paginated_users(
             page=page,

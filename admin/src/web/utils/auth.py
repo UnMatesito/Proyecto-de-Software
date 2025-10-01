@@ -119,33 +119,12 @@ def system_admin_required(f):
     return decorated_function
 
 
-"""
-def check_maintenance_mode():
-    Verifica si el modo mantenimiento está activo
-    try:
-        flag = FeatureFlag.query.filter_by(name="admin_maintenance_mode").first()
-        if flag and flag.is_enabled:
-            # Solo permitir acceso a System Admins
-            if "user_id" in session:
-                user = User.query.get(session["user_id"])
-                if user and user.system_admin:
-                    return False, None
-            return True, flag.maintenance_message
-        return False, None
-    except SQLAlchemyError:
-        # Error al consultar la base de datos, asumir que no está en mantenimiento
-        return False, None
-    except Exception:
-        # Cualquier otro error, asumir que no está en mantenimiento
-        return False, None
-"""
-
 # Funciones para jinja2
 
 
 def is_authenticated():
     """Devuelve true si el usuario tiene la sesión iniciada"""
-    return session.get('user_id') is not None
+    return "user_id" in session
 
 
 def is_system_admin():

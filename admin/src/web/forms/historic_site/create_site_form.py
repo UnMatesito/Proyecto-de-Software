@@ -1,14 +1,16 @@
+from datetime import datetime, timezone
+
 from flask_wtf import FlaskForm
 from wtforms import (
     FloatField,
+    IntegerField,
     SelectField,
     SelectMultipleField,
     StringField,
     SubmitField,
-    IntegerField
 )
 from wtforms.validators import DataRequired, Length, NumberRange
-from datetime import datetime, timezone
+
 from core.services import (
     get_all_categories,
     get_all_conservation_state,
@@ -43,13 +45,12 @@ class CreateSiteForm(FlaskForm):
         "Año de inaguracion del sitio",
         validators=[
             DataRequired(message="El año de inauguración del sitio es obligatorio"),
-             NumberRange(
+            NumberRange(
                 min=1000,
-                max= datetime.now(timezone.utc).year,
+                max=datetime.now(timezone.utc).year,
                 message="La latitud se debe encontrar en un rago de -90 a 90",
             ),
         ],
-        
     )
 
     province = SelectField(
@@ -113,7 +114,9 @@ class CreateSiteForm(FlaskForm):
     )
 
     tags = SelectMultipleField(
-        "Seleccionar Tags", coerce=int, validators=[DataRequired("Al menos un tag es necesario")]
+        "Seleccionar Tags",
+        coerce=int,
+        validators=[DataRequired("Al menos un tag es necesario")],
     )
 
     submit = SubmitField("Crear")
@@ -143,4 +146,3 @@ class CreateSiteForm(FlaskForm):
         self.tags.choices = [  # Cargo las tags en el select
             (tag.id, tag.name) for tag in get_all_tags()
         ]
-
