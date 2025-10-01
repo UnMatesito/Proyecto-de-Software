@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% from "macros/button.html" import button %}
+{% from "macros/paginate.html" import paginate %}
+{% from "macros/table.html" import table %}
+{% from "macros/toast.html" import toast %}
+{% block title %}Listado de tags{% endblock %}
+
+{% block header %}
+<h1 class="text-2xl font-bold p-4 text-center">Tags</h1>
+    {{ button("Volver al inicio", link=url_for('home'), icon_left_svg='<i class="fa-solid fa-arrow-left mr-1"></i>', class="absolute top-3 left-3") }}
+{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    {{toast(message=message, type=category)}}
+                {% endfor %}
+            </div>
+        {% endif %}
+{% endwith %}
+
+<div class="flex flex-col justify-center items-center">
+    <div class="p-4 flex gap-4">
+    <div class="w-64 p-4 border-2 border-gray-300 rounded shadow-lg flex-none space-x-4">
+        <h3 class="text-lg font-semibold mb-2">Ordenar Tags</h3>
+        <ul class="space-y-2">
+            <li>
+                <a href="{{ url_for('tag_bp.list_paginted_tags', sorted_by='asc', order_by='name') }}"
+                class="
+                block px-3 py-2 rounded
+                {% if order_by == 'name' and sorted_by == 'asc' %}
+                    bg-green-300
+                    font-semibold
+                {% else %}
+                bg-green-100  hover:bg-green-200
+                {% endif %}">
+                    Ordenar A-Z
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('tag_bp.list_paginted_tags', sorted_by='desc', order_by='name') }}"
+                    class="
+                    block px-3 py-2 rounded
+                    {% if order_by == 'name' and sorted_by == 'desc' %}
+                    bg-green-300
+                    font-semibold
+                    {% else %}
+                    bg-green-100  hover:bg-green-200
+                    {% endif %}">
+                    Ordenar Z-A
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('tag_bp.list_paginted_tags', sorted_by='desc', order_by='created_at') }}"
+                    class="
+                    block px-3 py-2 rounded
+                    {% if order_by == 'created_at' and sorted_by == 'desc' %}
+                    bg-green-300
+                    font-semibold
+                    {% else %}
+                    bg-green-100  hover:bg-green-200
+                    {% endif %}">
+                    Ordenar Últimas creaciones
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('tag_bp.list_paginted_tags', sorted_by='asc', order_by='created_at') }}"
+                    class="
+                    block px-3 py-2 rounded
+                    {% if order_by == 'created_at' and sorted_by == 'asc' %}
+                    bg-green-300
+                    font-semibold
+                    {% else %}
+                    bg-green-100  hover:bg-green-200
+                    {% endif %}">
+                    Ordenar Primeras creaciones
+                </a>
+            </li>
+            <div class="border-t border-2"></div>
+            <li>
+                {{ button("Crear Tag", link=url_for('tag_bp.show_create_tags'), icon_left_svg='<i class="fa-solid fa-plus mr-1"></i>', class="w-full h-14") }}
+            </li>
+        </ul>
+    </div>
+
+    <div class="flex flex-col items-center gap-y-3">
+        {{ table(
+        data=tags,
+        columns=columns,
+        title="Lista de Tags (" + tags|length|string + " encontrados)",
+        empty_message="No se encontraron tags",
+        delete_route='tag_bp.delete',
+        edit_route='tag_bp.edit_tag',
+        detail_route='tag_bp.detail_tag',
+        id_param='tag_id'
+        ) }}
+
+        {{ paginate(pagination=pagination, url='tag_bp.list_paginted_tags') }}
+    </div>
+</div>
+{% endblock %}

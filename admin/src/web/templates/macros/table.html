@@ -1,0 +1,118 @@
+{% from 'macros/button.html' import button, button_error, button_warning %}
+{% from 'macros/status.html' import active_status, blocked_status, eliminated_status, inactive_status%}
+
+{% macro table(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
+<div class="relative overflow-x-auto">
+  {% if title %}
+    <h2 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">{{ title }}</h2>
+  {% endif %}
+
+  {# Detectar si data es dict con clave "items", si no tomarlo directo #}
+  {% if data is mapping %}
+    {% set items = data.get("items", []) %}
+  {% else %}
+    {% set items = data %}
+  {% endif %}
+
+  {% if items and items|length > 0 %}
+    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <tr>
+          {% for col in columns %}
+            <th scope="col" class="px-6 py-3">{{ col.label }}</th>
+          {% endfor %}
+          {% if edit_route or delete_route or detail_route %}
+            <th scope="col" class="px-6 py-3 text-center">Acciones</th>
+          {% endif %}
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for item in items %}
+          <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+            {% for col in columns %}
+              <td class="px-6 py-4">
+                {% if col.render %}
+                  {% if col.render == 'user_name' %}
+                    {{ item.first_name }} {{ item.last_name }}
+                  {% elif col.render == 'role' %}
+                    {{ item.role.name if item.role else "Sin rol" }}
+                  {% elif col.render == 'status' %}
+                    {{ render_status(item) }}
+                  {% elif col.render == 'date' %}
+                    {{ item.created_at.strftime('%d/%m/%Y') if item.created_at else 'N/A' }}
+                  {% else %}
+                    {{ col.render(item) }}
+                  {% endif %}
+                {% else %}
+                  {% set value = item|attr(col.key) %}
+                  {{ value if value is not none else '—' }}
+                {% endif %}
+              </td>
+            {% endfor %}
+
+            {% if edit_route or delete_route or detail_route %}
+              <td class="px-6 py-4 text-center">
+                {{ render_action_buttons(item, detail_route , edit_route, delete_route, restore_route, id_param) }}
+              </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="text-center py-12">
+      <div class="text-gray-400 text-6xl mb-4">📋</div>
+      <p class="text-gray-500 dark:text-gray-400">{{ empty_message }}</p>
+    </div>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro render_action_buttons(item, detail_route=None, edit_route=None, delete_route=None, restore_route=None, id_param="id") %}
+  <div class="flex justify-center space-x-2">
+    {% if detail_route %}
+      {% set detail_params = {id_param: item.id} %}
+      {{ button("Detalles", link=url_for(detail_route, **detail_params), icon_left_svg=get_icon("view")) }}
+    {% endif %}
+
+    {% if edit_route %}
+      {% set edit_params = {id_param: item.id} %}
+      {{ button_warning("Editar", link=url_for(edit_route, **edit_params), icon_left_svg=get_icon("edit")) }}
+    {% endif %}
+
+    {% if item.deleted_at and restore_route %}
+      {% set restore_params = {id_param: item.id} %}
+      <form action="{{ url_for(restore_route, **restore_params) }}" method="post" class="inline"
+            onsubmit="return confirm('¿Está seguro de restaurar este elemento?')">
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Restaurar</button>
+      </form>
+    {% elif delete_route and not item.deleted_at %}
+      {% set delete_params = {id_param: item.id} %}
+      {{ button_error("Eliminar", link=url_for(delete_route, **delete_params), icon_left_svg=get_icon("delete")) }}
+    {% endif %}
+
+  </div>
+{% endmacro %}
+
+{# Macro para los tags de estado #}
+{% macro render_status(item) %}
+  {% if item.deleted_at %}
+    {{ eliminated_status() }}
+  {% elif item.blocked %}
+    {{ blocked_status() }}
+  {% else %}
+    {{ active_status() }}
+  {% endif %}
+{% endmacro %}
+
+{# Macro para iconos de botones #}
+{% macro get_icon(icon_name) %}
+  {% if icon_name == 'edit' %}
+    <i class="fa-solid fa-pen-to-square mr-1"></i>
+  {% elif icon_name == 'delete' %}
+    <i class="fa-solid fa-trash mr-1"></i>
+  {% elif icon_name == 'view' %}
+    <i class="fa-solid fa-eye mr-1"></i>
+  {% endif %}
+{% endmacro %}
