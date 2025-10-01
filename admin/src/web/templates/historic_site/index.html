@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+
+{% from "macros/button.html" import button %}
+{% from "macros/paginate.html" import paginate %}
+{% from "macros/table.html" import table %}
+{% from "macros/toast.html" import toast %}
+
+{% block title %}Sitios Historicos{% endblock %}
+
+{% block header %}
+    <h1 class="text-2xl font-bold text-center mt-6">Sitios Historicos</h1>
+{% endblock %}
+    
+{% block content %}
+<div class="flex flex-col justify-center items-center">
+    <div class="p-4 flex gap-4">
+    <div class="w-64 p-4 border-2 border-gray-300 rounded shadow-lg flex-none space-x-4">
+        <h3 class="text-lg font-semibold mb-2">Ordenar Sitios</h3>
+        <ul class="space-y-2">
+            <li>
+                <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='asc', order_by='name') }}"
+                class="
+                block px-3 py-2 rounded
+                {% if order_by == 'name' and sorted_by == 'asc' %}
+                    bg-green-300
+                    font-semibold
+                {% else %}
+                bg-green-100  hover:bg-green-200
+                {% endif %}">
+                    Ordenar A-Z
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='desc', order_by='name') }}"
+                    class="
+                    block px-3 py-2 rounded
+                    {% if order_by == 'name' and sorted_by == 'desc' %}
+                    bg-green-300
+                    font-semibold
+                    {% else %}
+                    bg-green-100  hover:bg-green-200
+                    {% endif %}">
+                    Ordenar Z-A
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='desc', order_by='created_at') }}"
+                    class="
+                    block px-3 py-2 rounded
+                    {% if order_by == 'created_at' and sorted_by == 'desc' %}
+                    bg-green-300
+                    font-semibold
+                    {% else %}
+                    bg-green-100  hover:bg-green-200
+                    {% endif %}">
+                    Ordenar Últimas creaciones
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='asc', order_by='created_at') }}"
+                    class="
+                    block px-3 py-2 rounded
+                    {% if order_by == 'created_at' and sorted_by == 'asc' %}
+                    bg-green-300
+                    font-semibold
+                    {% else %}
+                    bg-green-100  hover:bg-green-200
+                    {% endif %}">
+                    Ordenar Primeras creaciones
+                </a>
+            </li>
+            <div class="border-t border-2"></div>
+            <li>
+                {{ button("Crear Sitio", link=url_for('site_bp.get_create'), icon_left_svg='<i class="fa-solid fa-plus mr-1"></i>', class="w-full h-14") }}
+            </li>
+            <div class="border-t border-2"></div>
+            <li>
+                {{ button(
+                    "Exportar CSV",
+                    link=url_for(
+                        'site_bp.export',
+                        **dict(request.args.to_dict(), order_by=order_by, sorted_by=sorted_by)
+                    )
+                ) }}
+            </li>
+        </ul>
+    </div>
+    
+    {{table(data=sites, 
+        columns=columns, 
+        edit_route="site_bp.get_edit",
+        detail_route="site_bp.detail",
+        delete_route="site_bp.delete",
+        restore_route="site_bp.restore",
+        validate_route="site_bp.validate_site",
+        empty_message="No hay sitios para mostrar", 
+        title="Sitios Historicos",
+        id_param="site_id")}}
+
+
+</div>
+    <!-- Paginación -->
+    {{ paginate(pagination=pagination, url='site_bp.list_paginated_sites') }}
+
+{% endblock %}
