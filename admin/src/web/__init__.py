@@ -24,10 +24,17 @@ from .utils.auth import (
 )
 from .utils.hooks import hook_admin_maintenance
 
+import os
+
 session = Session()
 
 
 def create_app(env="development", static_folder="../../static"):
+    # Imprimir todas las variables de entorno
+    for key, value in os.environ.items():
+        print(f"{key}={value}")
+
+
     app = Flask(__name__, static_folder=static_folder)
     app.config.from_object(get_current_config(env))
 
