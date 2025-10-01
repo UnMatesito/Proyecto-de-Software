@@ -1,10 +1,7 @@
-import os
-from bs4 import BeautifulSoup
-import folium
+
 from flask import (
     Blueprint,
     flash,
-    jsonify,
     redirect,
     render_template,
     request,
@@ -23,15 +20,22 @@ from core.services import (
     get_tag_by_id,
     get_user_by_id,
     get_sites_filtered,
-    get_historic_site_by_id
+    get_historic_site_by_id,
+    delete_historic_site, 
+    restore_historic_site,
+    update_historic_site,
+    validate
 )
+
 from core.utils.export import export_sites_to_csv, get_csv_filename
-from web.forms.historic_site import CreateSiteForm
+from web.forms.historic_site import CreateSiteForm, EditSiteForm
 from web.utils.auth import login_required, permission_required
 
 site_bp = Blueprint("site_bp", __name__, url_prefix="/sites")
 
 @site_bp.get("/")
+@login_required
+@permission_required("site_index")
 def list_paginated_sites():
     try:
         order_by = request.args.get("order_by", "name")
@@ -47,16 +51,17 @@ def list_paginated_sites():
             per_page=25,
         )
 
-        # Armamos columnas para la tabla
+        sites = pagination["items"]
+
+        # ASrmamos columnas para la tabla
         columns = [
             {"key": "name", "label": "Nombre"},
-            {"key": "city.name", "label": "Ciudad"},
-            {"key": "city.province.name", "label": "Provincia"},
-            {"key": "conservation_state.state", "label": "Estado de conservación"},
+            {"key": "city", "label": "Ciudad", "render": lambda site: site.city.name},
+            {"key": "city.province.name", "label": "Provincia", "render": lambda site: site.city.province.name},
+            {"key": "conservation_state.state", "label": "Estado de conservación", "render": lambda site: site.conservation_state.state},
             {"key": "is_visible", "label": "Visibilidad"},
+            {"key": "deleted_at", "label": "Estado", "render": 'status'},
         ]
-
-        sites = pagination["items"]
 
         return render_template(
             "historic_site/index.html",
@@ -64,56 +69,42 @@ def list_paginated_sites():
             order_by=order_by,
             sorted_by=sorted_by,
             pagination=pagination,
-            columns=columns,
+            columns=columns
         )
     except Exception as e:
-        flash(f"Error al cargar los sitios: {e}", "error")
-        return redirect("/home"), 400
+        print(e)
+        flash(f"Error al cargar los sitios, error: {e}", "error")
+        return redirect("/home")
 
-# Ver el detalle del site#
+# Ver el detalle del site
 @site_bp.get("/detail/<int:site_id>")
+@login_required
+@permission_required("site_show")
 def detail(site_id):
     try:
         site = get_historic_site_by_id(site_id)
         province = get_province_by_id(site.city.province.id)
         lon = float(site.longitude)
         lat = float(site.latitude)
-        map = folium.Map(location=[lat, lon], zoom_start=17)
-        folium.Marker(location=[lat, lon], popup=folium.Popup(site.name, show=True)).add_to(map)
-        map_html = map._repr_html_()
-        return render_template("historic_site/detail.html", site=site, map=map_html, province=province), 200
+        return render_template("historic_site/detail.html", site=site, lat=lat, lon=lon, province=province, site_name=site.name)
     except Exception as e:
-        print(e)
         flash(f"Error al intentar ver detalle del tag, error: {e}", "error")
         return redirect("/sites")
 
-
 @site_bp.get("/create")
 @login_required
+@permission_required("site_new")
 def get_create():
     try:
-        m = folium.Map(location=[-34.9205, -57.9536], zoom_start=12)
-        m.add_child(folium.LatLngPopup())
-        map_name = m.get_name()
-
-        map_html = m.get_root().render()
-        # Extraer solo el contenido del body (mapa + scripts)
-        print(map_html)
         form = CreateSiteForm()
-        return render_template("historic_site/create.html", form=form, map_html=map_html, map_name=map_name)
+        return render_template("historic_site/create.html", form=form)
     except Exception as e:
-        flash(f"Error al cargar el formulario {e}", "error")
-        return redirect("/home"), 400
-
-
-@site_bp.get("/cities/<int:province_id>")
-def get_cities(province_id):
-    province = get_province_by_id(province_id)
-    return jsonify([{"id": c.id, "name": c.name} for c in province.cities])
-
+        flash(f"Error al cargar el formulario, error: {e}", "error")
+        return redirect("/home")
 
 @site_bp.post("/create")
 @login_required
+@permission_required("site_new")
 def post_create():
     current_user = get_user_by_id(session["user_id"])
     form = CreateSiteForm()
@@ -136,7 +127,6 @@ def post_create():
             for tag_id in form.tags.data:
                 tags.append(get_tag_by_id(tag_id))
             site = create_historic_site(**site)
-            flash("Se creo correctamente el sitio", "success")
             assign_relations_to_historic_site(
                 historic_site=site,
                 conservation_state=conservation_state,
@@ -145,15 +135,110 @@ def post_create():
                 user=current_user,
                 tags=tags,
             )
+            flash("Se creo correctamente el sitio", "success")
             return redirect(url_for("site_bp.list_paginated_sites"))
         except Exception as e:  
-            print(e)
             flash(f"Error al crear el sitio, {e}", "error")
-            return redirect("/sites/create"), 400
+            return redirect(url_for("site_bp.get_create"))
     else:
         flash(f"Error al crear el sitio", "error")
-        return render_template("historic_site/create.html", form=form), 400
+        return render_template("historic_site/create.html", form=form)
 
+@site_bp.get("/edit/<int:site_id>")
+@login_required
+@permission_required("site_update")
+def get_edit(site_id):
+    try:
+        site = get_historic_site_by_id(site_id=site_id)
+        site_name = site.name
+        form = EditSiteForm(site=site)
+        
+        #Cargo tags del sitio
+        tags = site.tags
+        tags_id = []
+        for tag in tags:
+            tags_id.append(tag.id)
+        if (tags):
+            form.tags.data = tags_id
+
+        lon = float(site.longitude)
+        lat = float(site.latitude)
+             
+        return render_template("historic_site/edit.html", form=form, lat=lat, lon=lon, site_name=site_name)
+    except Exception as e:
+        flash(f"Se produjo un error, {e}", "error")
+        return redirect(url_for("site_bp.list_paginated_sites"))
+    
+@site_bp.post("/edit/<int:site_id>")
+@login_required
+@permission_required("site_update")
+def post_edit(site_id):
+    form = EditSiteForm()
+    if form.validate_on_submit():
+        try:
+            body = {
+            "historic_site_id": site_id,
+            "name": form.name.data,
+            "brief_description": form.brief_description.data,
+            "full_description": form.full_description.data,
+            "inauguration_year": form.inauguration_year.data,
+            "location": {
+                            "lat": form.latitude.data,
+                            "lon": form.longitude.data,
+            },
+            "is_visible": form.is_visible.data,
+            "city": form.city.data,
+            "conservation_state": form.conservation_state.data,
+            "category": form.category.data,
+            "tags": form.tags.data,
+        }
+            update_historic_site(body)
+            flash(f"El sitio {site_id} fue eliminado exitosamente", "success")
+            return redirect(url_for("site_bp.list_paginated_sites"))
+        except Exception as e:
+            flash(f"Se produjo un error al intentar editar el sitio {site_id}, {e}", "error")
+            return redirect(url_for("site_bp.list_paginated_sites"))
+    else:
+        for e in form.errors:
+            flash(f"Se produjo un error al intentar editar el sitio {site_id}, error: {e}", "error")
+        return redirect(url_for("site_bp.get_edit", site_id=site_id))
+        
+@site_bp.get("/delete/<int:site_id>")
+@login_required
+@permission_required("site_destroy")
+def delete(site_id):
+    try:
+        delete_historic_site(site_id=site_id)
+        flash(f"El sitio {site_id} fue eliminado exitosamente", "success")
+        return redirect(url_for("site_bp.list_paginated_sites"))
+    except Exception as e:
+        flash(f"Error al intentar eliminar el sitio {site_id}, {e}", "error")
+        return redirect(url_for("site_bp.list_paginated_sites"))
+
+@site_bp.post("/restore/<int:site_id>")
+@login_required
+@permission_required("site_restore")
+def restore(site_id):
+    try:
+        restore_historic_site(site_id=site_id)
+        flash(f"El sitio {site_id} fue restaurado exitosamente", "success")
+        return redirect(url_for("site_bp.list_paginated_sites"))
+    except Exception as e:
+        flash(f"Error al intentar restaurar el sitio {site_id}, {e}", "error")
+        return redirect(url_for("site_bp.list_paginated_sites")) 
+
+@site_bp.get("/validate/<int:site_id>")
+@login_required
+@permission_required("proposal_approve")
+def validate_site(site_id):
+    try:
+        validate(site_id=site_id)
+        flash(f"Se valido correctamente el sitio {site_id}", "success")
+        return redirect(url_for("site_bp.list_paginated_sites"))
+    except Exception as e:
+        flash(f"Error al intentar validar el sitio {site_id}, {e}", "error")
+        return redirect(url_for("site_bp.list_paginated_sites"))
+    
 @site_bp.get("/export")
 @login_required
 @permission_required("site_export")
