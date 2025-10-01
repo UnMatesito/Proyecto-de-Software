@@ -61,7 +61,7 @@ def seed_permissions():
         ("site_show", "Ver detalle de sitio"),
         ("site_export", "Exportar sitios"),
         ("site_history", "Ver historial de sitio"),
-        ("site_restore", "Restaurar sitio borrado sitio"),
+        ("site_restore", "Restaurar sitio borrado"),
     ]
 
     # Permisos para tags
