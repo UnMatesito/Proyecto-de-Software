@@ -23,7 +23,7 @@ class Config:
 
 class ProductionConfig(Config):
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "postgresql+psycopg2://grupo09:wx3zmchLkK9uwssaLJpj@postgresql:5432/postgres")
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
     pass
 
 
