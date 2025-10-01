@@ -42,8 +42,8 @@ def export_sites_to_csv(sites):
                     site.conservation_state.state if site.conservation_state else ""
                 ),
                 "Fecha de Registro": (
-                    site.registration_date.strftime("%Y-%m-%d %H:%M:%S")
-                    if site.registration_date
+                    site.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                    if site.created_at
                     else ""
                 ),
                 "Latitud": site.latitude,

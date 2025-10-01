@@ -70,7 +70,7 @@ def create_app(env="development", static_folder="../../static"):
 
     # Inicialización automática para producción
     with app.app_context():
-        if env == "development":
+        if env == "production":
             from core.database import reset_db
             from core.seeds import run as seed_db
 

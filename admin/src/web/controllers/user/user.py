@@ -315,14 +315,14 @@ def change_self_password_get():
     try:
         if not current_user:
             flash("Usuario no encontrado", "error")
-            return redirect(url_for("home"))
+            return redirect(url_for("main_bp.home"))
         form = ChangePasswordForm()
         return render_template(
             "users/change_password.html", form=form, user=current_user
         )
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
-        return redirect(url_for("home"))  # Lo mando al home en caso de error
+        return redirect(url_for("main_bp.home"))  # Lo mando al home en caso de error
 
 
 @user_bp.post("/change-password")
@@ -333,7 +333,7 @@ def change_self_password_post():
         current_user = get_user_by_id(session["user_id"])
         if not current_user:
             flash("Usuario no encontrado", "error")
-            return redirect(url_for("home"))
+            return redirect(url_for("main_bp.home"))
 
         form = ChangePasswordForm()
         if form.validate_on_submit():
@@ -353,4 +353,4 @@ def change_self_password_post():
         )
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
-        return redirect(url_for("home"))  # Lo mando al home en caso de error
+        return redirect(url_for("main_bp.home"))  # Lo mando al home en caso de error
