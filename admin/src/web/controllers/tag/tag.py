@@ -54,17 +54,17 @@ def create_tags():
             return redirect("/tags")
         except Exception as e:
             flash(f"Error al crear tag: {e}", "error")
-            return render_template("tags/create.html", form=form), 400
+            return render_template("tags/create.html", form=form)
     else:
         flash(f"Error al crear tag: Datos invalidos", "error")
-        return render_template("tags/create.html", form=form), 400
+        return render_template("tags/create.html", form=form)
 
 
 @tag_bp.get("/create")
 @login_required
 def show_create_tags():
     form = CreateTagForm()
-    return render_template("tags/create.html", form=form), 200
+    return render_template("tags/create.html", form=form)
 
 
 @tag_bp.post("/delete/<int:tag_id>")
@@ -111,7 +111,7 @@ def show_edit_tag(tag_id):
 def detail_tag(tag_id):
     try:
         tag = get_tag_by_id(tag_id)
-        return render_template("tags/detail.html", tag=tag), 200
+        return render_template("tags/detail.html", tag=tag)
     except Exception as e:
-        flash(f"Error al intentar ver detalle del tag, error: {e}", 400)
+        flash(f"Error al intentar ver detalle del tag, error: {e}", "error")
         return redirect("/tags/")
