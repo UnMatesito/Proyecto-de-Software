@@ -1,12 +1,15 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, session, flash, redirect, url_for
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_session import Session
 
 from core.database import db
+from core.services import get_user_by_id
 from core.utils.bcrypt import bcrypt
+from web.forms.auth import AuthForm
 
 from .config import get_current_config
 from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp, site_bp
+from .forms.auth import AuthForm
 from .handlers import error
 from .utils.auth import (
     get_user_role_name,
@@ -33,7 +36,32 @@ def create_app(env="development", static_folder="../../static"):
     # Rutas
     @app.route("/")
     def home():
-        return render_template("home.html")
+        if not is_authenticated():
+            return render_template("auth/login.html", form=AuthForm())
+
+        user_id = session.get("user_id")
+        if not user_id:
+            flash("No hay usuario en sesión", "error")
+            return redirect(url_for("auth.login"))
+
+        user = get_user_by_id(int(user_id))
+
+        return render_template("home.html", user=user)
+
+    @app.route("/profile")
+    def profile():
+        if not is_authenticated():
+            return render_template("auth/login.html", form=AuthForm())
+
+        user_id = session.get("user_id")
+        if not user_id:
+            flash("No hay usuario en sesión", "error")
+            return redirect(url_for("auth.login"))
+
+        user = get_user_by_id(int(user_id))
+
+        # Render the user detail template directly
+        return render_template("users/detail.html", user=user)
 
     # Hooks
     app.before_request(hook_admin_maintenance)

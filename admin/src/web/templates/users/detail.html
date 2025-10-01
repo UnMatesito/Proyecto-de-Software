@@ -12,10 +12,11 @@
 
     <!-- Boton volver -->
     <div>
-        <a href="/users" 
-            class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow">
-            ← Volver
-        </a>
+        {% if request.path != '/profile' %}
+            {{ button("Volver",  link=url_for('users.index') ,icon_left_svg='<i class="fa-solid fa-arrow-left mr-1"></i>') }}
+        {% else %}
+            {{ button("Volver",  link="/" ,icon_left_svg='<i class="fa-solid fa-arrow-left mr-1"></i>') }}
+        {% endif %}
     </div>
 
     <!-- Card con los detalless -->
@@ -70,6 +71,7 @@
             </div>
         </dl>
 
+        {% if request.path != '/profile' %}
         <!-- Botón Administrar -->
         <div class="mt-6 flex justify-center">
             {{ button(
@@ -78,6 +80,7 @@
                 icon_left_svg='<i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>'
             ) }}
         </div>
+        {% endif %}
     </div>
 
 </div>
