@@ -8,7 +8,7 @@ module.exports = {
     extend: {
       colors: {
           'proyecto-text': '#2b2b2b',
-          'proyecto-bg': 'fbf4f4',
+          'proyecto-bg': '#faf6f5',
           'proyecto-primary': '#1a4d70',
           'proyecto-secondary': '#e9dcc9',
           'proyecto-accent': '#c46d45'

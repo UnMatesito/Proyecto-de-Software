@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "macros/button.html" import button %}
 
 {% block title %}Feature Flags{% endblock %}
 
@@ -7,6 +8,7 @@
         <h1 class="text-5xl font-bold p-4">Feature Flags</h1>
         <p class="text-xl">Aqui puedes administrar todas las Flags presentes en el sistema.</p>
     </div>
+    {{ button('Volver al Inicio', link="/", icon_left_svg='<i class="fa-solid fa-arrow-left"></i>', class="absolute top-10 left-5") }}
 {% endblock %}
 
 {% block content %}

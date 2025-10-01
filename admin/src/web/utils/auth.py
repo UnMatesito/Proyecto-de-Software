@@ -145,7 +145,7 @@ def check_maintenance_mode():
 
 def is_authenticated():
     """Devuelve true si el usuario tiene la sesión iniciada"""
-    return session["user_id"] is not None
+    return session.get('user_id') is not None
 
 
 def is_system_admin():
