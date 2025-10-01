@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from geoalchemy2.elements import WKTElement
 from sqlalchemy.exc import SQLAlchemyError
 
 from core.database import db
@@ -11,7 +12,7 @@ from core.services import (
     tag_service,
 )
 from core.utils.pagination import paginate_query
-from core.utils.search import build_search_query, apply_ordering
+from core.utils.search import apply_ordering, build_search_query
 
 
 def get_all_historic_site():
@@ -37,7 +38,21 @@ def get_pending_historic_sites():
 
 def create_historic_site(**kwargs):
     """Crea un nuevo sitio histórico."""
-    historic_site = HistoricSite(**kwargs)
+    name = kwargs.get("name")
+    brief_description = kwargs.get("brief_description")
+    full_description = kwargs.get("full_description")
+    inauguration_year = kwargs.get("inauguration_year")
+    longitude = kwargs.get("longitude")
+    latitude = kwargs.get("latitude")
+    location = WKTElement(f"POINT({longitude} {latitude})", srid=4326)
+
+    historic_site = HistoricSite(
+        name=name,
+        brief_description=brief_description,
+        full_description=full_description,
+        location=location,
+        inauguration_year=inauguration_year,
+    )
     db.session.add(historic_site)
     db.session.commit()
     return historic_site
@@ -52,11 +67,11 @@ def get_historic_site_by_id(site_id: int):
 
 
 def assign_relations_to_historic_site(
-    historic_site, conservation_state, categories, user, city, tags=None
+    historic_site, conservation_state, category, user, city, tags=None
 ):
     """Asigna relaciones a un sitio histórico."""
     historic_site.conservation_state = conservation_state
-    historic_site.categories = categories
+    historic_site.category = category
     historic_site.user = user
     historic_site.city = city
     if tags:
@@ -253,6 +268,7 @@ def update_historic_site(body):
         db.session.rollback()
         raise RuntimeError(f"Error al editar el sitio histórico: {e}")
 
+
 def get_sites_filtered(
     filters=None,
     order_by: str = "name",
@@ -263,7 +279,7 @@ def get_sites_filtered(
 ):
     """
     Devuelve sitios históricos filtrados, ordenados y opcionalmente paginados.
-    Usa GenericSearchBuilder para filtros genéricos y paginate_query para paginación.
+    Usa GenericSearchBuilder para filtros    y paginate_query para paginación.
 
     Args:
         filters (dict): filtros a aplicar (ej: {"city_id": 1, "visible": True})

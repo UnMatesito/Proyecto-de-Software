@@ -12,5 +12,6 @@ def get_conservation_state_by_id(conservation_id):
         )
     return conservation
 
+
 def get_all_conservation_state():
     return ConservationState.query.all()

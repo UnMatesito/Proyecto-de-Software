@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+{% from "macros/button.html" import button %}
+
+{% block title %}Detalle del Sitio{% endblock %}
+
+{% block header %}
+<h1 class="text-2xl font-bold text-center mt-6">Detalle del sitio historico</h1>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-6 space-y-6">
+
+    <!-- Boton volver -->
+    <div>
+        <a href="/sites" 
+            class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow">
+            ← Volver
+        </a>
+    </div>
+
+    <!-- Card con los detalles -->   
+    <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            
+            <!-- ID -->
+            <div>
+                <dt class="font-semibold text-gray-700">ID:</dt>
+                <dd class="text-gray-900">{{ site.id }}</dd>
+            </div>
+
+            <!-- Nombre -->
+            <div>
+                <dt class="font-semibold text-gray-700">Nombre:</dt>
+                <dd class="text-gray-900">{{ site.name }}</dd>
+            </div>
+
+            <!-- Descripción breve -->
+            <div>
+                <dt class="font-semibold text-gray-700">Descripción breve:</dt>
+                <dd class="text-gray-900">{{ site.brief_description }}</dd>
+            </div>
+
+            <!-- Descripción completa -->
+            <div>
+                <dt class="font-semibold text-gray-700">Descripción completa:</dt>
+                <dd class="text-gray-900">{{ site.full_description }}</dd>
+            </div>
+
+            <!-- Estado -->
+            <div>
+                <dt class="font-semibold text-gray-700">Estado:</dt>
+                <dd>
+                    {% if site.deleted_at %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">Eliminado</span>
+                    {% elif site.is_visible %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">Visible</span>
+                    {% else %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">No visible</span>
+                    {% endif %}
+                </dd>
+            </div>
+
+            <!-- Estado de validación -->
+            <div>
+                <dt class="font-semibold text-gray-700">Estado de validación:</dt>
+                <dd>
+                    {% if site.pending_validation %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">Pendiente</span>
+                    {% else %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">No pendiente</span>
+                    {% endif %}
+                </dd>
+            </div>
+
+            <!-- Usuario creador -->
+            <div>
+                <dt class="font-semibold text-gray-700">Usuario creador:</dt>
+                <dd class="text-gray-900">{{ site.user.email }}</dd>
+            </div>
+
+            <!-- Fecha de creación -->
+            <div>
+                <dt class="font-semibold text-gray-700">Fecha de creación:</dt>
+                <dd class="text-gray-900">{{ site.created_at.strftime('%d/%m/%Y') if site.created_at else 'N/A' }}</dd>
+            </div>
+
+            <!-- Año de inauguración -->
+            <div>
+                <dt class="font-semibold text-gray-700">Año de inauguración:</dt>
+                <dd class="text-gray-900">{{ site.inauguration_year }}</dd>
+            </div>
+
+            <!-- Categoría -->
+            <div>
+                <dt class="font-semibold text-gray-700">Categoría:</dt>
+                <dd class="text-gray-900">{{ site.category.name }}</dd>
+            </div>
+
+           <!-- Provincia -->
+            <div>
+                <dt class="font-semibold text-gray-700">Provincia:</dt>
+                <dd class="text-gray-900">{{ province.name}}</dd>
+            </div>
+
+            <!-- Ciudad -->
+            <div>
+                <dt class="font-semibold text-gray-700">Ciudad:</dt>
+                <dd class="text-gray-900">{{ site.city.name }}</dd>
+            </div>
+
+            <!-- Estado de conservación -->
+            <div>
+                <dt class="font-semibold text-gray-700">Estado de conservación:</dt>
+                <dd class="text-gray-900">{{ site.conservation_state.state }}</dd>
+            </div>
+        </dl>
+    </div>
+    <!-- Mapa -->
+    <div>
+        {{map | safe}}
+    </div>
+
+</div>
+{% endblock %}

@@ -1,15 +1,23 @@
 from flask import Flask, render_template, session, flash, redirect, url_for
 from flask_debugtoolbar import DebugToolbarExtension
-from flask_session import Session
 
 from core.database import db
 from core.services import get_user_by_id
 from core.utils.bcrypt import bcrypt
 from web.forms.auth import AuthForm
+from flask_session import Session
 
 from .config import get_current_config
 from .controllers import auth_bp, feature_flag_bp, tag_bp, user_bp, user_management_bp, site_bp
 from .forms.auth import AuthForm
+from .controllers import (
+    auth_bp,
+    feature_flag_bp,
+    site_bp,
+    tag_bp,
+    user_bp,
+    user_management_bp,
+)
 from .handlers import error
 from .utils.auth import (
     get_user_role_name,
@@ -20,6 +28,7 @@ from .utils.auth import (
 from .utils.hooks import hook_admin_maintenance
 
 session = Session()
+
 
 def create_app(env="development", static_folder="../../static"):
     app = Flask(__name__, static_folder=static_folder)
@@ -91,42 +100,18 @@ def create_app(env="development", static_folder="../../static"):
 
         seed_db(env)
 
-    # TODO: Eliminar
-    @app.cli.command("delete-tag")
-    def delete_tag_command():
-        from core.services import delete_tag
+    # Inicialización automática para producción
+    with app.app_context():
+        if env == "development":
+            from core.seeds import run as seed_db
+            from core.database import reset_db
 
-        delete_tag(1)
+            # Borra y crea la base de datos
+            reset_db(app)
 
-    # TODO: Eliminar
-    @app.cli.command("paginated_tag")
-    def paginated_tag_command():
-        from core.services import get_paginated_tags
+            # Corre los seeds
+            seed_db(app)
 
-        print(get_paginated_tags(1, "name", "asc"))
-
-        print(get_paginated_tags(1, "name", "dsc"))
-
-    # TODO: Eliminar
-    @app.cli.command("update_site")
-    def update_site_command():
-        from core.services import update_historic_site
-
-        body = {
-            "name": "Updated Obalisco",
-            "brief_description": "Updated brief decription",
-            "full_description": "Updated full description",
-            "latitude": 1111111,
-            "longitude": 22222,
-            "inauguration_year": 2025,
-            "is_visible": True,
-            "city_id": 2,
-            "conservation_state_id": 1,
-            "category_id": 1,
-            "tag_ids": [1],
-            "historic_site_id": 1,
-        }
-        update_historic_site(body)
 
     # Métodos de jinja
     app.jinja_env.globals.update(is_authenticated=is_authenticated)
