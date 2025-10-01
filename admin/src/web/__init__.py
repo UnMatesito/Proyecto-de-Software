@@ -13,6 +13,7 @@ from .controllers import (
     tag_bp,
     user_bp,
     user_management_bp,
+    city_bp,
 )
 from .handlers import error
 from .utils.auth import (
@@ -53,7 +54,7 @@ def create_app(env="development", static_folder="../../static"):
     app.register_blueprint(feature_flag_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(site_bp)
-
+    app.register_blueprint(city_bp)
     # Commands
     @app.cli.command("reset-db")
     def reset_db_command():
