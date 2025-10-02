@@ -8,7 +8,7 @@ from core.services.tag_service import (
     get_tag_by_id,
     update_tag,
 )
-from web.forms.tag import CreateTagForm, DeleteTagForm, EditTagForm
+from web.forms.tag import CreateTagForm, EditTagForm
 from web.utils.auth import login_required, permission_required
 
 tag_bp = Blueprint("tag_bp", __name__, url_prefix="/tags")

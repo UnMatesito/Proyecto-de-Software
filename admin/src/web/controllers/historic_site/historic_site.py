@@ -77,7 +77,7 @@ def list_paginated_sites():
     except Exception as e:
         print(e)
         flash(f"Error al cargar los sitios, error: {e}", "error")
-        return redirect("/home")
+        return redirect(url_for("main_bp.home"))
 
 # Ver el detalle del site
 @site_bp.get("/detail/<int:site_id>")
@@ -92,7 +92,7 @@ def detail(site_id):
         return render_template("historic_site/detail.html", site=site, lat=lat, lon=lon, province=province, site_name=site.name)
     except Exception as e:
         flash(f"Error al intentar ver detalle del tag, error: {e}", "error")
-        return redirect("/sites")
+        return redirect(url_for("site_bp.list_paginated_sites"))
 
 @site_bp.get("/create")
 @login_required
@@ -103,7 +103,7 @@ def get_create():
         return render_template("historic_site/create.html", form=form)
     except Exception as e:
         flash(f"Error al cargar el formulario, error: {e}", "error")
-        return redirect("/home")
+        return redirect(url_for("site_bp.list_paginated_sites"))
 
 @site_bp.post("/create")
 @login_required
@@ -225,10 +225,9 @@ def restore(site_id):
     try:
         restore_historic_site(site_id=site_id)
         flash(f"El sitio {site_id} fue restaurado exitosamente", "success")
-        return redirect(url_for("site_bp.list_paginated_sites"))
     except Exception as e:
         flash(f"Error al intentar restaurar el sitio {site_id}, {e}", "error")
-        return redirect(url_for("site_bp.list_paginated_sites")) 
+    return redirect(url_for("site_bp.list_paginated_sites")) 
 
 @site_bp.get("/validate/<int:site_id>")
 @login_required
@@ -237,10 +236,9 @@ def validate_site(site_id):
     try:
         validate(site_id=site_id)
         flash(f"Se valido correctamente el sitio {site_id}", "success")
-        return redirect(url_for("site_bp.list_paginated_sites"))
     except Exception as e:
         flash(f"Error al intentar validar el sitio {site_id}, {e}", "error")
-        return redirect(url_for("site_bp.list_paginated_sites"))
+    return redirect(url_for("site_bp.list_paginated_sites"))
     
 @site_bp.get("/export")
 @login_required
