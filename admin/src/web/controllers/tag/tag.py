@@ -28,7 +28,7 @@ def list_paginted_tags():
         columns = [
             {"key": "name", "label": "Nombre"},
             {"key": "slug", "label": "Slug"},
-            {"key": "created_at", "label": "Creado"},
+            {"key": "created_at", "label": "Creado", "render": "date"},
             {"key": "deleted_at", "label": "Estado", "render": 'status'}
         ]
         return render_template(
@@ -42,7 +42,13 @@ def list_paginted_tags():
     except Exception as e:
         flash(f'Error al cargar tags: {str(e)}', 'error')
         return render_template("tags/index.html", tags = [], order_by = "name", sorted_by = "asc")
-    
+
+@tag_bp.get("/create")
+@login_required
+def show_create_tags():
+    form = CreateTagForm()
+    return render_template("tags/create.html", form=form)
+
 @tag_bp.post("/create")
 @login_required
 def create_tags():
@@ -51,47 +57,13 @@ def create_tags():
         try:
             create_tag(name=form.name.data)
             flash(f"Tag creado correctamente!", "success")
-            return redirect("/tags")
+            return redirect(url_for("tag_bp.list_paginted_tags"))
         except Exception as e:
             flash(f"Error al crear tag: {e}", "error")
             return render_template("tags/create.html", form=form)
     else:
         flash(f"Error al crear tag: Datos invalidos", "error")
         return render_template("tags/create.html", form=form)
-
-
-@tag_bp.get("/create")
-@login_required
-def show_create_tags():
-    form = CreateTagForm()
-    return render_template("tags/create.html", form=form)
-
-
-@tag_bp.post("/delete/<int:tag_id>")
-@login_required
-def delete(tag_id):
-    try:
-        delete_tag(tag_id)
-        flash(f"Se ah eliminado correctamente el tag {tag_id}", "succes")
-        return redirect("/tags")
-    except Exception as e:
-        flash(f"Erro al intentar eliminar el tag {e}", "error")
-        return redirect("/tags")
-
-
-@tag_bp.post("/edit/<int:tag_id>")
-@login_required
-def edit_tag(tag_id):
-    form = EditTagForm()
-    if form.validate_on_submit():
-        try:
-            update_tag(tag_id, form.name.data)
-            flash("Se ha actualizado correctamente el tag!", "succes")
-            return redirect("/tags")
-        except Exception as e:
-            flash(f"Error al editar el tag {tag_id}, {e}", "error")
-            return redirect("/tags")
-
 
 @tag_bp.get("/edit/<int:tag_id>")
 @login_required
@@ -102,9 +74,37 @@ def show_edit_tag(tag_id):
         return render_template("tags/edit.html", form=form, tag=tag)
     except Exception as e:
         flash(f"Error al seleccinar el tag {tag_id}: {e}", "error")
-        return redirect("/tags")
+        return redirect(url_for("tag_bp.list_paginted_tags"))
+    
+@tag_bp.post("/edit/<int:tag_id>")
+@login_required
+def edit_tag(tag_id):
+    form = EditTagForm()
+    if form.validate_on_submit():
+        try:
+            tag = update_tag(tag_id, form.name.data)
+            flash(f"Se ha actualizado correctamente el tag!", "succes")
+        except Exception as e:
+            flash(f"Error al editar el tag {tag_id}, {e}", "error")
+        return redirect(url_for("tag_bp.list_paginted_tags"))
+    else:
+        try:
+            tag = get_tag_by_id(tag_id)
+            return render_template("tags/edit.html", form=form, tag=tag)
+        except Exception as e:
+            flash(f"Error al editar el tag {tag_id}, {e}", "error")
+            return redirect(url_for("tag_bp.list_paginted_tags"))
 
-
+@tag_bp.post("/delete/<int:tag_id>")
+@login_required
+def delete(tag_id):
+    try:
+        delete_tag(tag_id)
+        flash(f"Se ah eliminado correctamente el tag {tag_id}", "succes")
+    except Exception as e:
+        flash(f"Erro al intentar eliminar el tag {e}", "error")
+    return redirect(url_for("tag_bp.list_paginted_tags"))
+    
 @tag_bp.get("/datail/<int:tag_id>")
 @login_required
 @permission_required("user_show")
@@ -114,4 +114,4 @@ def detail_tag(tag_id):
         return render_template("tags/detail.html", tag=tag)
     except Exception as e:
         flash(f"Error al intentar ver detalle del tag, error: {e}", "error")
-        return redirect("/tags/")
+        return redirect(url_for("tag_bp.list_paginted_tags"))
