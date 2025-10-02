@@ -18,7 +18,6 @@ tag_bp = Blueprint("tag_bp", __name__, url_prefix="/tags")
 @login_required
 def list_paginted_tags():
     try:
-        deleteForm = DeleteTagForm()
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
         page = request.args.get("page", 1)
