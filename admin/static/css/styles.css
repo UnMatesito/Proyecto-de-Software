@@ -1117,6 +1117,22 @@ select {
   top: 2rem;
 }
 
+.left-3 {
+  left: 0.75rem;
+}
+
+.left-5 {
+  left: 1.25rem;
+}
+
+.top-10 {
+  top: 2.5rem;
+}
+
+.top-3 {
+  top: 0.75rem;
+}
+
 .z-10 {
   z-index: 10;
 }
@@ -1818,6 +1834,16 @@ select {
   background-color: rgb(142 75 16 / var(--tw-bg-opacity, 1));
 }
 
+.bg-proyecto-primary {
+  --tw-bg-opacity: 1;
+  background-color: rgb(30 64 175 / var(--tw-bg-opacity, 1));
+}
+
+.bg-proyecto-secondary {
+  --tw-bg-opacity: 1;
+  background-color: rgb(100 116 139 / var(--tw-bg-opacity, 1));
+}
+
 .p-1\.5 {
   padding: 0.375rem;
 }
@@ -2108,6 +2134,11 @@ select {
 .text-yellow-800 {
   --tw-text-opacity: 1;
   color: rgb(114 59 19 / var(--tw-text-opacity, 1));
+}
+
+.text-black {
+  --tw-text-opacity: 1;
+  color: rgb(0 0 0 / var(--tw-text-opacity, 1));
 }
 
 .underline {

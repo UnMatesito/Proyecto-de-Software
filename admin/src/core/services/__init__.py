@@ -40,6 +40,7 @@ from .historic_site_service import (
     get_historic_site_by_id,
     get_pending_historic_sites,
     get_published_historic_sites,
+    get_sites_filtered,
     update_category,
     update_city,
     update_conservation_state,

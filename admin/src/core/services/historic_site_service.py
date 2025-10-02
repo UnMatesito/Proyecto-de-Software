@@ -23,8 +23,8 @@ def get_all_historic_site():
 def get_published_historic_sites():
     """Obtiene todos los sitios históricos publicados (visibles, validados y no eliminados)."""
     return HistoricSite.query.filter(
-        HistoricSite.is_visible == True,
-        HistoricSite.pending_validation == False,
+        HistoricSite.is_visible.is_(True),
+        HistoricSite.pending_validation.is_(False),
         HistoricSite.deleted_at.is_(None),
     ).all()
 
@@ -32,7 +32,7 @@ def get_published_historic_sites():
 def get_pending_historic_sites():
     """Obtiene todos los sitios históricos pendientes de validación y no eliminados."""
     return HistoricSite.query.filter(
-        HistoricSite.pending_validation == True, HistoricSite.deleted_at.is_(None)
+        HistoricSite.pending_validation.is_(True), HistoricSite.deleted_at.is_(None)
     ).all()
 
 

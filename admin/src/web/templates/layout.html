@@ -12,12 +12,12 @@
     <title>{% block title %}Header de la pagina{% endblock %}</title>
 </head>
 
-<body class="flex flex-col min-h-screen">
-    <header class="bg-gray-700 text-white">
+<body class="flex flex-col min-h-screen bg-proyecto-bg">
+    <header class="bg-proyecto-primary text-white">
         {% block header %}{% endblock %}
     </header>
 
-    <main class="flex-grow p-6">
+    <main class="flex-grow">
         {% block content %}{% endblock %}
     </main>
 

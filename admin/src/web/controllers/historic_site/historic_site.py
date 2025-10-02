@@ -1,13 +1,13 @@
 
 from flask import (
     Blueprint,
+    Response,
     flash,
     redirect,
     render_template,
     request,
     session,
     url_for,
-    Response
 )
 
 from core.services import (
@@ -16,7 +16,9 @@ from core.services import (
     get_category_by_id,
     get_city_by_id,
     get_conservation_state_by_id,
+    get_historic_site_by_id,
     get_province_by_id,
+    get_sites_filtered,
     get_tag_by_id,
     get_user_by_id,
     get_sites_filtered,
@@ -32,6 +34,7 @@ from web.forms.historic_site import CreateSiteForm, EditSiteForm
 from web.utils.auth import login_required, permission_required
 
 site_bp = Blueprint("site_bp", __name__, url_prefix="/sites")
+
 
 @site_bp.get("/")
 @login_required

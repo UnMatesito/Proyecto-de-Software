@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask
 from flask_debugtoolbar import DebugToolbarExtension
 
 from core.database import db
@@ -9,6 +9,7 @@ from .config import get_current_config
 from .controllers import (
     auth_bp,
     feature_flag_bp,
+    main_bp,
     site_bp,
     tag_bp,
     user_bp,
@@ -39,15 +40,11 @@ def create_app(env="development", static_folder="../../static"):
     db.init_app(app)
     session.init_app(app)
 
-    # Rutas
-    @app.route("/")
-    def home():
-        return render_template("home.html")
-
     # Hooks
     app.before_request(hook_admin_maintenance)
 
     # Blueprints
+    app.register_blueprint(main_bp)
     app.register_blueprint(user_management_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(tag_bp)
@@ -72,42 +69,17 @@ def create_app(env="development", static_folder="../../static"):
 
         seed_db(env)
 
-    # TODO: Eliminar
-    @app.cli.command("delete-tag")
-    def delete_tag_command():
-        from core.services import delete_tag
+    # Inicialización automática para producción
+    with app.app_context():
+        if env == "production":
+            from core.database import reset_db
+            from core.seeds import run as seed_db
 
-        delete_tag(1)
+            # Borra y crea la base de datos
+            reset_db(app)
 
-    # TODO: Eliminar
-    @app.cli.command("paginated_tag")
-    def paginated_tag_command():
-        from core.services import get_paginated_tags
-
-        print(get_paginated_tags(1, "name", "asc"))
-
-        print(get_paginated_tags(1, "name", "dsc"))
-
-    # TODO: Eliminar
-    @app.cli.command("update_site")
-    def update_site_command():
-        from core.services import update_historic_site
-
-        body = {
-            "name": "Updated Obalisco",
-            "brief_description": "Updated brief decription",
-            "full_description": "Updated full description",
-            "latitude": 1111111,
-            "longitude": 22222,
-            "inauguration_year": 2025,
-            "is_visible": True,
-            "city_id": 2,
-            "conservation_state_id": 1,
-            "category_id": 1,
-            "tag_ids": [1],
-            "historic_site_id": 1,
-        }
-        update_historic_site(body)
+            # Corre los seeds
+            seed_db(app)
 
     # Métodos de jinja
     app.jinja_env.globals.update(is_authenticated=is_authenticated)
