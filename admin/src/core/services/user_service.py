@@ -229,17 +229,35 @@ def change_password(user_id, old_password, new_password):
 
 
 def assign_role(user_id, role_id):
-    """Asigna un rol a un usuario"""
+    """Asigna un rol a un usuario y desactiva system_admin si corresponde"""
     role = Role.query.get(role_id)
     if not role:
         raise ValueError(f"No existe el rol con id {role_id}")
 
-    def role_check(user):
-        if user.check_role(role_id):
-            return f"El usuario {user.first_name} ya tiene dicho rol"
-        return None
+    user = User.query.get(user_id)
+    if not user:
+        raise ValueError(f"No existe el usuario con id {user_id}")
 
-    return update_user_attribute(user_id, "role_id", role_id, role_check)
+    # Verificar si ya tiene ese rol
+    if user.check_role(role_id):
+        raise ValueError(
+            f"El usuario {user.get_full_name()} ya tiene el rol '{role.name}'"
+        )
+
+    # Asignar nuevo rol
+    user.role_id = role_id
+
+    # Si tenía system_admin, desactivarlo
+    if user.is_admin():
+        user.system_admin = False
+
+    try:
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al asignar el rol: {e}")
+
+    return True
 
 
 def toggle_system_admin(user_id, make_admin: bool):
