@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, session, url_for
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 from core.services import user_service
 from web.forms.auth import AuthForm
@@ -52,7 +52,9 @@ def authenticate():
         return render_template("auth/login.html", form=form)
 
     session["user_id"] = user.id
-    return redirect(url_for("home"))
+    flash("Has iniciado sesión correctamente", "success")
+    next_page = request.args.get("next")
+    return redirect(next_page or url_for("main_bp.home"))
 
 
 @auth_bp.get("/logout")

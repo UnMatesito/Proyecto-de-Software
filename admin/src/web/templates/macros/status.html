@@ -1,0 +1,27 @@
+{% macro active_status() %}
+    <span class="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                <span class="w-2 h-2 me-1 bg-green-500 rounded-full"></span>
+                Activo
+    </span>
+{% endmacro %}
+
+{% macro inactive_status() %}
+    <span class="inline-flex items-center bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                <span class="w-2 h-2 me-1 bg-gray-500 rounded-full"></span>
+                Inactivo
+    </span>
+{% endmacro %}
+
+{% macro blocked_status() %}
+    <span class="inline-flex items-center bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+        <span class="w-2 h-2 me-1 bg-yellow-500 rounded-full"></span>
+        Bloqueado
+    </span>
+{% endmacro %}
+
+{% macro eliminated_status() %}
+    <span class="inline-flex items-center bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+        <span class="w-2 h-2 me-1 bg-red-500 rounded-full"></span>
+        Eliminado
+    </span>
+{% endmacro %}

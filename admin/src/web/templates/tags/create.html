@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-
+{% from "macros/toast.html" import toast %}
 {% block title %} Crear Tag {% endblock %}
 
 {% block header %}
@@ -7,11 +7,23 @@
 {% endblock %}
 
 {% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    {{toast(message=message, type=category)}}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
     <div class="mb-4 p-6 max-w-lg mx-auto bg-white shadow-md rounded-lg">
         <form method="POST">
                 {{ form.hidden_tag() }}
                 {{ form.name.label(class="block font-medium text-gray-700")}}
                 {{ form.name(class="w-full border rounded px-3 py-2") }}
+                {% for error in form.name.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                {% endfor %}
             <div class="mt-6">
                 {{ form.submit(class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700") }}
             </div>     

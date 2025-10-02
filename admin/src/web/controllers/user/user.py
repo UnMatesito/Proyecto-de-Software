@@ -13,7 +13,7 @@ from core.services.user_service import (
     update_user_attribute,
 )
 from web.forms.user import ChangePasswordForm, CreateUserForm, EditUserForm
-from web.utils.auth import login_required, permission_required
+from web.utils.auth import get_user_role_name, login_required, permission_required
 from web.utils.hooks import hook_admin_maintenance
 
 user_bp = Blueprint("users", __name__, url_prefix="/users")
@@ -30,6 +30,18 @@ def index():
         page = request.args.get("page", 1)
         active_param = request.args.get("active", None)
         role_id = request.args.get("role_id", None)
+        columns = [
+            {"key": "id", "label": "ID"},
+            {"key": "full_name", "label": "Usuario", "render": "user_name"},
+            {"key": "email", "label": "Correo"},
+            {
+                "key": "role",
+                "label": "Rol",
+                "render": lambda user: get_user_role_name(user.id) or "Sin rol",
+            },
+            {"key": "status", "label": "Estado", "render": "status"},
+            {"key": "created_at", "label": "Creado", "render": "date"},
+        ]
         users_page = get_paginated_users(
             page=page,
             order_by=order_by,
@@ -41,6 +53,7 @@ def index():
         return render_template(
             "users/index.html",
             pagination=users_page,
+            columns=columns,
             roles=roles,
             active=active_param,
             role_id=role_id,
@@ -51,7 +64,7 @@ def index():
         flash(
             f"Error al cargar usuarios: {str(e)}", "error"
         )  # Envia un  mensaje temporal a la sesión
-        return render_template("users/index.html", pagination=[])
+        return render_template("users/index.html", pagination=[], columns=[])
 
 
 @user_bp.get("/<int:user_id>")
@@ -292,3 +305,52 @@ def change_password_get(user_id):
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
         return redirect(url_for("users.list_users"))
+
+
+@user_bp.get("/change-password")
+@login_required
+def change_self_password_get():
+    """Mostrar el formulario para cambiar la contraseña del usuario que realizo la peticion"""
+    current_user = get_user_by_id(session["user_id"])
+    try:
+        if not current_user:
+            flash("Usuario no encontrado", "error")
+            return redirect(url_for("main_bp.home"))
+        form = ChangePasswordForm()
+        return render_template(
+            "users/change_password.html", form=form, user=current_user
+        )
+    except Exception as e:
+        flash(f"Error inesperado: {str(e)}", "error")
+        return redirect(url_for("main_bp.home"))  # Lo mando al home en caso de error
+
+
+@user_bp.post("/change-password")
+@login_required
+def change_self_password_post():
+    """Procesar el cambio de contraseña del usuario que realizo la peticion"""
+    try:
+        current_user = get_user_by_id(session["user_id"])
+        if not current_user:
+            flash("Usuario no encontrado", "error")
+            return redirect(url_for("main_bp.home"))
+
+        form = ChangePasswordForm()
+        if form.validate_on_submit():
+            try:
+                change_password(
+                    session["user_id"], form.old_password.data, form.new_password.data
+                )
+                flash("Contraseña actualizada", "success")
+                return redirect(url_for("users.detail", user_id=session["user_id"]))
+            except ValueError as e:
+                flash(str(e), "warning")
+            except Exception as e:
+                flash(f"Error al cambiar contraseña: {str(e)}", "error")
+        # Si el form no valida, se muestra de nuevo
+        return render_template(
+            "users/change_password.html", form=form, user=current_user
+        )
+    except Exception as e:
+        flash(f"Error inesperado: {str(e)}", "error")
+        return redirect(url_for("main_bp.home"))  # Lo mando al home en caso de error

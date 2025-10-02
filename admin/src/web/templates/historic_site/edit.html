@@ -1,0 +1,222 @@
+{% extends "layout.html" %}
+{% from "macros/toast.html" import toast %}
+
+{% block title %}Editar Sitio{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<style>
+    #map { height: 60vh;
+            max-width: 800px;
+            width: 100%; 
+            border-radius: 6px;
+            border: 1px solid #c0bfbf;
+        }
+</style>
+{% endblock %}
+{% block header %}
+<h1 class="text-2xl font-bold text-center mt-6">Editar Sitio Historico</h1>
+{% endblock %}
+
+{% block content %}
+<div class="flex items-center flex-col">
+{% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    {{toast(message=message, type=category)}}
+                {% endfor %}
+            </div>
+        {% endif %}
+{% endwith %}
+
+<div class="max-w-2xl mx-auto mt-6 space-y-6">
+
+ <!-- Boton para volver a users -->
+    <div>
+        <a href="/sites" 
+            class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow">
+            ← Volver
+        </a>
+    </div>
+    <div class="p-6 bg-white w-160 shadow-lg rounded-lg border border-gray-200">
+        <form method="POST" class="space-y-5 flex gap-3 flex-col ">
+            {{ form.hidden_tag() }}
+            <div class="flex gap-6 justify-center">
+                <div>
+                    <div>
+                        {{ form.name.label(class="block font-medium text-gray-700 mb-1") }}
+                        {{ form.name(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200")}}
+                        {% for error in form.name.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        {{ form.province.label(class="block font-medium text-gray-700 mb-1") }}
+                        {{ form.province(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                        {% for error in form.province.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        {{ form.city.label(class="block font-medium text-gray-700 mb-1") }}
+                        {{ form.city(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                        {% for error in form.city.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        {{ form.conservation_state.label(class="block font-medium text-gray-700 mb-1") }}
+                        {{ form.conservation_state(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                        {% for error in form.conservation_state.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <div>
+                        {{ form.is_visible.label(class="block font-medium text-gray-700 mb-1") }}
+                        {{ form.is_visible(class=" mb-4 flex items-center space-x-2") }}
+                        {% for error in form.is_visible.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <div>
+                        {{ form.category.label(class="block font-medium text-gray-700 mb-1") }}
+                        {{ form.category(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                        {% for error in form.category.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        {{ form.inauguration_year.label(class="block font-medium text-gray-700 mb-1") }}
+                        {{ form.inauguration_year(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                        {% for error in form.inauguration_year.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        {{ form.brief_description.label(class="block font-medium text-gray-700 mb-1") }}
+                        {{ form.brief_description(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                        {% for error in form.brief_description.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <div>
+                        {{ form.full_description.label(class="block font-medium text-gray-700 mb-1") }}
+                        {{ form.full_description(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                        {% for error in form.full_description.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        {{form.longitude(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 hidden")}}
+                        {% for error in form.longitude.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        {{form.latitude(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 hidden")}}
+                        {% for error in form.latitude.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                {{form.tags.label(class="block font-medium text-gray-700 mb-1")}}
+                {{form.tags(class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-700 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200", size=1)}}
+                {% for error in form.tags.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="w-md ">
+                {{ form.submit(class="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 shadow") }}
+            </div>
+        </form>
+    </div>
+</div>
+<div class="flex items-center justify-center flex-col mt-2 gap-2 " style=" height: 70vh; max-width: 900px; width: 70%;"> 
+    <h3 class="block font-semibold text-gray-700 mb-1">Seleccione la ubicación en el mapa!</h3>
+    <div id="map">
+
+    </div>
+</div>
+
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        new MultiSelectTag('tags', {
+        rounded: true,   
+        shadow: true,
+        placeholder: "Seleccionar tags",
+        onChange: function(selected) {
+            console.log("Seleccionados:", selected);
+        }
+        });
+
+        document.getElementById("tag-input").className = "w-full"
+
+        lonInput = document.getElementById("longitude")
+        latIpunt = document.getElementById("latitude")
+
+        var map = L.map('map').setView(["{{lat}}", "{{lon}}"], 13);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        }).addTo(map);
+
+        mark = L.marker(["{{lat}}", "{{lon}}"]).addTo(map)
+            .bindPopup('{{site_name}} <br> {{lat}}", "{{lon}}')
+            .openPopup();
+    
+        var lat_lng_popup = L.popup();
+
+        function latLngPop(e) {
+            mark.remove();
+            lat_lng_popup
+                .setLatLng(e.latlng)
+                .setContent("Latitude: " + e.latlng.lat.toFixed(4) +
+                            "<br>Longitude: " + e.latlng.lng.toFixed(4))
+                .openOn(map);
+            lonInput.value = e.latlng.lng
+            latIpunt.value = e.latlng.lat
+            mark = L.marker([e.latlng.lat,  e.latlng.lng]).addTo(map)
+            .bindPopup('{{site_name}}')
+            .openPopup();
+        }
+
+        map.on('click', latLngPop);
+
+        //Obtener la ciudades de la prov seleccionada
+        document.getElementById("province").addEventListener("change", function() {
+            const provinceId = this.value;
+            fetch(`/cities/${provinceId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const citySelect = document.getElementById("city");
+                    citySelect.innerHTML = "";
+                    data.forEach(city => {
+                        let option = document.createElement("option");
+                        option.value = city.id;
+                        option.text = city.name;
+                        citySelect.appendChild(option);
+                    });
+                })
+        });
+    });
+      
+</script>
+{% endblock %}

@@ -1,5 +1,8 @@
 from datetime import datetime, timezone
 
+from geoalchemy2 import Geometry
+from geoalchemy2.shape import to_shape
+
 from core.database import db
 
 historic_site_tag = db.Table(
@@ -10,7 +13,12 @@ historic_site_tag = db.Table(
         db.ForeignKey("historic_site.id", ondelete="CASCADE"),
         primary_key=True,
     ),
-    db.Column("tag_id", db.Integer, db.ForeignKey("tag.id", ondelete="CASCADE"), primary_key=True),
+    db.Column(
+        "tag_id",
+        db.Integer,
+        db.ForeignKey("tag.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
 )
 
 
@@ -22,12 +30,26 @@ class HistoricSite(db.Model):
     name = db.Column(db.String(255), nullable=False)
     brief_description = db.Column(db.String, nullable=False)
     full_description = db.Column(db.String, nullable=False)
-    latitude = db.Column(db.Double, nullable=False)
-    longitude = db.Column(db.Double, nullable=False)
     inauguration_year = db.Column(db.Integer, nullable=False)
-    registration_date = db.Column(db.DateTime, nullable=False)
     is_visible = db.Column(db.Boolean, default=False, nullable=False)
     pending_validation = db.Column(db.Boolean, default=True, nullable=False)
+    location = db.Column(Geometry(geometry_type="POINT", srid=4326), nullable=False)
+
+    # Latitud
+    @property
+    def latitude(self) -> float:
+        if self.location:
+            punto = to_shape(self.location)
+            return punto.y
+        return None
+
+    # Longitud
+    @property
+    def longitude(self) -> float:
+        if self.location:
+            punto = to_shape(self.location)
+            return punto.x
+        return None
 
     # Timestamps
     created_at = db.Column(

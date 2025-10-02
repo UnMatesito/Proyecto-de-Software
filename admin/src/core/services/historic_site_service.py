@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from geoalchemy2.elements import WKTElement
 from sqlalchemy.exc import SQLAlchemyError
 
 from core.database import db
@@ -10,6 +11,8 @@ from core.services import (
     conservation_state_service,
     tag_service,
 )
+from core.utils.pagination import paginate_query
+from core.utils.search import apply_ordering, build_search_query
 
 
 def get_all_historic_site():
@@ -20,8 +23,8 @@ def get_all_historic_site():
 def get_published_historic_sites():
     """Obtiene todos los sitios históricos publicados (visibles, validados y no eliminados)."""
     return HistoricSite.query.filter(
-        HistoricSite.is_visible == True,
-        HistoricSite.pending_validation == False,
+        HistoricSite.is_visible.is_(True),
+        HistoricSite.pending_validation.is_(False),
         HistoricSite.deleted_at.is_(None),
     ).all()
 
@@ -29,13 +32,27 @@ def get_published_historic_sites():
 def get_pending_historic_sites():
     """Obtiene todos los sitios históricos pendientes de validación y no eliminados."""
     return HistoricSite.query.filter(
-        HistoricSite.pending_validation == True, HistoricSite.deleted_at.is_(None)
+        HistoricSite.pending_validation.is_(True), HistoricSite.deleted_at.is_(None)
     ).all()
 
 
 def create_historic_site(**kwargs):
     """Crea un nuevo sitio histórico."""
-    historic_site = HistoricSite(**kwargs)
+    name = kwargs.get("name")
+    brief_description = kwargs.get("brief_description")
+    full_description = kwargs.get("full_description")
+    inauguration_year = kwargs.get("inauguration_year")
+    longitude = kwargs.get("longitude")
+    latitude = kwargs.get("latitude")
+    location = WKTElement(f"POINT({longitude} {latitude})", srid=4326)
+
+    historic_site = HistoricSite(
+        name=name,
+        brief_description=brief_description,
+        full_description=full_description,
+        location=location,
+        inauguration_year=inauguration_year,
+    )
     db.session.add(historic_site)
     db.session.commit()
     return historic_site
@@ -50,11 +67,11 @@ def get_historic_site_by_id(site_id: int):
 
 
 def assign_relations_to_historic_site(
-    historic_site, conservation_state, categories, user, city, tags=None
+    historic_site, conservation_state, category, user, city, tags=None
 ):
     """Asigna relaciones a un sitio histórico."""
     historic_site.conservation_state = conservation_state
-    historic_site.categories = categories
+    historic_site.category = category
     historic_site.user = user
     historic_site.city = city
     if tags:
@@ -88,7 +105,6 @@ def update_city(site, city_id):
         site.city = city
     return site
 
-
 def update_name(site, name):
     if not isinstance(name, str):
         raise ValueError("El nombre del sitio debe ser un string")
@@ -112,22 +128,13 @@ def update_full_description(site, description):
         site.full_description = description
     return site
 
-
-def update_latitude(site, latitude):
-    if not isinstance(latitude, (int, float)):
+def update_location(site, location):
+    if not isinstance(location["lat"], (int, float)):
         raise ValueError("La latitude debe ser numerica")
-    if not site.same_latitude(latitude):
-        site.latitude = latitude
-    return site
-
-
-def update_longitude(site, longitude):
-    if not isinstance(longitude, (int, float)):
+    if not isinstance(location["lon"], (int, float)):
         raise ValueError("La longitude debe ser numerica")
-    if not site.same_longitude(longitude):
-        site.longitude = longitude
+    site.location = WKTElement(f"POINT({location["lon"]} {location["lat"]})", srid=4326)
     return site
-
 
 def update_inauguration_year(site, year):
     if not site.same_inauguration_year(year):
@@ -144,6 +151,11 @@ def update_registration_date(site, date):
 def update_is_visible(site, visibility):
     if not isinstance(visibility, bool):
         raise ValueError("El valor de visibilidad debe ser booleano")
+    if (visibility):
+        if site.deleted_at:  
+            raise ValueError("El sitio no debe estar borrado")
+        if site.pending_validation:
+            raise ValueError("El sitio debe estar validado")
     if not site.same_visibility(visibility):
         site.is_visible = visibility
     return site
@@ -163,6 +175,15 @@ def update_tags(site, tag_ids):
     for tag in tags:
         site.add_tag(tag)
 
+def validate(site_id):
+    site = get_historic_site_by_id(site_id)
+    if (not site.pending_validation):
+        raise ValueError(f"El sitio con id {site_id} ya se encuentra validado")
+    if (site.deleted_at):
+        raise ValueError(f"El sitio con id {site_id} se encuentra borrado")
+    site.pending_validation = False
+    db.session.commit()
+    return site
 
 def assign_tags(site_id, tag_ids):
     """Asigna una lista de tags a un sitio histórico, reemplazando los existentes."""
@@ -220,21 +241,18 @@ def delete_historic_site(site_id):
 
 def update_historic_site(body):
     try:
-        print(body)
         site = get_historic_site_by_id(body["historic_site_id"])
         operations = {
             "name": update_name,
             "brief_description": update_brief_description,
             "full_description": update_full_description,
-            "latitude": update_latitude,
-            "longitude": update_longitude,
+            "location": update_location,
             "inauguration_year": update_inauguration_year,
-            "registration_date": update_registration_date,
             "is_visible": update_is_visible,
-            "city_id": update_city,
-            "conservation_state_id": update_conservation_state,
-            "category_id": update_category,
-            "tag_ids": update_tags,
+            "city": update_city,
+            "conservation_state": update_conservation_state,
+            "category": update_category,
+            "tags": update_tags,
         }
 
         for key, value in body.items():
@@ -245,9 +263,53 @@ def update_historic_site(body):
 
         site.update_at = datetime.now(timezone.utc)
 
-        db.session.add(site)
         db.session.commit()
         return site
     except SQLAlchemyError as e:
         db.session.rollback()
         raise RuntimeError(f"Error al editar el sitio histórico: {e}")
+    
+def restore_historic_site(site_id):
+    site = get_historic_site_by_id(site_id)
+    site.deleted_at = None
+    site.is_visible = False
+    db.session.commit()
+    return site
+
+def get_sites_filtered(
+    filters=None,
+    order_by: str = "name",
+    sorted_by: str = "asc",
+    paginate: bool = True,
+    page: int = 1,
+    per_page: int = 25,
+):
+    """
+    Devuelve sitios históricos filtrados, ordenados y opcionalmente paginados.
+    Usa GenericSearchBuilder para filtros    y paginate_query para paginación.
+
+    Args:
+        filters (dict): filtros a aplicar (ej: {"city_id": 1, "visible": True})
+        order_by (str): columna para ordenar
+        sorted_by (str): 'asc' o 'desc'
+        paginate (bool): si True devuelve dict con paginación, si False lista completa
+        page (int): número de página (si paginate=True)
+        per_page (int): tamaño de página (si paginate=True)
+
+    Returns:
+        dict de paginación o lista de objetos HistoricSite
+    """
+    filters = filters or {}
+
+    # Construir query con filtros genéricos
+    query = build_search_query(HistoricSite, filters)
+
+    # Ordenar
+    query = apply_ordering(query, HistoricSite, order_by, sorted_by)
+
+    if paginate:
+        return paginate_query(
+            query, page=page, per_page=per_page, order_by=order_by, sorted_by=sorted_by
+        )
+    else:
+        return query.all()

@@ -1,7 +1,4 @@
 from datetime import datetime, timezone
-
-from slugify import slugify
-
 from core.database import db
 from core.models.historic_site import historic_site_tag
 
@@ -11,7 +8,7 @@ class Tag(db.Model):
 
     # Atributos
     id = db.Column(db.Integer, primary_key=True)
-    _name = db.Column("name", db.String(50), unique=True, nullable=False, index=True)
+    name = db.Column("name", db.String(50), unique=True, nullable=False, index=True)
     slug = db.Column(db.String(50), unique=True, nullable=False, index=True)
 
     # Timestamps
@@ -24,16 +21,6 @@ class Tag(db.Model):
     sites = db.relationship(
         "HistoricSite", secondary=historic_site_tag, back_populates="tags"
     )
-
-    # Setters y Getters
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        self._name = value
-        self.slug = slugify(value)
 
     # Metodos
     def has_sites(self):
