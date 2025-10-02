@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_debugtoolbar import DebugToolbarExtension
 
 from core.database import db
 from core.utils.bcrypt import bcrypt
@@ -25,6 +24,7 @@ from .utils.auth import (
 )
 from .utils.hooks import hook_admin_maintenance
 
+
 session = Session()
 
 
@@ -33,7 +33,8 @@ def create_app(env="development", static_folder="../../static"):
     app.config.from_object(get_current_config(env))
 
     if app.config.get("DEBUG", False):
-        DebugToolbarExtension(app)
+            from flask_debugtoolbar import DebugToolbarExtension
+            DebugToolbarExtension(app)
 
     # Inicializar extensiones
     bcrypt.init_app(app)

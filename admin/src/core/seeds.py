@@ -355,13 +355,15 @@ def seed_feature_flags():
 def seed_tags():
     """Crea un conjunto inicial de tags para clasificar sitios históricos"""
     from core.models import Tag
+    from slugify import slugify
 
     print("Creando tags...")
     tags = ["Colonial", "Patrimonial", "tag 3", "tag 4"]
 
     for t in tags:
-        tag = Tag(name=t)
+        tag = Tag(name=t, slug=slugify(t))
         db.session.add(tag)
+
     db.session.commit()
 
 
