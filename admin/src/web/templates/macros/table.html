@@ -1,7 +1,7 @@
 {% from 'macros/button.html' import button, button_error, button_warning, button_validate%}
 {% from 'macros/status.html' import active_status, blocked_status, eliminated_status, inactive_status%}
 
-{% macro table(data, columns,  validate_route=None, edit_route=None, delete_route=None, detail_route=None, restore_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
+{% macro table(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
 <div class="relative overflow-x-auto">
   {% if title %}
     <h2 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">{{ title }}</h2>
@@ -21,7 +21,7 @@
           {% for col in columns %}
             <th scope="col" class="px-6 py-3">{{ col.label }}</th>
           {% endfor %}
-          {% if edit_route or delete_route or detail_route %}
+          {% if edit_route or delete_route or detail_route or validate_route or restore_route %}
             <th scope="col" class="px-6 py-3 text-center">Acciones</th>
           {% endif %}
         </tr>
@@ -51,7 +51,7 @@
               </td>
             {% endfor %}
 
-            {% if edit_route or delete_route or detail_route %}
+            {% if edit_route or delete_route or detail_route or validate_route or restore_route %}
               <td class="px-6 py-4 text-center">
                 {{ render_action_buttons(item, detail_route , edit_route, delete_route, restore_route, validate_route, id_param) }}
               </td>
@@ -90,14 +90,13 @@
     {% elif delete_route and not item.deleted_at %}
       {% set delete_params = {id_param: item.id} %}
       {{ button_error("Eliminar", link=url_for(delete_route, **delete_params), icon_left_svg=get_icon("delete")) }}
-      {% if validate_route %} 
+      {% if validate_route %}
         {% if item.pending_validation %}
           {% set validate_params = {id_param: item.id} %}
           {{ button_validate("Validar", link=url_for(validate_route, **validate_params), icon_left_svg=get_icon("validate")) }}
         {% endif %}
       {% endif %}
     {% endif %}
-
   </div>
 {% endmacro %}
 {# Macro para los tags de estado #}
