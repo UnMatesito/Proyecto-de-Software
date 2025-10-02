@@ -57,7 +57,7 @@ def create_tag(name):
     slug = slugify(name)
     validate_tag_name(name)
     validate_tag_slug(slug)
-    tag = Tag(name, slug)
+    tag = Tag(name=name, slug=slug)
     db.session.add(tag)
     db.session.commit()
     return tag
