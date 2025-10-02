@@ -1,83 +1,29 @@
 {% extends "layout.html" %}
+{% from "macros/button.html" import button %}
 
 {% block title %}Feature Flags{% endblock %}
 
 {% block header %}
-<h1 class="text-2xl font-bold p-4 text-center">Feature Flags</h1>
+    <div class="text-center mb-6">
+        <h1 class="text-5xl font-bold p-4">Feature Flags</h1>
+        <p class="text-xl">Aqui puedes administrar todas las Flags presentes en el sistema.</p>
+    </div>
+    {{ button('Volver al Inicio', link="/", icon_left_svg='<i class="fa-solid fa-arrow-left"></i>', class="absolute top-10 left-5") }}
 {% endblock %}
 
 {% block content %}
-<div class="p-6 max-w-7xl mx-auto space-y-6">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="mb-4">
-                {% for category, message in messages %}
-                    <div class="p-2 mb-2 rounded
-                        {% if category == 'error' %}bg-red-100 text-red-700
-                        {% elif category == 'warning' %}bg-yellow-100 text-yellow-700
-                        {% elif category == 'success' %}bg-green-100 text-green-700
-                        {% else %}bg-gray-100 text-gray-700{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
-
-    <!-- Contenedor tabla de flags -->
-    <div class="bg-white shadow rounded overflow-hidden">
-        <table class="table-auto border-collapse border border-gray-200 w-full text-sm">
-            <thead class="bg-gray-100 text-gray-700">
-                <tr>
-                    <th class="border px-4 py-2">Nombre</th>
-                    <th class="border px-4 py-2">Descripción</th>
-                    <th class="border px-4 py-2">Estado</th>
-                    <th class="border px-4 py-2">Última modificación</th>
-                    <th class="border px-4 py-2">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for flag in flags %}
-                <tr class="hover:bg-gray-50">
-                    <td class="border px-4 py-2">{{ flag.name }}</td>
-                    <td class="border px-4 py-2">{{ flag.description }}</td>
-                    <td class="border px-4 py-2">
-                        {% if flag.is_enabled %}
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">ON</span>
-                        {% else %}
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">OFF</span>
-                        {% endif %}
-                    </td>
-                    <td class="border px-4 py-2 text-gray-700">
-                        <span class="block">{{ flag.last_modified_by.first_name ~ " " ~ flag.last_modified_by.last_name if flag.last_modified_by else "-" }}</span>
-                        <span>{{ flag.last_modified_at.strftime("%d/%m/%Y %H:%M") if flag.last_modified_at else "-" }}</span>
-                    </td>
-                    <!-- Acciones  -->
-                    <td class="border px-4 py-2 text-center">
-                        <form method="POST" action="{{ url_for('feature-flags.toggle', flag_id=flag.id) }}" class="flex flex-col sm:flex-row items-start sm:items-center justify-center gap-2">
-                            {% if flag.name in ["admin_maintenance_mode", "portal_maintenance_mode"] and not flag.has_message()%}
-                                <input type="text" 
-                                       name="message" 
-                                       placeholder="Mensaje de mantenimiento"
-                                       class="border rounded-lg px-3 py-2 text-sm w-full sm:w-56 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                       {% if flag.enabled %} value="{{ flag.message }}" {% endif %}>
-                            {% endif %}
-                            <button type="submit"
-                                    onclick="return confirm('¿Confirmar cambio del flag {{ flag.name }}?')"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
-                                Cambiar
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="5" class="text-center p-4 text-gray-500">No hay flags cargadas.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-centerp">
+        {% for flag in flags %}
+            {% from 'macros/flag_card.html' import feature_flag_card %}
+            {{ feature_flag_card(
+                name=flag.name,
+                description=flag.description,
+                is_enable=flag.is_enabled,
+                last_edited_user=flag.last_modified_by.name if flag.last_modified_by else "-",
+                last_edited_date=flag.last_modified_at.strftime("%d/%m/%Y %H:%M") if flag.last_modified_at else "-",
+                show_input_text=(flag.name in ["admin_maintenance_mode", "portal_maintenance_mode"]),
+                id=flag.id
+            ) }}
+        {% endfor %}
     </div>
-
-</div>
 {% endblock %}

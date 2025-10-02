@@ -54,7 +54,7 @@ def authenticate():
     session["user_id"] = user.id
     flash("Has iniciado sesión correctamente", "success")
     next_page = request.args.get("next")
-    return redirect(next_page or url_for("home"))
+    return redirect(next_page or url_for("main_bp.home"))
 
 
 @auth_bp.get("/logout")
@@ -69,4 +69,3 @@ def logout():
     session.clear()
     flash("Has cerrado sesión", "success")
     return redirect(url_for("auth.login"))
-  

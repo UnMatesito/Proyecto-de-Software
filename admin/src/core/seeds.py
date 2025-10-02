@@ -1,3 +1,5 @@
+from geoalchemy2.elements import WKTElement
+
 from core.database import db
 
 
@@ -59,6 +61,7 @@ def seed_permissions():
         ("site_show", "Ver detalle de sitio"),
         ("site_export", "Exportar sitios"),
         ("site_history", "Ver historial de sitio"),
+        ("site_restore", "Restaurar sitio borrado"),
     ]
 
     # Permisos para tags
@@ -171,6 +174,7 @@ def seed_roles():
             "site_show",
             "site_export",
             "site_history",
+            "site_restore",
             # Tags
             "tag_index",
             "tag_new",
@@ -433,48 +437,45 @@ def seed_historic_sites():
             brief_description="Edificio histórico del periodo colonial.",
             full_description="El Cabildo de Buenos Aires fue sede de las autoridades coloniales. "
             "Actualmente funciona como museo, ubicado frente a la Plaza de Mayo.",
-            latitude=-34.6083,
-            longitude=-58.3712,
             inauguration_year=1610,
-            registration_date=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc),
             is_visible=False,
             pending_validation=True,
             city_id=1,
             category_id=1,
             conservation_state_id=1,
             proposed_by=1,
+            location=WKTElement("POINT(-57.9561 -34.9226)"),
         ),
         HistoricSite(
             name="Ruinas de San Ignacio Miní",
             brief_description="Misión jesuítica guaraní en Misiones.",
             full_description="Las Ruinas de San Ignacio Miní son Patrimonio de la Humanidad por la UNESCO "
             "y muestran el legado de las misiones jesuíticas en Argentina.",
-            latitude=-27.2556,
-            longitude=-55.5353,
             inauguration_year=1632,
-            registration_date=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc),
             is_visible=False,
             pending_validation=True,
             city_id=2,
             category_id=2,
             conservation_state_id=2,
             proposed_by=1,
+            location=WKTElement("POINT(-57.9319 -34.9085)"),
         ),
         HistoricSite(
             name="Teatro Colón",
             brief_description="Principal teatro de ópera de Argentina.",
             full_description="Inaugurado en 1908, el Teatro Colón es considerado uno de los cinco mejores del mundo "
             "por su acústica y su trayectoria artística.",
-            latitude=-34.6012,
-            longitude=-58.3836,
             inauguration_year=1908,
-            registration_date=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc),
             is_visible=False,
             pending_validation=True,
             city_id=1,
             category_id=3,
             conservation_state_id=1,
             proposed_by=2,
+            location=WKTElement("POINT(-57.9543 -34.9216)"),
         ),
     ]
 
