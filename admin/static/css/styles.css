@@ -1117,16 +1117,16 @@ select {
   top: 2rem;
 }
 
+.left-3 {
+  left: 0.75rem;
+}
+
 .left-5 {
   left: 1.25rem;
 }
 
 .top-10 {
   top: 2.5rem;
-}
-
-.left-3 {
-  left: 0.75rem;
 }
 
 .top-3 {
@@ -1506,6 +1506,14 @@ select {
 
 .justify-between {
   justify-content: space-between;
+}
+
+.gap-1 {
+  gap: 0.25rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
 }
 
 .gap-3 {
@@ -2216,11 +2224,6 @@ select {
 .hover\:bg-gray-100:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
-}
-
-.hover\:bg-gray-300:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(209 213 219 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:bg-gray-50:hover {

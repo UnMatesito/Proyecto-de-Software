@@ -5,6 +5,7 @@ from .main import main_bp
 from .tag.tag import tag_bp
 from .user.user import user_bp
 from .user.user_management import user_management_bp
+from .city.city import city_bp
 
 __all__ = [
     "user_management_bp",
@@ -13,5 +14,6 @@ __all__ = [
     "feature_flag_bp",
     "user_bp",
     "site_bp",
+    "city_bp"
     "main_bp",
 ]
