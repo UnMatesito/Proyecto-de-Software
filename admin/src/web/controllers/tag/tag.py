@@ -99,9 +99,9 @@ def edit_tag(tag_id):
 def delete(tag_id):
     try:
         delete_tag(tag_id)
-        flash(f"Se ah eliminado correctamente el tag {tag_id}", "succes")
+        flash(f"Se ha eliminado correctamente el tag {tag_id}", "succes")
     except Exception as e:
-        flash(f"Erro al intentar eliminar el tag {e}", "error")
+        flash(f"Error al intentar eliminar el tag {e}", "error")
     return redirect(url_for("tag_bp.list_paginted_tags"))
     
 @tag_bp.get("/datail/<int:tag_id>")

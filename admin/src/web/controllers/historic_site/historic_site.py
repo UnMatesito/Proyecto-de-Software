@@ -56,7 +56,6 @@ def list_paginated_sites():
 
         sites = pagination["items"]
 
-        # ASrmamos columnas para la tabla
         columns = [
             {"key": "name", "label": "Nombre"},
             {"key": "city", "label": "Ciudad", "render": lambda site: site.city.name},
@@ -75,7 +74,6 @@ def list_paginated_sites():
             columns=columns
         )
     except Exception as e:
-        print(e)
         flash(f"Error al cargar los sitios, error: {e}", "error")
         return redirect(url_for("main_bp.home"))
 
