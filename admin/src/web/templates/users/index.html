@@ -10,6 +10,23 @@
 {% block content %}
 <!-- Contenedor general -->
 <div class="p-6 max-w-7xl mx-auto space-y-6">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="p-2 mb-2 rounded
+                        {% if category == 'error' %}bg-red-100 text-red-700
+                        {% elif category == 'warning' %}bg-yellow-100 text-yellow-700
+                        {% elif category == 'success' %}bg-green-100 text-green-700
+                        {% else %}bg-gray-100 text-gray-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+
         <!-- Contenedor del buscador -->
     <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2">
         <form method="get" action="{{ url_for('users.search_by_email') }}" class="flex space-x-2 w-full max-w-md">
@@ -113,7 +130,7 @@
                     <td class="border px-4 py-2">{{ user.id }}</td>
                     <td class="border px-4 py-2">{{ user.first_name }} {{ user.last_name }}</td>
                     <td class="border px-4 py-2">{{ user.email }}</td>
-                    <td class="border px-4 py-2">{{ user.role.name if user.role else "Sin rol" }}</td>
+                    <td class="border px-4 py-2">{{ get_user_role_name(user.id) or "Sin rol" }}</td>
                     <td class="border px-4 py-2">
                         {% if user.deleted_at %}
                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -136,7 +153,7 @@
                     <td class="border px-4 py-2">{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A' }}</td>
                     <td class="border px-4 py-2 text-center">
                         <div class="flex justify-center space-x-2">
-                            <a href="{{ url_for('users.edit', user_id=user.id) }}" 
+                            <a href="{{ url_for('users.edit_get', user_id=user.id) }}" 
                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
                                 Editar
                             </a>

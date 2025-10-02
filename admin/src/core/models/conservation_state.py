@@ -10,7 +10,9 @@ class ConservationState(db.Model):
 
     # Relaciones
     historic_sites = db.relationship(
-        "HistoricSite", back_populates="conservation_state"
+        "HistoricSite",
+        back_populates="conservation_state",
+        cascade="all, delete-orphan",
     )
 
     # Metodos

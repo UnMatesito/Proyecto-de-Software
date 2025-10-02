@@ -31,7 +31,9 @@ class User(db.Model):
     )
 
     # Relaciones
-    site_histories = db.relationship("SiteHistory", back_populates="user")
+    site_histories = db.relationship(
+        "SiteHistory", back_populates="user", cascade="all, delete-orphan"
+    )
     historic_sites = db.relationship(
         "HistoricSite", back_populates="user", cascade="all, delete-orphan"
     )
@@ -65,19 +67,30 @@ class User(db.Model):
         return self.system_admin
 
     def is_active(self):
+        """Devuelve si esta bloqueado"""
         return self.blocked is False
 
     def block_user(self):
+        """Bloquea al usuario, excepto si es administrador."""
+        if self.is_admin() or self.has_role("Administrador"):
+            raise ValueError("No se puede bloquear un administrador")
         self.blocked = True
 
+    def unblock_user(self):
+        """Desbloquea al usuario."""
+        self.blocked = False
+
     def get_full_name(self):
+        """Funcion que devuelve el nombre completo"""
         return f"{self.first_name} {self.last_name}"
 
     def delete_user(self):
+        """Funcion que setea la fecha de borrado"""
         self.deleted_at = datetime.now(timezone.utc)
         self.active = False
 
     def restore_user(self):
+        """Funcion que recupera el usuaio (setea la fecha de borrado en None)"""
         self.deleted_at = None
         self.active = True
 
