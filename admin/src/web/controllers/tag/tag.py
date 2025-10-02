@@ -99,7 +99,7 @@ def edit_tag(tag_id):
             flash(f"Error al editar el tag {tag_id}, {e}", "error")
             return redirect(url_for("tag_bp.list_paginated_tags"))
 
-@tag_bp.post("/delete/<int:tag_id>")
+@tag_bp.get("/delete/<int:tag_id>")
 @login_required
 @permission_required("tag_destroy")
 def delete(tag_id):
