@@ -34,8 +34,8 @@
             </svg>
         </div>
         <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ description }}</p>
-        <form method="POST" action="{{ url_for('feature-flags.toggle', flag_id=id) }}" class="flex flex-row items-center w-full mb-4 justify-center">
-            {% if show_input_text %}
+            <form method="POST" action="{{ url_for('feature-flags.toggle', flag_id=id) }}" class="flex flex-row items-center w-full mb-4 justify-center">
+            {% if (name in ['admin_maintenance_mode', 'portal_maintenance_mode']) and not is_enable %}
                 {{ text_input(name="message", placeholder="Mensaje de mantenimiento", class="mr-4 w-64", required=True) }}
             {% endif %}
             {% if is_enable %}
