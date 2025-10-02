@@ -1,6 +1,17 @@
 {% extends "layout.html" %}
 {% from "macros/button.html" import button %}
-
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<style>
+    #map { height: 60vh;
+            max-width: 800px;
+            width: 100%; 
+            border-radius: 6px;
+            border: 1px solid #c0bfbf;
+        }
+</style>
+{% endblock %}
 {% block title %}Detalle del Sitio{% endblock %}
 
 {% block header %}
@@ -115,10 +126,28 @@
             </div>
         </dl>
     </div>
-    <!-- Mapa -->
-    <div>
-        {{map | safe}}
-    </div>
 
+    <!-- Mapa del sitio -->
+    <div class="flex items-center justify-center flex-col mt-2 gap-2 " style=" height: 70vh; max-width: 900px;"> 
+        <h3 class="block font-semibold text-gray-700 mb-1">Seleccione la ubicación en el mapa!</h3>
+        <div id="map">
+
+        </div>
+    </div>
 </div>
+
+<script>
+
+        var map = L.map('map').setView(["{{lat}}", "{{lon}}"], 13);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        }).addTo(map);
+
+        mark = L.marker(["{{lat}}", "{{lon}}"]).addTo(map)
+            .bindPopup('{{site_name}}  <br> {{lat}}", "{{lon}}')
+            .openPopup();
+    
+        var lat_lng_popup = L.popup();
+
+</script>
 {% endblock %}
