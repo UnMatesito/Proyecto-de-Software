@@ -28,7 +28,7 @@ def index():
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
         page = request.args.get("page", 1)
-        active_param = request.args.get("active", None)
+        blocked_param = request.args.get("blocked", None)
         role_id = request.args.get("role_id", None)
         columns = [
             {"key": "id", "label": "ID"},
@@ -46,7 +46,7 @@ def index():
             page=page,
             order_by=order_by,
             sorted_by=sorted_by,
-            active=active_param,
+            blocked=blocked_param,
             role_id=role_id,
         )
         roles = get_all_roles()
@@ -55,7 +55,7 @@ def index():
             pagination=users_page,
             columns=columns,
             roles=roles,
-            active=active_param,
+            blocked=blocked_param,
             role_id=role_id,
             sorted_by=sorted_by,
             order_by=order_by,
