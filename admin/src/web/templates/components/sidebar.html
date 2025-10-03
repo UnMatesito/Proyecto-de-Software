@@ -14,13 +14,13 @@
     <div class="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
       <ul class="space-y-2 font-medium">
          <li>
-            <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+            <a href="{{ url_for('site_bp.list_paginated_sites') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                <i class="fa-solid fa-building-columns"></i>
                <span class="flex-1 ms-3">Gestión de sitios históricos</span>
             </a>
          </li>
          <li>
-            <a href="/tags" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+            <a href="{{ url_for('tag_bp.list_paginated_tags') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                 <i class="fa-solid fa-tags"></i>
                <span class="flex-1 ms-3">Gestión de Tags</span>
             </a>

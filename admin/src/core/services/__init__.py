@@ -47,7 +47,7 @@ from .historic_site_service import (
     update_historic_site,
     get_sites_filtered,
     restore_historic_site,
-    validate
+    validate_historic_site
 )
 
 # Permission services
@@ -159,7 +159,7 @@ __all__ = [
     "update_historic_site",
     "get_sites_filtered",
     "restore_historic_site",
-    "validate",
+    "validate_historic_site",
     # Permission services
     "create_multiple_permissions",
     "create_permission",
