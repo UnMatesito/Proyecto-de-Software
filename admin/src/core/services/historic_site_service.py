@@ -175,7 +175,7 @@ def update_tags(site, tag_ids):
     for tag in tags:
         site.add_tag(tag)
 
-def validate(site_id):
+def validate_historic_site(site_id):
     site = get_historic_site_by_id(site_id)
     if (not site.pending_validation):
         raise ValueError(f"El sitio con id {site_id} ya se encuentra validado")
@@ -271,8 +271,9 @@ def update_historic_site(body):
     
 def restore_historic_site(site_id):
     site = get_historic_site_by_id(site_id)
-    site.deleted_at = None
-    site.is_visible = False
+    if (not site.is_deleted):
+        raise ValueError(f"El sitio {site_id} no se encuentra borrado")
+    site.restore_site()
     db.session.commit()
     return site
 

@@ -26,7 +26,7 @@ from core.services import (
     delete_historic_site, 
     restore_historic_site,
     update_historic_site,
-    validate
+    validate_historic_site
 )
 
 from core.utils.export import export_sites_to_csv, get_csv_filename
@@ -230,9 +230,9 @@ def restore(site_id):
 @site_bp.get("/validate/<int:site_id>")
 @login_required
 @permission_required("proposal_approve")
-def validate_site(site_id):
+def validate(site_id):
     try:
-        validate(site_id=site_id)
+        validate_historic_site(site_id=site_id)
         flash(f"Se valido correctamente el sitio {site_id}", "success")
     except Exception as e:
         flash(f"Error al intentar validar el sitio {site_id}, {e}", "error")
