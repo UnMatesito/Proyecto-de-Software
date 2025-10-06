@@ -1,9 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
-
 from core.services.tag_service import (
     create_tag,
     delete_tag,
-    get_all_tags,
     get_paginated_tags,
     get_tag_by_id,
     update_tag,
@@ -13,8 +11,7 @@ from web.utils.auth import login_required, permission_required
 
 tag_bp = Blueprint("tag_bp", __name__, url_prefix="/tags")
 
-
-@tag_bp.route("/")
+@tag_bp.get("/")
 @login_required
 @permission_required("tag_index")
 def list_paginated_tags():
