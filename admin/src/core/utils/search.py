@@ -94,9 +94,10 @@ class GenericSearchBuilder:
             return query
 
         # Importar Tag dentro del método para evitar imports circulares
-        from core.models import Tag
         from sqlalchemy import func
+
         from core.database import db
+        from core.models import Tag
 
         # Subconsulta que cuenta cuántos de los tags seleccionados tiene cada sitio
         subquery = (

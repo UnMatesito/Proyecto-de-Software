@@ -324,7 +324,9 @@ def export():
         tags_id = []
         if tags_param:
             try:
-                tags_id = [int(tid.strip()) for tid in tags_param.split(",") if tid.strip()]
+                tags_id = [
+                    int(tid.strip()) for tid in tags_param.split(",") if tid.strip()
+                ]
             except ValueError:
                 flash("IDs de tags inválidos", "error")
                 return redirect(url_for("site_bp.list_paginated_sites"))
