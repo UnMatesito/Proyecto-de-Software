@@ -27,7 +27,7 @@ from core.services import (
     get_user_by_id,
     restore_historic_site,
     update_historic_site,
-    validate,
+    validate_historic_site,
 )
 from core.utils.export import export_sites_to_csv, get_csv_filename
 from web.forms.historic_site import CreateSiteForm, EditSiteForm
@@ -87,7 +87,6 @@ def list_paginated_sites():
                 "label": "Estado de conservación",
                 "render": lambda site: site.conservation_state.state,
             },
-            {"key": "created_at", "label": "Creado el", "render": "date"},
             {"key": "is_visible", "label": "Visibilidad"},
             {"key": "deleted_at", "label": "Estado", "render": "status"},
         ]
@@ -201,7 +200,11 @@ def post_create():
             flash(f"Error al crear el sitio, {e}", "error")
             return redirect(url_for("site_bp.get_create"))
     else:
-        flash(f"Error al crear el sitio", "error")
+        form.city.choices = [
+            (city.id, city.name)
+            for city in get_all_cities()
+            if (city.province_id == form.province.data)
+        ]
         return render_template("historic_site/create.html", form=form)
 
 
@@ -257,11 +260,11 @@ def post_edit(site_id):
                 "tags": form.tags.data,
             }
             update_historic_site(body)
-            flash(f"El sitio {site_id} fue eliminado exitosamente", "success")
+            flash(f"El sitio {form.name.data} fue editado exitosamente", "success")
             return redirect(url_for("site_bp.list_paginated_sites"))
         except Exception as e:
             flash(
-                f"Se produjo un error al intentar editar el sitio {site_id}, {e}",
+                f"Se produjo un error al intentar editar el sitio {form.name.data}, {e}",
                 "error",
             )
             return redirect(url_for("site_bp.list_paginated_sites"))
@@ -302,9 +305,9 @@ def restore(site_id):
 @site_bp.get("/validate/<int:site_id>")
 @login_required
 @permission_required("proposal_approve")
-def validate_site(site_id):
+def validate(site_id):
     try:
-        validate(site_id=site_id)
+        validate_historic_site(site_id=site_id)
         flash(f"Se valido correctamente el sitio {site_id}", "success")
     except Exception as e:
         flash(f"Error al intentar validar el sitio {site_id}, {e}", "error")

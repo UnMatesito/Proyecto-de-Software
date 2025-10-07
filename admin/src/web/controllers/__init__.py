@@ -14,5 +14,6 @@ __all__ = [
     "feature_flag_bp",
     "user_bp",
     "site_bp",
-    "city_bp" "main_bp",
+    "city_bp",
+    "main_bp",
 ]

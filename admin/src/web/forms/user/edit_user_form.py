@@ -33,4 +33,4 @@ class EditUserForm(FlaskForm):
 
     active = BooleanField("Usuario activo")
 
-    submit = SubmitField("Crear usuario")
+    submit = SubmitField("Editar usuario")

@@ -680,13 +680,13 @@ def seed_historic_sites():
 
 def seed_site_tags():
     """Asocia sitios históricos con tags de clasificación"""
-    from core.services import historic_site_service as HistorcService
+    from core.services import historic_site_service as HistoricService
     from core.services import tag_service as TagService
 
     print("Agregando relaciones Sites-Tags")
 
-    cabildo = HistorcService.get_historic_site_by_id(1)
-    san_ignacio = HistorcService.get_historic_site_by_id(2)
+    cabildo = HistoricService.get_historic_site_by_id(1)
+    san_ignacio = HistoricService.get_historic_site_by_id(2)
 
     tag1 = TagService.get_tag_by_id(1)
     tag2 = TagService.get_tag_by_id(2)

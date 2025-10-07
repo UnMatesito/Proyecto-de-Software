@@ -109,9 +109,11 @@ class HistoricSite(db.Model):
         self.is_visible = False
 
     def restore_site(self):
-        """Restaura el sitio histórico, eliminando la fecha de eliminación y haciéndolo visible."""
+        """Restaura el sitio histórico, eliminando la fecha de eliminación, haciéndolo no visible y en estado de validacion."""
         self.deleted_at = None
-        self.is_visible = True
+        self.is_visible = False
+        self.pending_validation = True
+        return self
 
     def get_coordinates(self):
         """Devuelve un diccionario con las coordenadas del sitio histórico."""

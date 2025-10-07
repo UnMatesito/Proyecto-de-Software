@@ -3,7 +3,6 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from core.services.tag_service import (
     create_tag,
     delete_tag,
-    get_all_tags,
     get_paginated_tags,
     get_tag_by_id,
     update_tag,
@@ -14,9 +13,10 @@ from web.utils.auth import login_required, permission_required
 tag_bp = Blueprint("tag_bp", __name__, url_prefix="/tags")
 
 
-@tag_bp.route("/")
+@tag_bp.get("/")
 @login_required
-def list_paginted_tags():
+@permission_required("tag_index")
+def list_paginated_tags():
     try:
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
@@ -47,6 +47,7 @@ def list_paginted_tags():
 
 @tag_bp.get("/create")
 @login_required
+@permission_required("tag_new")
 def show_create_tags():
     form = CreateTagForm()
     return render_template("tags/create.html", form=form)
@@ -54,13 +55,14 @@ def show_create_tags():
 
 @tag_bp.post("/create")
 @login_required
+@permission_required("tag_new")
 def create_tags():
     form = CreateTagForm()
     if form.validate_on_submit():
         try:
             create_tag(name=form.name.data)
             flash(f"Tag creado correctamente!", "success")
-            return redirect(url_for("tag_bp.list_paginted_tags"))
+            return redirect(url_for("tag_bp.list_paginated_tags"))
         except Exception as e:
             flash(f"Error al crear tag: {e}", "error")
             return render_template("tags/create.html", form=form)
@@ -71,18 +73,20 @@ def create_tags():
 
 @tag_bp.get("/edit/<int:tag_id>")
 @login_required
+@permission_required("tag_update")
 def show_edit_tag(tag_id):
     try:
         form = EditTagForm()
         tag = get_tag_by_id(tag_id)
         return render_template("tags/edit.html", form=form, tag=tag)
     except Exception as e:
-        flash(f"Error al seleccinar el tag {tag_id}: {e}", "error")
-        return redirect(url_for("tag_bp.list_paginted_tags"))
+        flash(f"Error al seleccinar el tag, {e}", "error")
+        return redirect(url_for("tag_bp.list_paginated_tags"))
 
 
 @tag_bp.post("/edit/<int:tag_id>")
 @login_required
+@permission_required("tag_update")
 def edit_tag(tag_id):
     form = EditTagForm()
     if form.validate_on_submit():
@@ -90,23 +94,24 @@ def edit_tag(tag_id):
             tag = update_tag(tag_id, form.name.data)
             flash(f"Se ha actualizado correctamente el tag!", "succes")
         except Exception as e:
-            flash(f"Error al editar el tag {tag_id}, {e}", "error")
-        return redirect(url_for("tag_bp.list_paginted_tags"))
+            flash(f"Error al editar el tag, {e}", "error")
+        return redirect(url_for("tag_bp.list_paginated_tags"))
     else:
         try:
             tag = get_tag_by_id(tag_id)
             return render_template("tags/edit.html", form=form, tag=tag)
         except Exception as e:
-            flash(f"Error al editar el tag {tag_id}, {e}", "error")
-            return redirect(url_for("tag_bp.list_paginted_tags"))
+            flash(f"Error al editar el tag, {e}", "error")
+            return redirect(url_for("tag_bp.list_paginated_tags"))
 
 
 @tag_bp.post("/delete/<int:tag_id>")
 @login_required
+@permission_required("tag_destroy")
 def delete(tag_id):
     try:
-        delete_tag(tag_id)
-        flash(f"Se ha eliminado correctamente el tag {tag_id}", "succes")
+        tag = delete_tag(tag_id)
+        flash(f"Se ha eliminado correctamente el tag {tag.name}", "succes")
     except Exception as e:
         flash(f"Error al intentar eliminar el tag {e}", "error")
     return redirect(url_for("tag_bp.list_paginted_tags"))
@@ -114,11 +119,11 @@ def delete(tag_id):
 
 @tag_bp.get("/datail/<int:tag_id>")
 @login_required
-@permission_required("user_show")
+@permission_required("tag_show")
 def detail_tag(tag_id):
     try:
         tag = get_tag_by_id(tag_id)
         return render_template("tags/detail.html", tag=tag)
     except Exception as e:
         flash(f"Error al intentar ver detalle del tag, error: {e}", "error")
-        return redirect(url_for("tag_bp.list_paginted_tags"))
+        return redirect(url_for("tag_bp.list_paginated_tags"))

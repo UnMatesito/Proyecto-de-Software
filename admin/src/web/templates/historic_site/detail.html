@@ -76,9 +76,9 @@
                 <dt class="font-semibold text-gray-700">Estado de validación:</dt>
                 <dd>
                     {% if site.pending_validation %}
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">Pendiente</span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">No validado</span>
                     {% else %}
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">No pendiente</span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">Validado</span>
                     {% endif %}
                 </dd>
             </div>
@@ -123,6 +123,15 @@
             <div>
                 <dt class="font-semibold text-gray-700">Estado de conservación:</dt>
                 <dd class="text-gray-900">{{ site.conservation_state.state }}</dd>
+            </div>
+            
+            <div>
+                <dt class="font-semibold text-gray-700">Tags asociados:</dt>
+                <dd class="text-gray-900">
+                    {% for tag in site.tags %}
+                        <span class="inline-flex items-center bg-blue-300 text-sky-950 text-xs font-bold px-2.5 py-0.5 rounded-full">{{ tag.name }}</span>
+                    {% endfor %}
+                </dd>
             </div>
         </dl>
     </div>

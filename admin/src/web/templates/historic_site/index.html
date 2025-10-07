@@ -14,9 +14,10 @@
 {% endblock %}
     
 {% block content %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="mb-4">
+            <div class="mb-4 flex items-center justify-center">
                 {% for category, message in messages %}
                     {{toast(message=message, type=category)}}
                 {% endfor %}
@@ -98,6 +99,17 @@
             </li>
         </ul>
     </div>
+    
+    {{table(data=sites, 
+        columns=columns, 
+        edit_route="site_bp.get_edit",
+        detail_route="site_bp.detail",
+        delete_route="site_bp.delete",
+        restore_route="site_bp.restore",
+        validate_route="site_bp.validate",
+        empty_message="No hay sitios para mostrar", 
+        title="Sitios Historicos",
+        id_param="site_id")}}
 
     <div class="flex flex-row">
         <div class="flex flex-col">

@@ -170,6 +170,8 @@ def update_tags(site, tag_ids):
     tags = []
     for tag_id in tag_ids:
         tag = tag_service.get_tag_by_id(tag_id)
+        if tag.deleted_at:
+            raise ValueError("Se no se pueden asignar tags borrados")
         tags.append(tag)
 
     # Limpiar tags existentes y asignar nuevos usando métodos del modelo
@@ -179,13 +181,14 @@ def update_tags(site, tag_ids):
         site.add_tag(tag)
 
 
-def validate(site_id):
+def validate_historic_site(site_id):
     site = get_historic_site_by_id(site_id)
     if not site.pending_validation:
         raise ValueError(f"El sitio con id {site_id} ya se encuentra validado")
     if site.deleted_at:
         raise ValueError(f"El sitio con id {site_id} se encuentra borrado")
     site.pending_validation = False
+    site.is_visible = True
     db.session.commit()
     return site
 
@@ -277,8 +280,9 @@ def update_historic_site(body):
 
 def restore_historic_site(site_id):
     site = get_historic_site_by_id(site_id)
-    site.deleted_at = None
-    site.is_visible = False
+    if not site.is_deleted:
+        raise ValueError(f"El sitio {site_id} no se encuentra borrado")
+    site.restore_site()
     db.session.commit()
     return site
 
