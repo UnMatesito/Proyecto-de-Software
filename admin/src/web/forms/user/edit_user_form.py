@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, SelectField, StringField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, Length
+from wtforms import BooleanField, StringField, SubmitField, EmailField
+from wtforms.validators import DataRequired, Email, Length
 
 from core.services import get_all_roles
 
@@ -22,7 +22,7 @@ class EditUserForm(FlaskForm):
         ],
     )
 
-    email = StringField(
+    email = EmailField(
         "Correo",
         validators=[
             DataRequired(message="El correo es obligatorio"),

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, PasswordField, SelectField, StringField, SubmitField
+from wtforms import BooleanField, PasswordField, SelectField, StringField, SubmitField, EmailField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 
 from core.services import get_all_roles
@@ -24,7 +24,7 @@ class CreateUserForm(FlaskForm):
         ],
     )
 
-    email = StringField(
+    email = EmailField(
         "Correo",
         validators=[
             DataRequired(message="El correo es obligatorio"),
