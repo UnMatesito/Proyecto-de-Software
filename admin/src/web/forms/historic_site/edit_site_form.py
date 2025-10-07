@@ -5,7 +5,7 @@ from core.services import (
     get_all_cities,
     get_all_conservation_state,
     get_all_provinces,
-    get_all_tags,
+    get_all_not_deleted_tags
 )
 
 from .create_site_form import CreateSiteForm
@@ -70,7 +70,7 @@ class EditSiteForm(CreateSiteForm):
             ]
 
             self.tags.choices = [  # Cargo las tags en el select
-                (tag.id, tag.name) for tag in get_all_tags()
+                (tag.id, tag.name) for tag in get_all_not_deleted_tags()
             ]
         else:
             super(EditSiteForm, self).__init__(*args, **kwargs)

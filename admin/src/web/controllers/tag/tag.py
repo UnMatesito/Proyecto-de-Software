@@ -73,7 +73,7 @@ def show_edit_tag(tag_id):
         tag = get_tag_by_id(tag_id)
         return render_template("tags/edit.html", form=form, tag=tag)
     except Exception as e:
-        flash(f"Error al seleccinar el tag {tag_id}: {e}", "error")
+        flash(f"Error al seleccinar el tag, {e}", "error")
         return redirect(url_for("tag_bp.list_paginated_tags"))
     
 @tag_bp.post("/edit/<int:tag_id>")
@@ -86,14 +86,14 @@ def edit_tag(tag_id):
             tag = update_tag(tag_id, form.name.data)
             flash(f"Se ha actualizado correctamente el tag!", "succes")
         except Exception as e:
-            flash(f"Error al editar el tag {tag_id}, {e}", "error")
+            flash(f"Error al editar el tag, {e}", "error")
         return redirect(url_for("tag_bp.list_paginated_tags"))
     else:
         try:
             tag = get_tag_by_id(tag_id)
             return render_template("tags/edit.html", form=form, tag=tag)
         except Exception as e:
-            flash(f"Error al editar el tag {tag_id}, {e}", "error")
+            flash(f"Error al editar el tag, {e}", "error")
             return redirect(url_for("tag_bp.list_paginated_tags"))
 
 @tag_bp.get("/delete/<int:tag_id>")
@@ -101,10 +101,10 @@ def edit_tag(tag_id):
 @permission_required("tag_destroy")
 def delete(tag_id):
     try:
-        delete_tag(tag_id)
-        flash(f"Se ha eliminado correctamente el tag {tag_id}", "succes")
+        tag = delete_tag(tag_id)
+        flash(f"Se ha eliminado correctamente el tag {tag.name}", "succes")
     except Exception as e:
-        flash(f"Error al intentar eliminar el tag {e}", "error")
+        flash(f"Error al intentar eliminar el tag, {e}", "error")
     return redirect(url_for("tag_bp.list_paginated_tags"))
     
 @tag_bp.get("/datail/<int:tag_id>")

@@ -167,6 +167,8 @@ def update_tags(site, tag_ids):
     tags = []
     for tag_id in tag_ids:
         tag = tag_service.get_tag_by_id(tag_id)
+        if (tag.deleted_at):
+            raise ValueError("Se no se pueden asignar tags borrados")
         tags.append(tag)
 
     # Limpiar tags existentes y asignar nuevos usando métodos del modelo

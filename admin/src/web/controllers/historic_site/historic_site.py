@@ -194,10 +194,10 @@ def post_edit(site_id):
             "tags": form.tags.data,
         }
             update_historic_site(body)
-            flash(f"El sitio {site_id} fue eliminado exitosamente", "success")
+            flash(f"El sitio {form.name.data} fue editado exitosamente", "success")
             return redirect(url_for("site_bp.list_paginated_sites"))
         except Exception as e:
-            flash(f"Se produjo un error al intentar editar el sitio {site_id}, {e}", "error")
+            flash(f"Se produjo un error al intentar editar el sitio {form.name.data}, {e}", "error")
             return redirect(url_for("site_bp.list_paginated_sites"))
     else:
         for e in form.errors:

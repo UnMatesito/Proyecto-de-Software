@@ -10,6 +10,10 @@ from core.utils import pagination
 # TODO: Agregar dosctrings
 
 
+def get_all_not_deleted_tags():
+    return Tag.query.filter_by(deleted_at=None)
+
+
 def get_all_tags():
     return Tag.query.all()
 
@@ -30,6 +34,7 @@ def get_tag_by_name(tag_name):
 
 def tag_exist(tag_name):
     return Tag.query.filter_by(name=tag_name).first() is not None
+
 
 def slug_exist(slug):
     return Tag.query.filter_by(slug=slug).first() is not None
@@ -106,3 +111,4 @@ def delete_tag(tag_id):
         raise ValueError("El tag posee sitios asociados")
     tag.deleted_at = datetime.now(timezone.utc)
     db.session.commit()
+    return tag
