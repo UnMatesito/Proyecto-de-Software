@@ -14,6 +14,7 @@ from .controllers import (
     user_bp,
     user_management_bp,
     city_bp,
+    site_history_bp,
 )
 from .handlers import error
 from .utils.auth import (
@@ -40,7 +41,9 @@ def create_app(env="development", static_folder="../../static"):
     bcrypt.init_app(app)
     db.init_app(app)
     session.init_app(app)
-
+ 
+    import core.audit
+    
     # Hooks
     app.before_request(hook_admin_maintenance)
 
@@ -53,6 +56,7 @@ def create_app(env="development", static_folder="../../static"):
     app.register_blueprint(auth_bp)
     app.register_blueprint(site_bp)
     app.register_blueprint(city_bp)
+    app.register_blueprint(site_history_bp)
     # Commands
     @app.cli.command("reset-db")
     def reset_db_command():
