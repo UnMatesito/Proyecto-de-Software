@@ -150,12 +150,14 @@
 </select>
 {% endmacro %}
 
-{% macro multi_select_tags(label, name, choices, selected_choices, placeholder) %}
+{% macro multi_select_tags(label='', name='', choices=[], selected_choices=[], placeholder='Selecciona opciones...') %}
   {% set component_id = name|replace(' ', '_') %}
   <div class="relative w-full" data-multi-select-id="{{ component_id }}">
+    {% if label %}
     <label for="{{ component_id }}" class="block mb-2 text-sm font-medium text-gray-900">
       {{ label }}
     </label>
+    {% endif %}
 
     <!-- Dropdown button -->
     <button
@@ -177,10 +179,10 @@
     >
       <ul class="py-2 text-sm text-gray-700 max-h-60 overflow-y-auto">
         {% for choice in choices %}
-          {% set option_value = choice[0] %}
+          {% set option_value = choice[0]|string %}
           {% set option_label = choice[1] %}
           {% set option_id = (component_id ~ '_' ~ option_value)|replace(' ', '_')|replace('.', '_') %}
-          {% if option_value not in selected_choices %}
+          {% if option_value not in selected_choices|map('string')|list %}
             <li id="{{ option_id }}_li" class="cursor-pointer hover:bg-gray-100 px-3 py-1"
                 onclick="toggleOption('{{ component_id }}', '{{ option_value }}', '{{ option_label }}')">
               {{ option_label }}
@@ -193,7 +195,7 @@
     <!-- Tags container -->
     <div id="{{ component_id }}_tags" class="flex flex-wrap gap-2 mt-2">
       {% for value, label in choices %}
-        {% if value in selected_choices %}
+        {% if value|string in selected_choices|map('string')|list %}
           <span
             class="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded flex items-center"
             data-tag="{{ value }}"
@@ -207,61 +209,71 @@
               ✕
             </button>
           </span>
-          <input type="hidden" name="{{ name }}" value="{{ value }}">
         {% endif %}
       {% endfor %}
+      <!-- Un único input hidden con valores separados por comas -->
+      <input type="hidden" name="{{ name }}" value="{{ selected_choices|join(',') }}">
     </div>
   </div>
 
   <script>
     (function() {
-      const dropdown = document.getElementById('{{ component_id }}_dropdown');
-      const button = document.getElementById('{{ component_id }}_button');
-      const tagsContainer = document.getElementById('{{ component_id }}_tags');
-      const placeholder = document.getElementById('{{ component_id }}_placeholder');
+      const componentId = '{{ component_id }}';
+      const name = '{{ name }}';
+      const dropdown = document.getElementById(componentId + '_dropdown');
+      const button = document.getElementById(componentId + '_button');
+      const tagsContainer = document.getElementById(componentId + '_tags');
 
-      window.toggleDropdown = function(componentId) {
-        const dd = document.getElementById(componentId + '_dropdown');
-        dd.classList.toggle('hidden');
+      // Obtener el input hidden
+      let hiddenInput = tagsContainer.querySelector('input[type="hidden"]');
+
+      // Inicializar Set con valores seleccionados
+      const selectedTags = new Set(
+        hiddenInput.value ? hiddenInput.value.split(',').filter(v => v.trim()) : []
+      );
+
+      window.toggleDropdown = function(cId) {
+        if (cId === componentId) {
+          dropdown.classList.toggle('hidden');
+        }
       }
 
-      window.toggleOption = function(componentId, value, label) {
-        const component = document.querySelector(`[data-multi-select-id="${componentId}"]`);
-        const tagsContainer = component.querySelector(`#${componentId}_tags`);
-        const dropdown = component.querySelector(`#${componentId}_dropdown`);
+      window.toggleOption = function(cId, value, label) {
+        if (cId !== componentId) return;
+
         const li = document.getElementById(`${componentId}_${value}_li`);
 
-        // Crear el tag visual
+        // Agregar tag visual
         const tag = document.createElement('span');
         tag.className = 'bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded flex items-center';
         tag.dataset.tag = value;
         tag.innerHTML = `${label}<button type="button" class="ml-1 text-blue-800 hover:text-blue-900 focus:outline-none" onclick="removeTag('${componentId}', '${value}', '${label}')">✕</button>`;
-        tagsContainer.appendChild(tag);
 
-        // Crear input hidden para Flask
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = '{{ name }}';
-        input.value = value;
-        tagsContainer.appendChild(input);
+        // Insertar antes del input hidden
+        tagsContainer.insertBefore(tag, hiddenInput);
 
-        // Eliminar la opción del dropdown
+        // Agregar al Set y actualizar input
+        selectedTags.add(String(value));
+        updateHiddenInput();
+
+        // Eliminar del dropdown
         if (li) li.remove();
-
-        // Cerrar dropdown si querés (opcional)
-        // dropdown.classList.add('hidden');
       }
 
-      window.removeTag = function(componentId, value, label) {
-        const component = document.querySelector(`[data-multi-select-id="${componentId}"]`);
-        const tagsContainer = component.querySelector(`#${componentId}_tags`);
-        const dropdownList = component.querySelector(`#${componentId}_dropdown ul`);
+      window.removeTag = function(cId, value, label) {
+        if (cId !== componentId) return;
 
-        // Eliminar tag e input hidden
-        tagsContainer.querySelectorAll(`[data-tag="${value}"]`).forEach(e => e.remove());
-        tagsContainer.querySelectorAll(`input[value="${value}"]`).forEach(e => e.remove());
+        const dropdownList = dropdown.querySelector('ul');
 
-        // Volver a agregar opción al dropdown
+        // Eliminar tag visual
+        const tag = tagsContainer.querySelector(`[data-tag="${value}"]`);
+        if (tag) tag.remove();
+
+        // Eliminar del Set y actualizar input
+        selectedTags.delete(String(value));
+        updateHiddenInput();
+
+        // Restaurar en dropdown
         const li = document.createElement('li');
         li.id = `${componentId}_${value}_li`;
         li.className = 'cursor-pointer hover:bg-gray-100 px-3 py-1';
@@ -270,7 +282,11 @@
         dropdownList.appendChild(li);
       }
 
-      // Cerrar dropdown si clickeás afuera
+      function updateHiddenInput() {
+        hiddenInput.value = Array.from(selectedTags).join(',');
+      }
+
+      // Cerrar dropdown al hacer click fuera
       document.addEventListener('click', function(e) {
         if (!button.contains(e.target) && !dropdown.contains(e.target)) {
           dropdown.classList.add('hidden');

@@ -92,7 +92,8 @@
                     link=url_for(
                         'site_bp.export',
                         **dict(request.args.to_dict(), order_by=order_by, sorted_by=sorted_by)
-                    )
+                    ),
+                    icon_left_svg='<i class="fa-solid fa-file-csv mr-1"></i>'
                 ) }}
             </li>
         </ul>

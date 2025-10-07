@@ -41,7 +41,9 @@ site_bp = Blueprint("site_bp", __name__, url_prefix="/sites")
 @permission_required("site_index")
 def list_paginated_sites():
     try:
-        tags_id = request.args.getlist("tag_id")
+        # Obtener tags como string separado por comas y convertir a lista
+        tags_param = request.args.get("tag_id", "")
+        tags_id = [tid.strip() for tid in tags_param.split(",") if tid.strip()]
 
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
@@ -58,7 +60,7 @@ def list_paginated_sites():
         }
 
         if tags_id:
-            search_filters["tags_id"] = [int(tid) for tid in tags_id if tid]
+            search_filters["tags_id"] = [int(tid) for tid in tags_id]
 
         pagination = get_sites_filtered(
             filters=search_filters,
@@ -101,11 +103,10 @@ def list_paginated_sites():
             (state.id, state.state) for state in conservation_states
         ]
 
-        tags = get_all_tags()  # Obtener todos los tags
+        tags = get_all_tags()
         tag_choices = [(tag.id, tag.name) for tag in tags]
 
-        # Obtener tags seleccionados
-        selected_tags = request.args.getlist("tag_id")
+        selected_tags = tags_id
 
         return render_template(
             "historic_site/index.html",
@@ -317,10 +318,26 @@ def export():
     try:
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
-        filters = request.args.to_dict()
+
+        # Obtener tags como string separado por comas
+        tags_param = request.args.get("tag_id", "")
+        tags_id = [tid.strip() for tid in tags_param.split(",") if tid.strip()]
+
+        search_filters = {
+            "search_text": request.args.get("search_text"),
+            "province_id": request.args.get("province_id"),
+            "city_id": request.args.get("city_id"),
+            "conservation_state_id": request.args.get("conservation_state_id"),
+            "is_visible": request.args.get("is_visible"),
+            "date_from": request.args.get("date_from"),
+            "date_to": request.args.get("date_to"),
+        }
+
+        if tags_id:
+            search_filters["tags_id"] = [int(tid) for tid in tags_id]
 
         sitios = get_sites_filtered(
-            filters=filters,
+            filters=search_filters,
             order_by=order_by,
             sorted_by=sorted_by,
             paginate=False,

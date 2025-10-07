@@ -306,30 +306,37 @@ def get_sites_filtered(
     Returns:
         dict de paginación o lista de objetos HistoricSite
     """
-    filters = filters or {}
-
     from core.models import City, Province
 
-    # If city_id is provided, set province_id from city
-    if filters.get("city_id"):
-        city = City.query.get(filters["city_id"])
-        if not city:
-            raise ValueError("Ciudad no encontrada")
-        filters["province_id"] = city.province_id
+    filters = filters or {}
 
-    # Build the query with all filters
+    # Si se filtra por ciudad, deducir automáticamente la provincia
+    city_id = filters.get("city_id")
+    if city_id:
+        city = City.query.get(city_id)
+        if not city:
+            raise ValueError(f"No existe la ciudad con id {city_id}")
+        # Añadir el province_id derivado, solo si no lo enviaron explícitamente
+        filters.setdefault("province_id", city.province_id)
+
+    # Construir la query base con el builder genérico
     query = build_search_query(HistoricSite, filters)
 
-    # If province_id filter is present, join and filter
-    if filters.get("province_id"):
-        query = query.join(HistoricSite.city).join(City.province)
-        query = query.filter(Province.id == filters["province_id"])
+    # Aplicar join manual si se filtra por provincia (ya que el builder no maneja relaciones)
+    province_id = filters.get("province_id")
+    if province_id:
+        query = (
+            query.join(HistoricSite.city)
+            .join(City.province)
+            .filter(Province.id == province_id)
+        )
 
+    # Ordenar los resultados
     query = apply_ordering(query, HistoricSite, order_by, sorted_by)
 
+    # Aplicar paginación o devolver lista completa
     if paginate:
         return paginate_query(
             query, page=page, per_page=per_page, order_by=order_by, sorted_by=sorted_by
         )
-    else:
-        return query.all()
+    return query.all()
