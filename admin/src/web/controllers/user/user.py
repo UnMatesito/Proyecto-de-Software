@@ -267,10 +267,19 @@ def restore(user_id):
 @permission_required("user_update")
 def change_password_post(user_id):
     """Procesar el cambio de contraseña"""
+    current_user = get_user_by_id(session["user_id"])
     try:
         user = get_user_by_id(user_id)
         if not user:
             flash("Usuario no encontrado", "error")
+            return redirect(url_for("users.index"))
+        
+        if user.is_admin():
+            flash("No puede cambiar la contraseña de un administrador del sistema", "error")
+            return redirect(url_for("users.index"))
+        
+        if user.has_role("Administrador") and not current_user.is_admin():
+            flash("No puede cambiar la contraseña de un administrador si usted no es administrador del sistema", "error")
             return redirect(url_for("users.index"))
 
         form = ChangePasswordByAdminForm()
@@ -295,12 +304,21 @@ def change_password_post(user_id):
 @permission_required("user_update")
 def change_password_get(user_id):
     """Mostrar el formulario para cambiar la contraseña"""
+    current_user = get_user_by_id(session["user_id"])
     try:
         user = get_user_by_id(user_id)
         if not user:
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
-
+        
+        if user.is_admin():
+            flash("No puede cambiar la contraseña de un administrador del sistema", "error")
+            return redirect(url_for("users.index"))
+    
+        if user.has_role("Administrador") and not current_user.is_admin():
+            flash("No puede cambiar la contraseña de un administrador si usted no es administrador del sistema", "error")
+            return redirect(url_for("users.index"))
+        
         form = ChangePasswordByAdminForm()
         return render_template("users/change_password_by_admin.html", form=form, user=user)
     except Exception as e:
