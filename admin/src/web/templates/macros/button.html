@@ -5,7 +5,7 @@
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
-                <div class="hidden sm:block">
+                <div>
                     {{ text }}
                 </div>
                 {% if icon_right_svg %}
@@ -17,7 +17,7 @@
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
-                <div class="hidden sm:block">
+                <div>
                     {{ text }}
                 </div>
                 {% if (icon_right_svg )%}
@@ -28,14 +28,14 @@
     </div>
 {% endmacro %}
 
-{% macro button_success(text="", type="button", link=None, icon_left_svg="", icon_right_svg="") %}
+{% macro button_success(text="", type="button", link=None, icon_left_svg="", icon_right_svg="", class="") %}
     <div>
         {% if link %}
-            <a href="{{ link }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
+            <a href="{{ link }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center {{ class }}">
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
-                <div class="hidden sm:block">
+                <div>
                     {{ text }}
                 </div>
                 {% if icon_right_svg %}
@@ -43,11 +43,11 @@
                 {% endif %}
             </a>
         {% else %}
-            <button type="{{ type }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
+            <button type="{{ type }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center {{ class }}">
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
-                <div class="hidden sm:block">
+                <div>
                     {{ text }}
                 </div>
                 {% if (icon_right_svg )%}
@@ -58,14 +58,14 @@
     </div>
 {% endmacro %}
 
-{% macro button_error(text="", type="button", link=None, icon_left_svg="", icon_right_svg="") %}
+{% macro button_error(text="", type="button", link=None, icon_left_svg="", icon_right_svg="", class="") %}
     <div>
         {% if link %}
-            <a href="{{ link }}" class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
+            <a href="{{ link }}" class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center {{ class }}">
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
-                <div class="hidden sm:block">
+                <div>
                     {{ text }}
                 </div>
                 {% if icon_right_svg %}
@@ -73,11 +73,11 @@
                 {% endif %}
             </a>
         {% else %}
-            <button type="{{ type }}" class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
+            <button type="{{ type }}" class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center {{ class }}">
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
-                <div class="hidden sm:block">
+                <div>
                     {{ text }}
                 </div>
                 {% if (icon_right_svg )%}
@@ -88,14 +88,14 @@
     </div>
 {% endmacro %}
 
-{% macro button_warning(text="", type="button", link=None, icon_left_svg="", icon_right_svg="") %}
+{% macro button_warning(text="", type="button", link=None, icon_left_svg="", icon_right_svg="", class="") %}
     <div>
         {% if link %}
-            <a href="{{ link }}" class="text-white bg-yellow-700 hover:bg-yellow-800 focus:ring-4 focus:ring-yellow-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
+            <a href="{{ link }}" class="text-white bg-yellow-700 hover:bg-yellow-800 focus:ring-4 focus:ring-yellow-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center {{ class }}">
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
-                <div class="hidden sm:block">
+                <div>
                     {{ text }}
                 </div>
                 {% if icon_right_svg %}
@@ -103,11 +103,11 @@
                 {% endif %}
             </a>
         {% else %}
-            <button type="{{ type }}" class="text-white bg-yellow-700 hover:bg-yellow-800 focus:ring-4 focus:ring-yellow-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
+            <button type="{{ type }}" class="text-white bg-yellow-700 hover:bg-yellow-800 focus:ring-4 focus:ring-yellow-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center {{ class }}">
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
-                <div class="hidden sm:block">
+                <div>
                     {{ text }}
                 </div>
                 {% if (icon_right_svg )%}
@@ -118,14 +118,14 @@
     </div>
 {% endmacro %}
 
-{% macro button_validate(text="", type="button", link=None, icon_left_svg="", icon_right_svg="") %}
+{% macro button_validate(text="", type="button", link=None, icon_left_svg="", icon_right_svg="", class="") %}
     <div>
         {% if link %}
-            <a href="{{ link }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
+            <a href="{{ link }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center {{ class }}">
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
-                <div class="hidden sm:block">
+                <div>
                     {{ text }}
                 </div>
                 {% if icon_right_svg %}
@@ -133,11 +133,11 @@
                 {% endif %}
             </a>
         {% else %}
-            <button type="{{ type }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
+            <button type="{{ type }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center {{ class }}">
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
-                <div class="hidden sm:block">
+                <div>
                     {{ text }}
                 </div>
                 {% if (icon_right_svg )%}
@@ -148,14 +148,14 @@
     </div>
 {% endmacro %}
 
-{% macro button_blank(text="", type="button", link=None, icon_left_svg="", icon_right_svg="") %}
+{% macro button_blank(text="", type="button", link=None, icon_left_svg="", icon_right_svg="", class="") %}
     <div>
         {% if link %}
-            <a href="{{ link }}" class="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
+            <a href="{{ link }}" class="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center {{ class }}">
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
-                <div class="hidden sm:block">
+                <div>
                     {{ text }}
                 </div>
                 {% if icon_right_svg %}
@@ -163,11 +163,11 @@
                 {% endif %}
             </a>
         {% else %}
-            <button type="{{ type }}" class="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
+            <button type="{{ type }}" class="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-semibold rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center {{ class }}">
                 {% if icon_left_svg %}
                     {{ icon_left_svg|safe }}
                 {% endif %}
-                <div class="hidden sm:block">
+                <div>
                     {{ text }}
                 </div>
                 {% if (icon_right_svg )%}
