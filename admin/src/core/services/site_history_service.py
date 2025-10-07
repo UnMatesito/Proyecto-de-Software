@@ -1,13 +1,14 @@
-
-from ..models import SiteHistory
-from core.database import db
-
 from datetime import datetime
+
 from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
-from core.utils import search
-from core.utils import pagination
-    
+
+from core.database import db
+from core.utils import pagination, search
+
+from ..models import SiteHistory
+
+
 def create_site_history(historic_site_id, user_id, event_type, description):
     """Crea un registro en SiteHistory."""
     try:
@@ -27,8 +28,8 @@ def create_site_history(historic_site_id, user_id, event_type, description):
 
 def get_paginated_site_histories(site_id, page=1, per_page=25, filters=None):
     """Obtiene los historiales de sitios con paginación.
-   
-    Args:  
+
+    Args:
         site_id (int): ID del sitio
         page (int): número de página
         per_page (int): elementos por página
@@ -37,15 +38,12 @@ def get_paginated_site_histories(site_id, page=1, per_page=25, filters=None):
         dict con paginación
     """
     filters = filters or {}
-    filters['historic_site_id'] = site_id
+    filters["historic_site_id"] = site_id
     # Construir query con el GenericSearchBuilder
     query = search.build_search_query(SiteHistory, filters)
-     
+
     query = search.apply_ordering(
-        query, 
-        SiteHistory, 
-        order_by="created_at", 
-        order_dir="desc"
+        query, SiteHistory, order_by="created_at", order_dir="desc"
     )
 
     return pagination.paginate_query(query, page=page, per_page=per_page)

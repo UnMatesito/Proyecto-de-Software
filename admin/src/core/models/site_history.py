@@ -34,4 +34,3 @@ class SiteHistory(db.Model):
     # Metodos
     def __repr__(self):
         return f"<SiteHistory {self.id} - {self.historic_site_id} - {self.user_id} - {self.event_type_id}>"
-
