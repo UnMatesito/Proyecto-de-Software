@@ -11,7 +11,18 @@ user_management_bp = Blueprint("user_management", __name__)
 @login_required
 @permission_required("user_show")
 def manage_user(user_id):
-    """Página para gestionar roles y estado de un usuario específico"""
+    """
+    Renderiza la página de gestión de un usuario específico.
+
+    Args:
+        user_id (int): ID del usuario a gestionar.
+
+    Returns:
+        Response: Página HTML con los formularios para asignar roles, bloquear o designar System Admin.
+
+    Raises:
+        Exception: Si ocurre un error al cargar los datos del usuario.
+    """
     try:
         user = user_service.get_user_by_id(user_id)
         if not user:
@@ -44,7 +55,19 @@ def manage_user(user_id):
 @login_required
 @permission_required("user_update")
 def assign_role(user_id):
-    """Asigna un rol a un usuario"""
+    """
+    Asigna un rol existente a un usuario.
+
+    Args:
+         user_id (int): ID del usuario al que se le asignará el rol.
+
+    Returns:
+        Response: Redirección a la vista de gestión del usuario.
+
+    Raises:
+        ValueError: Si el rol o el usuario no existen.
+        Exception: Si ocurre un error general en la asignación.
+    """
     form = AssignRoleForm()
 
     if form.validate_on_submit():
@@ -73,40 +96,7 @@ def assign_role(user_id):
         # Mostrar errores de validación
         for field, errors in form.errors.items():
             for error in errors:
-                flash(f"Error en {field}: {error}", "error")
-
-    return redirect(url_for("user_management.manage_user", user_id=user_id))
-
-
-@user_management_bp.post("/users/<int:user_id>/remove-role")
-@login_required
-@permission_required("user_update")
-def remove_role(user_id):
-    """Quita el rol actual de un usuario (lo deja como Usuario público)"""
-    try:
-        # Verificar que el usuario existe
-        user = user_service.get_user_by_id(user_id)
-        if not user:
-            flash("Usuario no encontrado", "error")
-            return redirect(url_for("users.index"))
-
-        # Obtener el rol de "Usuario público"
-        public_role = role_service.get_role_by_name("Usuario público")
-        if not public_role:
-            flash('Error: No se encontró el rol "Usuario público"', "error")
-            return redirect(url_for("user_management.manage_user", user_id=user_id))
-
-        # Asignar rol público (esto efectivamente "quita" el rol administrativo)
-        user_service.assign_role(user_id, public_role.id)
-        flash(
-            f"Rol administrativo removido. {user.email} ahora es Usuario público",
-            "success",
-        )
-
-    except ValueError as e:
-        flash(str(e), "error")
-    except Exception as e:
-        flash(f"Error al remover el rol: {str(e)}", "error")
+                flash(f"Error: {error}", "error")
 
     return redirect(url_for("user_management.manage_user", user_id=user_id))
 
@@ -115,7 +105,19 @@ def remove_role(user_id):
 @login_required
 @permission_required("user_update")
 def toggle_block(user_id):
-    """Bloquea o desbloquea un usuario"""
+    """
+    Bloquea o desbloquea un usuario según el estado del formulario.
+
+    Args:
+        user_id (int): ID del usuario a bloquear o desbloquear.
+
+    Returns:
+        Response: Redirección a la vista de gestión del usuario.
+
+    Raises:
+        ValueError: Si el usuario no existe o no puede ser bloqueado.
+        Exception: Si ocurre un error al modificar el estado.
+    """
     form = BlockUserForm()
 
     if form.validate_on_submit():
@@ -125,6 +127,12 @@ def toggle_block(user_id):
             if not user:
                 flash("Usuario no encontrado", "error")
                 return redirect(url_for("users.index"))
+
+            # Verificar que el usuario actual no se bloquee a sí mismo
+            current_user = get_current_user()
+            if current_user and current_user.id == user.id and form.block.data:
+                flash("No puede bloquear su propia cuenta", "error")
+                return redirect(url_for("user_management.manage_user", user_id=user_id))
 
             # Verificar que no es System Admin o Administrador si se intenta bloquear
             if form.block.data and user.system_admin:
@@ -165,7 +173,19 @@ def toggle_block(user_id):
 @login_required
 @permission_required("user_update")
 def toggle_system_admin(user_id):
-    """Activa o desactiva el flag System Admin de un usuario"""
+    """
+    Activa o desactiva el flag de System Admin de un usuario.
+
+    Args:
+        user_id (int): ID del usuario a modificar.
+
+    Returns:
+        Response: Redirección a la vista de gestión del usuario.
+
+    Raises:
+        ValueError: Si el usuario no tiene permisos suficientes o no existe.
+        Exception: Si ocurre un error al actualizar el estado.
+    """
     form = ToggleSystemAdminForm()
 
     if form.validate_on_submit():

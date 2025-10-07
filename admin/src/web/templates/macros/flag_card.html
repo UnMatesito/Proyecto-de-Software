@@ -13,7 +13,7 @@
   <path stroke="currentColor" stroke-width="1.5" d="M11.083 5.104c.35-.8 1.485-.8 1.834 0l1.752 4.022a1 1 0 0 0 .84.597l4.463.342c.9.069 1.255 1.2.556 1.771l-3.33 2.723a1 1 0 0 0-.337 1.016l1.03 4.119c.214.858-.71 1.552-1.474 1.106l-3.913-2.281a1 1 0 0 0-1.008 0L7.583 20.8c-.764.446-1.688-.248-1.474-1.106l1.03-4.119A1 1 0 0 0 6.8 14.56l-3.33-2.723c-.698-.571-.342-1.702.557-1.771l4.462-.342a1 1 0 0 0 .84-.597l1.753-4.022Z"/>
 {% endset %}
 
-{% macro feature_flag_card(name="", description="", is_enable=False, last_edited_user="", last_edited_date="", show_input_text=False, id="") %}
+{% macro feature_flag_card(name="", description="", is_enable=False, last_edited_user="", last_edited_date="", show_input_text=False, id="", form=None) %}
     <div class="max-w-lg w-full p-6 mx-4 my-2 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 text-center flex flex-col items-center shadow-xl">
         <div>
             <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ name|replace("_", " ")|title }}</h5>
@@ -34,16 +34,23 @@
             </svg>
         </div>
         <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ description }}</p>
-        <form method="POST" action="{{ url_for('feature-flags.toggle', flag_id=id) }}" class="flex flex-row items-center w-full mb-4 justify-center">
-            {% if show_input_text %}
-                {{ text_input(name="message", placeholder="Mensaje de mantenimiento", class="mr-4 w-64", required=True) }}
-            {% endif %}
-            {% if is_enable %}
-                {{ button_error(text="Desactivar", type="submit", icon_left_svg="", icon_right_svg="") }}
-            {% else %}
-                {{ button_success(text="Activar", type="submit", icon_left_svg="", icon_right_svg="") }}
-            {% endif %}
-        </form>
+            <form method="POST" action="{{ url_for('feature-flags.toggle', flag_id=id) }}" class="flex flex-row items-center w-full mb-4 justify-center">
+                {{ form.hidden_tag() }}
+                {{ form.flag_id(value=id) }}
+
+                {% if (name in ['admin_maintenance_mode', 'portal_maintenance_mode']) and not is_enable %}
+                    {{ form.message(class="mr-4 w-64", placeholder="Mensaje de mantenimiento") }}
+                    {% for error in form.message.errors %}
+                        <span class="text-red-500 text-sm ml-2">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+
+                {% if is_enable %}
+                    {{ button_error(text="Desactivar", type="submit") }}
+                {% else %}
+                    {{ button_success(text="Activar", type="submit") }}
+                {% endif %}
+            </form>
         <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">Última edición: {{ last_edited_date }} por: {{ last_edited_user }}</p>
     </div>
 {% endmacro %}

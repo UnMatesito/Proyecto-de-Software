@@ -34,16 +34,3 @@ class SiteHistory(db.Model):
     # Metodos
     def __repr__(self):
         return f"<SiteHistory {self.id} - {self.historic_site_id} - {self.user_id} - {self.event_type_id}>"
-
-    @classmethod
-    def log_event(cls, historic_site_id, user_id, event_type_id, description):
-        """Crea un nuevo registro de historial de sitio."""
-        site_history = cls(
-            historic_site_id=historic_site_id,
-            user_id=user_id,
-            event_type_id=event_type_id,
-            description=description,
-        )
-        db.session.add(site_history)
-        db.session.commit()
-        return site_history

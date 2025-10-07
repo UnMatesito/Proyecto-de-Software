@@ -105,6 +105,7 @@ def update_city(site, city_id):
         site.city = city
     return site
 
+
 def update_name(site, name):
     if not isinstance(name, str):
         raise ValueError("El nombre del sitio debe ser un string")
@@ -128,13 +129,29 @@ def update_full_description(site, description):
         site.full_description = description
     return site
 
+
 def update_location(site, location):
+    """
+    Actualiza la ubicación del sitio histórico solo si cambió realmente.
+    """
     if not isinstance(location["lat"], (int, float)):
         raise ValueError("La latitude debe ser numerica")
     if not isinstance(location["lon"], (int, float)):
         raise ValueError("La longitude debe ser numerica")
-    site.location = WKTElement(f"POINT({location["lon"]} {location["lat"]})", srid=4326)
+
+    new_lat = float(location["lat"])
+    new_lon = float(location["lon"])
+
+    # Obtener coordenadas actuales
+    current_lat = site.latitude
+    current_lon = site.longitude
+
+    # Solo actualizar si hay un cambio
+    if current_lat != new_lat or current_lon != new_lon:
+        site.location = WKTElement(f"POINT({new_lon} {new_lat})", srid=4326)
+
     return site
+
 
 def update_inauguration_year(site, year):
     if not site.same_inauguration_year(year):
@@ -151,8 +168,8 @@ def update_registration_date(site, date):
 def update_is_visible(site, visibility):
     if not isinstance(visibility, bool):
         raise ValueError("El valor de visibilidad debe ser booleano")
-    if (visibility):
-        if site.deleted_at:  
+    if visibility:
+        if site.deleted_at:
             raise ValueError("El sitio no debe estar borrado")
         if site.pending_validation:
             raise ValueError("El sitio debe estar validado")
@@ -162,11 +179,11 @@ def update_is_visible(site, visibility):
 
 
 def update_tags(site, tag_ids):
-    if not tag_ids:
-        raise ValueError("Se requiere al menos un tag")
     tags = []
     for tag_id in tag_ids:
         tag = tag_service.get_tag_by_id(tag_id)
+        if tag.deleted_at:
+            raise ValueError("Se no se pueden asignar tags borrados")
         tags.append(tag)
 
     # Limpiar tags existentes y asignar nuevos usando métodos del modelo
@@ -175,15 +192,18 @@ def update_tags(site, tag_ids):
     for tag in tags:
         site.add_tag(tag)
 
-def validate(site_id):
+
+def validate_historic_site(site_id):
     site = get_historic_site_by_id(site_id)
-    if (not site.pending_validation):
+    if not site.pending_validation:
         raise ValueError(f"El sitio con id {site_id} ya se encuentra validado")
-    if (site.deleted_at):
+    if site.deleted_at:
         raise ValueError(f"El sitio con id {site_id} se encuentra borrado")
     site.pending_validation = False
+    site.is_visible = True
     db.session.commit()
     return site
+
 
 def assign_tags(site_id, tag_ids):
     """Asigna una lista de tags a un sitio histórico, reemplazando los existentes."""
@@ -268,13 +288,16 @@ def update_historic_site(body):
     except SQLAlchemyError as e:
         db.session.rollback()
         raise RuntimeError(f"Error al editar el sitio histórico: {e}")
-    
+
+
 def restore_historic_site(site_id):
     site = get_historic_site_by_id(site_id)
-    site.deleted_at = None
-    site.is_visible = False
+    if not site.is_deleted:
+        raise ValueError(f"El sitio {site_id} no se encuentra borrado")
+    site.restore_site()
     db.session.commit()
     return site
+
 
 def get_sites_filtered(
     filters=None,
@@ -286,7 +309,7 @@ def get_sites_filtered(
 ):
     """
     Devuelve sitios históricos filtrados, ordenados y opcionalmente paginados.
-    Usa GenericSearchBuilder para filtros    y paginate_query para paginación.
+    Usa GenericSearchBuilder para filtros y paginate_query para paginación.
 
     Args:
         filters (dict): filtros a aplicar (ej: {"city_id": 1, "visible": True})
@@ -299,17 +322,37 @@ def get_sites_filtered(
     Returns:
         dict de paginación o lista de objetos HistoricSite
     """
+    from core.models import City, Province
+
     filters = filters or {}
 
-    # Construir query con filtros genéricos
+    # Si se filtra por ciudad, deducir automáticamente la provincia
+    city_id = filters.get("city_id")
+    if city_id:
+        city = City.query.get(city_id)
+        if not city:
+            raise ValueError(f"No existe la ciudad con id {city_id}")
+        # Añadir el province_id derivado, solo si no lo enviaron explícitamente
+        filters.setdefault("province_id", city.province_id)
+
+    # Construir la query base con el builder genérico
     query = build_search_query(HistoricSite, filters)
 
-    # Ordenar
+    # Aplicar join manual si se filtra por provincia (ya que el builder no maneja relaciones)
+    province_id = filters.get("province_id")
+    if province_id:
+        query = (
+            query.join(HistoricSite.city)
+            .join(City.province)
+            .filter(Province.id == province_id)
+        )
+
+    # Ordenar los resultados
     query = apply_ordering(query, HistoricSite, order_by, sorted_by)
 
+    # Aplicar paginación o devolver lista completa
     if paginate:
         return paginate_query(
             query, page=page, per_page=per_page, order_by=order_by, sorted_by=sorted_by
         )
-    else:
-        return query.all()
+    return query.all()

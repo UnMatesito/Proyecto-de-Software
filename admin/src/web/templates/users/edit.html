@@ -43,11 +43,12 @@
                 <p class="text-red-600 text-sm">{{ error }}</p>
             {% endfor %}
         </div>
-        <!-- Contenedor check de usuario activo -->
-        <div class="mb-4 flex items-center space-x-2">
-            {{ form.active() }}
-            {{ form.active.label }}
+        <!-- Contenedor cambiar contraseña -->
+        <div class="mb-4">
+            <a href="{{ url_for('users.change_password_get', user_id=user.id) }}"
+               class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Cambiar Contraseña</a>
         </div>
+
         <!-- Contenedor boton crear -->
         <div class="mt-6">
             {{ form.submit(class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700") }}

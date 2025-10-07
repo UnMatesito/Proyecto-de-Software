@@ -23,23 +23,11 @@ def get_user_by_email(email):
     return User.query.filter_by(email=email).first()
 
 
-def get_filtered_users(active=None, role_id=None):
-    """Filtro usuarios por activo y role"""
-    query = User.query
-    if active == "1":
-        query = query.filter_by(active=True)
-    elif active == "0":
-        query = query.filter_by(active=False)
-    if role_id:
-        query = query.filter_by(role_id=int(role_id))
-    return query.all()
-
-
 def get_paginated_users(
     page=1,
     order_by="created_at",
     sorted_by="asc",
-    active=None,
+    blocked=None,
     role_id=None,
     email=None,
 ):
@@ -50,10 +38,10 @@ def get_paginated_users(
     -role_id parametro para filtrar por rol
     """
     query = User.query
-    if active == "1":
-        query = query.filter_by(active=True)
-    elif active == "0":
-        query = query.filter_by(active=False)
+    if blocked == "1":
+        query = query.filter_by(blocked=True)
+    elif blocked == "0":
+        query = query.filter_by(blocked=False)
     if role_id:
         query = query.filter_by(role_id=int(role_id))
     if email:
@@ -228,18 +216,52 @@ def change_password(user_id, old_password, new_password):
     return True
 
 
+def change_password_by_admin(user_id, new_password):
+    """Admin cambia la contraseña de un usuario"""
+    user = User.query.get(user_id)
+    if not user:
+        raise ValueError("No existe tal usaurio")
+    if user.check_password(new_password):
+        raise ValueError("La nueva contraseña no puede ser igual a la anterior")
+    user.password = new_password
+    try:
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al actualizar la contraseña: {e}")
+    return True
+
+
 def assign_role(user_id, role_id):
-    """Asigna un rol a un usuario"""
+    """Asigna un rol a un usuario y desactiva system_admin si corresponde"""
     role = Role.query.get(role_id)
     if not role:
         raise ValueError(f"No existe el rol con id {role_id}")
 
-    def role_check(user):
-        if user.check_role(role_id):
-            return f"El usuario {user.first_name} ya tiene dicho rol"
-        return None
+    user = User.query.get(user_id)
+    if not user:
+        raise ValueError(f"No existe el usuario con id {user_id}")
 
-    return update_user_attribute(user_id, "role_id", role_id, role_check)
+    # Verificar si ya tiene ese rol
+    if user.check_role(role_id):
+        raise ValueError(
+            f"El usuario {user.get_full_name()} ya tiene el rol '{role.name}'"
+        )
+
+    # Asignar nuevo rol
+    user.role_id = role_id
+
+    # Si tenía system_admin, desactivarlo
+    if user.is_admin():
+        user.system_admin = False
+
+    try:
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al asignar el rol: {e}")
+
+    return True
 
 
 def toggle_system_admin(user_id, make_admin: bool):
@@ -272,3 +294,11 @@ def toggle_system_admin(user_id, make_admin: bool):
         raise RuntimeError(f"Error al actualizar el usuario: {e}")
 
     return True
+
+def get_user_history():
+    """Obtiene todos los usuarios systemAdmin/admin/editores"""
+    return User.query.filter(
+        (User.role.has(name="Administrador")) |
+        (User.role.has(name="Editor")) |
+        (User.system_admin == True)
+    ).all()

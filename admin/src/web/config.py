@@ -47,6 +47,19 @@ config = {
 
 
 def get_current_config(env=None):
+    """
+    Obtiene la configuración actual de la aplicación Flask según el entorno.
+
+    Si no se especifica un entorno, se toma el valor de la variable de entorno `FLASK_ENV`.
+    Si no está definida, se usa la configuración de producción por defecto.
+
+    Args:
+        env (str, optional): Nombre del entorno de configuración ("development", "testing", "production").
+            Si es None, se intenta obtener de la variable de entorno `FLASK_ENV`.
+
+    Returns:
+        Type[Config]: Clase de configuración correspondiente al entorno especificado.
+    """
     if env is None:
         env = os.getenv("FLASK_ENV", "production")
     return config.get(env, ProductionConfig)

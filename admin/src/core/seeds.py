@@ -23,7 +23,7 @@ def run(env="production"):
     seed_provinces_and_cities()
     seed_consevation_states()
     seed_categories()
-    # seed_event_types()
+    seed_event_types()
 
     # Solo si estamos en development
     if env == "development":
@@ -219,22 +219,10 @@ def seed_event_types():
         "Creación",
         "Edición",
         "Eliminación",
+        "Restauración",
         "Cambio de estado",  # cambio de visibilidad
         "Cambio de tags",
-        "Cambio de imágenes",  # para etapa 2
-        # Para usuarios
-        "Usuario creado",
-        "Usuario actualizado",
-        "Usuario bloqueado",
-        "Usuario desbloqueado",
-        "Rol asignado",
-        "Contraseña cambiada",
-        # Para propuestas (etapa 2)
-        "Propuesta aprobada",
-        "Propuesta rechazada",
-        # Para reseñas (etapa 2)
-        "Reseña aprobada",
-        "Reseña rechazada",
+        # "Cambio de imágenes",  para etapa 2
     ]
 
     for event_name in event_types:
@@ -268,7 +256,6 @@ def seed_system_admin():
         first_name="System",
         last_name="Administrator",
         system_admin=True,
-        active=True,
         role_id=admin_role.id,
     )
 
@@ -298,7 +285,6 @@ def seed_editor():
         first_name="EditorNomb",
         last_name="EditorApe",
         system_admin=False,
-        active=True,
         role_id=editor_role.id,
     )
 
@@ -354,8 +340,9 @@ def seed_feature_flags():
 
 def seed_tags():
     """Crea un conjunto inicial de tags para clasificar sitios históricos"""
-    from core.models import Tag
     from slugify import slugify
+
+    from core.models import Tag
 
     print("Creando tags...")
     tags = ["Colonial", "Patrimonial", "tag 3", "tag 4"]
@@ -430,9 +417,14 @@ def seed_historic_sites():
     """Carga un conjunto de sitios históricos iniciales"""
     from datetime import datetime, timezone
 
+    from core.audit import disable_audit_listeners, enable_audit_listeners
     from core.models import HistoricSite
 
     print("Cargando sitios historicos...")
+
+    # Deshabilitar registros de auditoría temporalmente
+    disable_audit_listeners()
+
     sites = [
         HistoricSite(
             name="Cabildo de Buenos Aires",
@@ -479,22 +471,220 @@ def seed_historic_sites():
             proposed_by=2,
             location=WKTElement("POINT(-57.9543 -34.9216)"),
         ),
+        HistoricSite(
+            name="Estancia Jesuítica de Alta Gracia",
+            brief_description="Patrimonio de la Humanidad en Córdoba.",
+            full_description="La Estancia Jesuítica de Alta Gracia, declarada Patrimonio de la Humanidad por la UNESCO, "
+            "incluye una iglesia y un museo que reflejan la historia jesuítica en Argentina.",
+            inauguration_year=1643,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=3,
+            category_id=2,
+            conservation_state_id=2,
+            proposed_by=2,
+            location=WKTElement("POINT(-64.1950 -31.6375)"),
+        ),
+        HistoricSite(
+            name="Parque General San Martín",
+            brief_description="Gran parque urbano en Mendoza.",
+            full_description="El Parque General San Martín es un extenso espacio verde en Mendoza, "
+            "diseñado por el paisajista Carlos Thays, ideal para actividades recreativas y culturales.",
+            inauguration_year=1896,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=5,
+            category_id=1,
+            conservation_state_id=1,
+            proposed_by=1,
+            location=WKTElement("POINT(-68.8470 -32.8903)"),
+        ),
+        HistoricSite(
+            name="Puente del Inca",
+            brief_description="Formación natural y sitio histórico en Mendoza.",
+            full_description="El Puente del Inca es una formación natural que sirvió como paso incaico y "
+            "lugar de baños termales, con una historia que data de la época precolombina.",
+            inauguration_year=0,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=5,
+            category_id=2,
+            conservation_state_id=3,
+            proposed_by=2,
+            location=WKTElement("POINT(-69.6605 -32.6532)"),
+        ),
+        HistoricSite(
+            name="Casa del Virrey Liniers",
+            brief_description="Residencia histórica en Buenos Aires.",
+            full_description="La Casa del Virrey Liniers, construida en el siglo XVIII, es un ejemplo "
+            "destacado de la arquitectura colonial y fue residencia del virrey Santiago de Liniers.",
+            inauguration_year=1784,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=1,
+            category_id=1,
+            conservation_state_id=2,
+            proposed_by=1,
+            location=WKTElement("POINT(-57.9530 -34.9212)"),
+        ),
+        HistoricSite(
+            name="Museo Nacional de Bellas Artes",
+            brief_description="Principal museo de arte en Argentina.",
+            full_description="El Museo Nacional de Bellas Artes alberga una vasta colección de arte argentino "
+            "e internacional, siendo un centro cultural clave en Buenos Aires.",
+            inauguration_year=1895,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=1,
+            category_id=3,
+            conservation_state_id=1,
+            proposed_by=2,
+            location=WKTElement("POINT(-57.5780 -34.5883)"),
+        ),
+        HistoricSite(
+            name="Iglesia de la Compañía de Jesús",
+            brief_description="Iglesia barroca en Córdoba.",
+            full_description="La Iglesia de la Compañía de Jesús, construida en el siglo XVIII, es un "
+            "ejemplo destacado del barroco colonial y forma parte del conjunto histórico jesuítico de Córdoba.",
+            inauguration_year=1670,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=3,
+            category_id=1,
+            conservation_state_id=2,
+            proposed_by=1,
+            location=WKTElement("POINT(-64.1811 -31.4135)"),
+        ),
+        HistoricSite(
+            name="Cerro de la Gloria",
+            brief_description="Monumento histórico en Mendoza.",
+            full_description="El Cerro de la Gloria es un monumento dedicado a los héroes de la independencia argentina, "
+            "ubicado en el Parque General San Martín.",
+            inauguration_year=1914,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=5,
+            category_id=1,
+            conservation_state_id=1,
+            proposed_by=2,
+            location=WKTElement("POINT(-68.8475 -32.8900)"),
+        ),
+        HistoricSite(
+            name="Casa de Tucumán",
+            brief_description="Lugar histórico de la independencia argentina.",
+            full_description="La Casa de Tucumán es el sitio donde se declaró la independencia de Argentina en 1816, "
+            "y actualmente funciona como museo.",
+            inauguration_year=1760,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=4,
+            category_id=1,
+            conservation_state_id=2,
+            proposed_by=1,
+            location=WKTElement("POINT(-65.2176 -26.8083)"),
+        ),
+        HistoricSite(
+            name="Monumento a la Bandera",
+            brief_description="Monumento emblemático en Rosario.",
+            full_description="El Monumento a la Bandera en Rosario es un símbolo nacional que conmemora la creación "
+            "de la bandera argentina por Manuel Belgrano.",
+            inauguration_year=1957,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=6,
+            category_id=1,
+            conservation_state_id=1,
+            proposed_by=2,
+            location=WKTElement("POINT(-60.6393 -32.9468)"),
+        ),
+        HistoricSite(
+            name="Obelisco de Buenos Aires",
+            brief_description="Monumento icónico de la ciudad.",
+            full_description="El Obelisco es uno de los monumentos más emblemáticos de Buenos Aires, inaugurado en 1936.",
+            inauguration_year=1936,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=1,
+            category_id=1,
+            conservation_state_id=1,
+            proposed_by=1,
+            location=WKTElement("POINT(-58.3816 -34.6037)"),
+        ),
+        HistoricSite(
+            name="Catedral de La Plata",
+            brief_description="Catedral neogótica en La Plata.",
+            full_description="La Catedral de La Plata es una de las iglesias más grandes de Argentina, de estilo neogótico.",
+            inauguration_year=1932,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=1,
+            category_id=1,
+            conservation_state_id=1,
+            proposed_by=2,
+            location=WKTElement("POINT(-57.9545 -34.9211)"),
+        ),
+        HistoricSite(
+            name="Museo de la Memoria",
+            brief_description="Espacio de memoria en Rosario.",
+            full_description="El Museo de la Memoria recuerda a las víctimas del terrorismo de Estado en Argentina.",
+            inauguration_year=2004,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=6,
+            category_id=3,
+            conservation_state_id=1,
+            proposed_by=1,
+            location=WKTElement("POINT(-60.6430 -32.9470)"),
+        ),
+        HistoricSite(
+            name="Basílica de Luján",
+            brief_description="Santuario nacional de la Virgen de Luján.",
+            full_description="La Basílica de Luján es uno de los principales centros de peregrinación católica del país.",
+            inauguration_year=1935,
+            created_at=datetime.now(timezone.utc),
+            is_visible=False,
+            pending_validation=True,
+            city_id=1,
+            category_id=1,
+            conservation_state_id=1,
+            proposed_by=2,
+            location=WKTElement("POINT(-59.1042 -34.5421)"),
+        ),
     ]
 
     db.session.add_all(sites)
 
     db.session.commit()
 
+    # Rehabilitar listeners de auditoría
+    enable_audit_listeners()
+
 
 def seed_site_tags():
     """Asocia sitios históricos con tags de clasificación"""
-    from core.services import historic_site_service as HistorcService
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.services import historic_site_service as HistoricService
     from core.services import tag_service as TagService
 
     print("Agregando relaciones Sites-Tags")
 
-    cabildo = HistorcService.get_historic_site_by_id(1)
-    san_ignacio = HistorcService.get_historic_site_by_id(2)
+    # Deshabilitar registros de auditoría temporalmente
+    disable_audit_listeners()
+
+    cabildo = HistoricService.get_historic_site_by_id(1)
+    san_ignacio = HistoricService.get_historic_site_by_id(2)
 
     tag1 = TagService.get_tag_by_id(1)
     tag2 = TagService.get_tag_by_id(2)
@@ -503,6 +693,9 @@ def seed_site_tags():
     san_ignacio.tags.extend([tag1, tag2])
 
     db.session.commit()
+
+    # Rehabilitar listeners de auditoría
+    enable_audit_listeners()
 
 
 def seed_users():
@@ -540,8 +733,7 @@ def seed_users():
                 password="password123",
                 role_id=roles["publico"].id,
                 system_admin=False,
-                active=True,
-            )
+                    )
         )
 
     # Editores
@@ -555,8 +747,7 @@ def seed_users():
                 password="editor123",
                 role_id=roles["editor"].id,
                 system_admin=False,
-                active=True,
-            )
+                    )
         )
 
     # Administradores no system admin
@@ -570,8 +761,7 @@ def seed_users():
                 password="admin123",
                 role_id=roles["admin"].id,
                 system_admin=False,
-                active=True,
-            )
+                    )
         )
 
     # Insertar en DB

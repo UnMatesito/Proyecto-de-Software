@@ -22,10 +22,14 @@
 <div class="max-w-2xl mx-auto mt-6 space-y-6">
 
     <!-- Boton volver -->
-    <div>
+    <div class="flex justify-between items-center">
         <a href="/sites" 
             class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow">
             ← Volver
+        </a>
+        <a href="{{ url_for('site_history.view_site_history', site_id=site.id, next=request.path) }}"
+            class="inline-block bg-blue-500 hover:bg-blue-700  text-white font-semibold py-2 px-4 rounded shadow">
+            Historial de cambios
         </a>
     </div>
 
@@ -76,9 +80,9 @@
                 <dt class="font-semibold text-gray-700">Estado de validación:</dt>
                 <dd>
                     {% if site.pending_validation %}
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">Pendiente</span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">No validado</span>
                     {% else %}
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">No pendiente</span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">Validado</span>
                     {% endif %}
                 </dd>
             </div>
@@ -124,6 +128,15 @@
                 <dt class="font-semibold text-gray-700">Estado de conservación:</dt>
                 <dd class="text-gray-900">{{ site.conservation_state.state }}</dd>
             </div>
+            
+            <div>
+                <dt class="font-semibold text-gray-700">Tags asociados:</dt>
+                <dd class="text-gray-900">
+                    {% for tag in site.tags %}
+                        <span class="inline-flex items-center bg-blue-300 text-sky-950 text-xs font-bold px-2.5 py-0.5 rounded-full">{{ tag.name }}</span>
+                    {% endfor %}
+                </dd>
+            </div>
         </dl>
     </div>
 
@@ -144,7 +157,7 @@
         }).addTo(map);
 
         mark = L.marker(["{{lat}}", "{{lon}}"]).addTo(map)
-            .bindPopup('{{site_name}}  <br> {{lat}}", "{{lon}}')
+            .bindPopup('{{site_name}}  <br> Latitude: {{lat}} <br> Longitude: {{lon}}')
             .openPopup();
     
         var lat_lng_popup = L.popup();

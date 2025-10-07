@@ -2,7 +2,7 @@
 {% from "macros/button.html" import button, button_blank %}
 {% from "macros/paginate.html" import paginate %}
 {% from "macros/table.html" import table %}
-{% from "macros/input.html" import text_input %}
+{% from "macros/input.html" import email_input %}
 {% block title %}Listado de usuarios{% endblock %}
 
 {% block header %}
@@ -17,7 +17,7 @@
     <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2 flex-col">
         <h3 class="text-lg font-semibold mb-2">Buscar por correo electronico</h3>
         <form method="get" action="{{ url_for('users.search_by_email') }}" class="flex space-x-2 w-full max-w-md items-center">
-            {{ text_input('email', 'email', 'Ingresar Correo', value=request.args.get('email', ''), required=True, class="w-80") }}
+            {{ email_input('email', 'email', 'Ingresar Correo', value=request.args.get('email', ''), required=True, class="w-80") }}
             {{ button('Buscar', type='submit', icon_left_svg='<i class="fa-solid fa-magnifying-glass mr-1"></i>') }}
         </form>
     </div>
@@ -29,7 +29,7 @@
             <h3 class="text-lg font-semibold mb-2">Ordenar Usuarios</h3>
             <ul class="space-y-2">
                 <li>
-                    <a href="{{ url_for('users.index', sorted_by='desc', active=active, role_id=role_id, order_by='created_at') }}"
+                    <a href="{{ url_for('users.index', sorted_by='desc', blocked=blocked, role_id=role_id, order_by='created_at') }}"
                        class="block px-3 py-2 rounded text-center
                               {% if order_by == 'created_at' and sorted_by == 'desc' %}
                                 bg-green-300 font-semibold
@@ -40,7 +40,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ url_for('users.index', sorted_by='asc', active=active, role_id=role_id, order_by='created_at') }}"
+                    <a href="{{ url_for('users.index', sorted_by='asc', blocked=blocked, role_id=role_id, order_by='created_at') }}"
                        class="block px-3 py-2 rounded text-center
                               {% if order_by == 'created_at' and sorted_by == 'asc' %}
                                 bg-green-300 font-semibold
@@ -57,10 +57,10 @@
         <form method="get" action="/users" class="flex flex-wrap items-end gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700">Estado</label>
-                <select name="active" class="border px-3 py-2 rounded">
+                <select name="blocked" class="border px-3 py-2 rounded">
                     <option value="">Todos</option>
-                    <option value="1" {% if request.args.get('active') == '1' %} selected {% endif %}>Activo</option>
-                    <option value="0" {% if request.args.get('active') == '0' %} selected {% endif %}>Inactivo</option>
+                    <option value="1" {% if blocked == '1' %} selected {% endif %}>Bloqueado</option>
+                    <option value="0" {% if blocked == '0' %} selected {% endif %}>No bloqueado</option>
                 </select>
             </div>
             <div>

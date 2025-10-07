@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+
 from slugify import slugify
 from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
@@ -8,6 +9,10 @@ from core.models import Tag
 from core.utils import pagination
 
 # TODO: Agregar dosctrings
+
+
+def get_all_not_deleted_tags():
+    return Tag.query.filter_by(deleted_at=None)
 
 
 def get_all_tags():
@@ -31,11 +36,12 @@ def get_tag_by_name(tag_name):
 def tag_exist(tag_name):
     return Tag.query.filter_by(name=tag_name).first() is not None
 
+
 def slug_exist(slug):
     return Tag.query.filter_by(slug=slug).first() is not None
 
 
-def validate_tag_name(tag_name):    
+def validate_tag_name(tag_name):
     if len(tag_name) > 50:
         raise ValueError("El tamaño maximo para un nombre es de caracteres es 50")
     if len(tag_name) < 3:
@@ -48,7 +54,7 @@ def validate_tag_name(tag_name):
 def validate_tag_slug(slug):
     if slug_exist(slug=slug):
         raise ValueError(f"Ya existe un tag con el slug: {slug}")
-    
+
 
 def create_tag(name):
     if not name:
@@ -57,7 +63,7 @@ def create_tag(name):
     slug = slugify(name)
     validate_tag_name(name)
     validate_tag_slug(slug)
-    tag = Tag(name, slug)
+    tag = Tag(name=name, slug=slug)
     db.session.add(tag)
     db.session.commit()
     return tag
@@ -106,3 +112,4 @@ def delete_tag(tag_id):
         raise ValueError("El tag posee sitios asociados")
     tag.deleted_at = datetime.now(timezone.utc)
     db.session.commit()
+    return tag
