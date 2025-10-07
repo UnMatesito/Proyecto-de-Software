@@ -152,7 +152,7 @@
 
 {% macro multi_select_tags(label='', name='', choices=[], selected_choices=[], placeholder='Selecciona opciones...') %}
   {% set component_id = name|replace(' ', '_') %}
-  <div class="relative w-full" data-multi-select-id="{{ component_id }}">
+  <div class="w-64 flex-none h-12" data-multi-select-id="{{ component_id }}">
     {% if label %}
     <label for="{{ component_id }}" class="block mb-2 text-sm font-medium text-gray-900">
       {{ label }}
@@ -163,19 +163,17 @@
     <button
       id="{{ component_id }}_button"
       type="button"
-      class="flex items-center justify-between w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+      class="flex items-center justify-between w-64 h-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
       onclick="toggleDropdown('{{ component_id }}')"
     >
       <span id="{{ component_id }}_placeholder">{{ placeholder }}</span>
-      <svg class="w-4 h-4 ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7l5 5 5-5" />
-      </svg>
+        <i class="fa-solid fa-chevron-down ml-2 text-gray-600 font-bold"></i>
     </button>
 
     <!-- Dropdown menu -->
     <div
       id="{{ component_id }}_dropdown"
-      class="hidden absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg"
+      class="hidden absolute z-10 w-64 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg"
     >
       <ul class="py-2 text-sm text-gray-700 max-h-60 overflow-y-auto">
         {% for choice in choices %}
@@ -193,7 +191,7 @@
     </div>
 
     <!-- Tags container -->
-    <div id="{{ component_id }}_tags" class="flex flex-wrap gap-2 mt-2">
+    <div id="{{ component_id }}_tags" class="flex flex-wrap gap-2 mt-2 w-full flex-none">
       {% for value, label in choices %}
         {% if value|string in selected_choices|map('string')|list %}
           <span
@@ -206,7 +204,7 @@
               class="ml-1 text-blue-800 hover:text-blue-900 focus:outline-none"
               onclick="removeTag('{{ component_id }}', '{{ value }}', '{{ label }}')"
             >
-              ✕
+              <i class="fa-solid fa-xmark"></i>
             </button>
           </span>
         {% endif %}

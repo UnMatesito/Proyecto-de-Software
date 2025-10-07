@@ -101,98 +101,113 @@
 
     <div class="flex flex-row">
         <div class="flex flex-col">
-            <div>
-                <h3 class="text-xl font-semibold mb-3">Busqueda Avanzada</h3>
-                <form method="get" action="{{ url_for('site_bp.list_paginated_sites') }}" class="flex space-x-2 mb-4">
-                    <div class="flex flex-row gap-x-3 w-full items-center justify-center">
-                        <div class="flex flex-col w-full gap-y-2">
-                        <div class="flex flex-row gap-x-2">
-                        {{ text_input(
-                        name='search_text',
-                        placeholder='Nombre del sitio o Breve descripcion',
-                        value=request.args.get('name', ''),
-                        class='w-64',
-                        required=false
-                        ) }}
+            <div id="accordion-collapse" data-accordion="collapse">
+                <h2 id="accordion-collapse-heading-1">
+                    <button type="button" class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-proyecto-text border border-gray-200 rounded-xl rounded-b-none focus:ring-4 focus:ring-gray-200 gap-3" data-accordion-target="#accordion-collapse-body-1" aria-expanded="True" aria-controls="accordion-collapse-body-1">
+                        <span class="text-xl font-semibold">Búsqueda Avanzada</span>
+                        <i class="fa-solid fa-chevron-up transition-transform duration-300" data-accordion-icon></i>
+                    </button>
+                </h2>
+                {# Cuerpo del acordion para la busqueda avanzada #}
+                <div id="accordion-collapse-body-1" aria-labelledby="accordion-collapse-heading-1">
+                    <div class="p-5 border border-t-0 border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+                        <form method="get" action="{{ url_for('site_bp.list_paginated_sites') }}" class="flex space-x-2">
+                            <div class="flex flex-row gap-x-2 w-full justify-center items-start">
+                                <div class="flex flex-col w-full gap-y-2">
+                                    <div class="flex flex-row gap-x-2 w-full">
+                                        {{ text_input(
+                                        name='search_text',
+                                        placeholder='Nombre del sitio o Breve descripcion',
+                                        value=request.args.get('name', ''),
+                                        class='w-[25%] text-sm h-12',
+                                        required=false
+                                        ) }}
 
-                        {{ select_input(
-                            name='province_id',
-                            id='province',
-                            choices=province_choices,
-                            selected=request.args.get('province_id', ''),
-                            placeholder='Seleccionar provincia',
-                            class='w-64'
-                        ) }}
+                                        {{ select_input(
+                                        name='province_id',
+                                        id='province',
+                                        choices=province_choices,
+                                        selected=request.args.get('province_id', ''),
+                                        placeholder='Seleccionar provincia',
+                                        class='w-64 text-sm h-12'
+                                        ) }}
 
-                        {{ select_input(
-                            name='city_id',
-                            id='city',
-                            choices=city_choices,
-                            selected=request.args.get('city_id', ''),
-                            placeholder='Seleccionar Ciudad',
-                            class='w-64'
-                        ) }}
+                                        {{ select_input(
+                                        name='city_id',
+                                        id='city',
+                                        choices=city_choices,
+                                        selected=request.args.get('city_id', ''),
+                                        placeholder='Seleccionar Ciudad',
+                                        class='w-64 text-sm h-12'
+                                        ) }}
 
+                                        {{ select_input(
+                                        name='conservation_state_id',
+                                        choices=conservation_state_choices,
+                                        selected=request.args.get('conservation_status', ''),
+                                        placeholder='Estado de conservación',
+                                        class='w-64 text-sm h-12'
+                                        ) }}
 
+                                        {{ multi_select_tags(
+                                        name='tag_id',
+                                        choices=tag_choices,
+                                        selected_choices=selected_tags,
+                                        placeholder='Selecciona tags...'
+                                        ) }}
+                                    </div>
 
-                        {{ select_input(
-                                name='conservation_state_id',
-                                choices=conservation_state_choices,
-                                selected=request.args.get('conservation_status', ''),
-                                placeholder='Estado de conservación',
-                                class='w-64'
-                        ) }}
+                                    <div class="flex flex-row justify-center items-center">
+                                        <div class="flex flex-col">
+                                            <span class="text-center mb-2">Filtrar por fechas de registro</span>
 
-                        {{ multi_select_tags(
-                            name='tag_id',
-                            choices=tag_choices,
-                            selected_choices=selected_tags,
-                            placeholder='Selecciona tags...'
-                        ) }}
-                    </div>
+                                             <div class="flex flex-row gap-x-4">
+                                                <div class="flex flex-row items-center gap-x-2">
+                                                    <label for="date_from">Desde</label>
+                                                    {{ date_input(
+                                                    name='date_from',
+                                                    value=request.args.get('date_from', ''),
+                                                    class='w-40 text-sm'
+                                                    ) }}
+                                                </div>
 
-                    <div class="flex flex-row justify-center">
-                        <div class="flex flex-row gap-x-2">
-                            <div class="flex flex-row items-center gap-x-2">
-                                <label for="date_from">Desde</label>
-                                {{ date_input(
-                                name='date_from',
-                                value=request.args.get('date_from', ''),
-                                class='w-40'
-                                ) }}
+                                                <div class="flex flex-row items-center gap-x-2">
+                                                    <label for="date_to">Hasta</label>
+                                                    {{ date_input(
+                                                    name='date_to',
+                                                    value=request.args.get('date_to', ''),
+                                                    class='w-40 text-sm'
+                                                    ) }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex flex-col items-center ms-4">
+                                            <span class="ms-3 text-md font-medium text-gray-900 dark:text-gray-300 mb-1">Solo Visibles</span>
+                                            <label class="inline-flex items-center cursor-pointer">
+                                            {{ checkbox_input(
+                                            name='is_visible',
+                                            id='is_visible',
+                                            checked='is_visible' in request.args,
+                                            class='sr-only peer'
+                                            ) }}
+                                            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mr-2 gap-y-1 max-w-[120px] flex flex-col h-full justify-center">
+                                {{ button_blank("Limpiar", link=url_for('site_bp.list_paginated_sites'), icon_left_svg='<i class="fa-solid fa-broom mr-1"></i>', class="w-full") }}
+                                {{ button("Buscar", type="submit", class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded w-full", icon_left_svg='<i class="fa-solid fa-magnifying-glass mr-1"></i>') }}
+                                </div>
                             </div>
-
-                            <div class="flex flex-row items-center gap-x-2">
-                                <label for="date_to">Hasta</label>
-                                {{ date_input(
-                                    name='date_to',
-                                    value=request.args.get('date_to', ''),
-                                    class='w-40'
-                                ) }}
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col items-center ms-4">
-                        <label for="is_visible">Mostrar Visibles</label>
-                        {{ checkbox_input(
-                            name='is_visible',
-                            checked='is_visible' in request.args,
-                            class='h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
-                        ) }}
-                        </div>
+                        </form>
                     </div>
-                    </div>
-
-
-
-                    <div class="flex flex-col justify-center items-center mr-2 gap-y-1">
-                        {{ button_blank("Limpiar", link=url_for('site_bp.list_paginated_sites'), icon_left_svg='<i class="fa-solid fa-broom mr-1"></i>') }}
-                        {{ button("Buscar", type="submit", class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded", icon_left_svg='<i class="fa-solid fa-magnifying-glass mr-1"></i>') }}
-                    </div>
-                    </div>
-                </form>
+                </div>
             </div>
 
+            <div class="mt-2"></div>
 
             {{table(data=sites,
             columns=columns,
@@ -229,5 +244,30 @@
                     });
                 })
         });
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Reinicializar Flowbite accordion después de que cargue
+      if (typeof Accordion !== 'undefined') {
+        const accordionElement = document.getElementById('accordion-collapse');
+        const accordionItems = [
+          {
+            id: 'accordion-collapse-body-1',
+            triggerEl: document.querySelector('[data-accordion-target="#accordion-collapse-body-1"]'),
+            targetEl: document.getElementById('accordion-collapse-body-1'),
+            active: true // Marca como activo desde el inicio
+          }
+        ];
+
+        const options = {
+          alwaysOpen: true,
+          activeClasses: 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white',
+          inactiveClasses: 'text-gray-500 dark:text-gray-400'
+        };
+
+        new Accordion(accordionElement, accordionItems, options);
+      }
+    });
     </script>
 {% endblock %}
