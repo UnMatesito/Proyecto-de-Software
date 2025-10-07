@@ -114,7 +114,7 @@ class HistoricSite(db.Model):
         self.is_visible = False
         self.pending_validation = True
         return self
-    
+
     def get_coordinates(self):
         """Devuelve un diccionario con las coordenadas del sitio histórico."""
         return {"latitude": self.latitude, "longitude": self.longitude}

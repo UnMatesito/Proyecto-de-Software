@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% from "macros/button.html" import button %}
-
+{% from "macros/flag_card.html" import feature_flag_card %}
 {% block title %}Feature Flags{% endblock %}
 
 {% block header %}
@@ -14,7 +14,6 @@
 {% block content %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-centerp">
         {% for flag in flags %}
-            {% from 'macros/flag_card.html' import feature_flag_card %}
             {{ feature_flag_card(
                 name=flag.name,
                 description=flag.description,
@@ -22,8 +21,24 @@
                 last_edited_user=flag.last_modified_by.name if flag.last_modified_by else "-",
                 last_edited_date=flag.last_modified_at.strftime("%d/%m/%Y %H:%M") if flag.last_modified_at else "-",
                 show_input_text=(flag.name in ["admin_maintenance_mode", "portal_maintenance_mode"]),
-                id=flag.id
+                id=flag.id,
+                form=form
             ) }}
         {% endfor %}
     </div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="p-2 mb-2 rounded
+                        {% if category == 'error' %}bg-red-100 text-red-700
+                        {% elif category == 'warning' %}bg-yellow-100 text-yellow-700
+                        {% elif category == 'success' %}bg-green-100 text-green-700
+                        {% else %}bg-gray-100 text-gray-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 {% endblock %}

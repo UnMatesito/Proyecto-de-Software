@@ -1,11 +1,11 @@
 from .auth.auth import auth_bp
+from .city.city import city_bp
 from .feature_flag.feature_flag import feature_flag_bp
 from .historic_site.historic_site import site_bp
 from .main import main_bp
 from .tag.tag import tag_bp
 from .user.user import user_bp
 from .user.user_management import user_management_bp
-from .city.city import city_bp
 from .site_history.site_history import site_history_bp
 
 __all__ = [

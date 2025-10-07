@@ -85,6 +85,19 @@
 >
 {% endmacro %}
 
+{% macro date_input(name='', id='', class='', value='', required=false, placeholder='', aria_label='') %}
+<input
+    type="date"
+    {% if name %}name="{{ name }}"{% endif %}
+    {% if id %}id="{{ id }}"{% endif %}
+    {% if required %}required{% endif %}
+    {% if value %}value="{{ value }}"{% endif %}
+    {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+    {% if aria_label %}aria-label="{{ aria_label }}"{% endif %}
+    class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent {{ class }}"
+>
+{% endmacro %}
+
 
 {% macro hidden_input(name='', id='', value='') %}
 <input
@@ -93,4 +106,190 @@
   {% if id %}id="{{ id }}"{% endif %}
   {% if value %}value="{{ value }}"{% endif %}
 >
+{% endmacro %}
+
+{% macro select_input(name='', id='', choices=[], selected='', required=false, class='', disabled=false, size='', placeholder='Seleccione una opción', data_attrs={}) %}
+<select
+    {% if name %}name="{{ name }}"{% endif %}
+    {% if id %}id="{{ id }}"{% endif %}
+    {% if required %}required{% endif %}
+    {% if disabled %}disabled{% endif %}
+    {% if multiple %}multiple{% endif %}
+    {% if size %}size="{{ size }}"{% endif %}
+  {% for attr, value in data_attrs.items() %}data-{{ attr }}="{{ value }}"{% endfor %}
+  class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent {{ class }}"
+>
+  {# Placeholder solo para selects simples #}
+  {% if not multiple and placeholder %}
+    <option value="" {% if not selected %}selected{% endif %} disabled>{{ placeholder }}</option>
+  {% endif %}
+
+  {# Opciones #}
+  {% for choice in choices %}
+    {# Determinar valor y etiqueta #}
+    {% if choice is iterable and choice is not string %}
+      {% set option_value = choice[0] %}
+      {% set option_label = choice[1] %}
+    {% else %}
+      {% set option_value = choice %}
+      {% set option_label = choice %}
+    {% endif %}
+
+    {# Determinar si está seleccionada #}
+    {% set is_selected = false %}
+    {% if multiple and selected %}
+      {% set is_selected = option_value in selected %}
+    {% elif not multiple %}
+      {% set is_selected = option_value|string == selected|string %}
+    {% endif %}
+
+    <option value="{{ option_value }}" {% if is_selected %}selected{% endif %}>
+      {{ option_label }}
+    </option>
+  {% endfor %}
+</select>
+{% endmacro %}
+
+{% macro multi_select_tags(label='', name='', choices=[], selected_choices=[], placeholder='Selecciona opciones...') %}
+  {% set component_id = name|replace(' ', '_') %}
+  <div class="w-64 flex-none h-12" data-multi-select-id="{{ component_id }}">
+    {% if label %}
+    <label for="{{ component_id }}" class="block mb-2 text-sm font-medium text-gray-900">
+      {{ label }}
+    </label>
+    {% endif %}
+
+    <!-- Dropdown button -->
+    <button
+      id="{{ component_id }}_button"
+      type="button"
+      class="flex items-center justify-between w-64 h-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+      onclick="toggleDropdown('{{ component_id }}')"
+    >
+      <span id="{{ component_id }}_placeholder">{{ placeholder }}</span>
+        <i class="fa-solid fa-chevron-down ml-2 text-gray-600 font-bold"></i>
+    </button>
+
+    <!-- Dropdown menu -->
+    <div
+      id="{{ component_id }}_dropdown"
+      class="hidden absolute z-10 w-64 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg"
+    >
+      <ul class="py-2 text-sm text-gray-700 max-h-60 overflow-y-auto">
+        {% for choice in choices %}
+          {% set option_value = choice[0]|string %}
+          {% set option_label = choice[1] %}
+          {% set option_id = (component_id ~ '_' ~ option_value)|replace(' ', '_')|replace('.', '_') %}
+          {% if option_value not in selected_choices|map('string')|list %}
+            <li id="{{ option_id }}_li" class="cursor-pointer hover:bg-gray-100 px-3 py-1"
+                onclick="toggleOption('{{ component_id }}', '{{ option_value }}', '{{ option_label }}')">
+              {{ option_label }}
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Tags container -->
+    <div id="{{ component_id }}_tags" class="flex flex-wrap gap-2 mt-2 w-full flex-none">
+      {% for value, label in choices %}
+        {% if value|string in selected_choices|map('string')|list %}
+          <span
+            class="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded flex items-center"
+            data-tag="{{ value }}"
+          >
+            {{ label }}
+            <button
+              type="button"
+              class="ml-1 text-blue-800 hover:text-blue-900 focus:outline-none"
+              onclick="removeTag('{{ component_id }}', '{{ value }}', '{{ label }}')"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </span>
+        {% endif %}
+      {% endfor %}
+      <!-- Un único input hidden con valores separados por comas -->
+      <input type="hidden" name="{{ name }}" value="{{ selected_choices|join(',') }}">
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const componentId = '{{ component_id }}';
+      const name = '{{ name }}';
+      const dropdown = document.getElementById(componentId + '_dropdown');
+      const button = document.getElementById(componentId + '_button');
+      const tagsContainer = document.getElementById(componentId + '_tags');
+
+      // Obtener el input hidden
+      let hiddenInput = tagsContainer.querySelector('input[type="hidden"]');
+
+      // Inicializar Set con valores seleccionados
+      const selectedTags = new Set(
+        hiddenInput.value ? hiddenInput.value.split(',').filter(v => v.trim()) : []
+      );
+
+      window.toggleDropdown = function(cId) {
+        if (cId === componentId) {
+          dropdown.classList.toggle('hidden');
+        }
+      }
+
+      window.toggleOption = function(cId, value, label) {
+        if (cId !== componentId) return;
+
+        const li = document.getElementById(`${componentId}_${value}_li`);
+
+        // Agregar tag visual
+        const tag = document.createElement('span');
+        tag.className = 'bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded flex items-center';
+        tag.dataset.tag = value;
+        tag.innerHTML = `${label}<button type="button" class="ml-1 text-blue-800 hover:text-blue-900 focus:outline-none" onclick="removeTag('${componentId}', '${value}', '${label}')">✕</button>`;
+
+        // Insertar antes del input hidden
+        tagsContainer.insertBefore(tag, hiddenInput);
+
+        // Agregar al Set y actualizar input
+        selectedTags.add(String(value));
+        updateHiddenInput();
+
+        // Eliminar del dropdown
+        if (li) li.remove();
+      }
+
+      window.removeTag = function(cId, value, label) {
+        if (cId !== componentId) return;
+
+        const dropdownList = dropdown.querySelector('ul');
+
+        // Eliminar tag visual
+        const tag = tagsContainer.querySelector(`[data-tag="${value}"]`);
+        if (tag) tag.remove();
+
+        // Eliminar del Set y actualizar input
+        selectedTags.delete(String(value));
+        updateHiddenInput();
+
+        // Restaurar en dropdown
+        const li = document.createElement('li');
+        li.id = `${componentId}_${value}_li`;
+        li.className = 'cursor-pointer hover:bg-gray-100 px-3 py-1';
+        li.textContent = label;
+        li.onclick = function() { toggleOption(componentId, value, label); };
+        dropdownList.appendChild(li);
+      }
+
+      function updateHiddenInput() {
+        hiddenInput.value = Array.from(selectedTags).join(',');
+      }
+
+      // Cerrar dropdown al hacer click fuera
+      document.addEventListener('click', function(e) {
+        if (!button.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.classList.add('hidden');
+        }
+      });
+    })();
+  </script>
 {% endmacro %}

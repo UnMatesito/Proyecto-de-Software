@@ -1,19 +1,19 @@
 from flask import Flask
+from flask_session import Session
 
 from core.database import db
 from core.utils.bcrypt import bcrypt
-from flask_session import Session
 
 from .config import get_current_config
 from .controllers import (
     auth_bp,
+    city_bp,
     feature_flag_bp,
     main_bp,
     site_bp,
     tag_bp,
     user_bp,
     user_management_bp,
-    city_bp,
     site_history_bp,
 )
 from .handlers import error
@@ -22,9 +22,9 @@ from .utils.auth import (
     has_permission,
     is_authenticated,
     is_system_admin,
+    is_validated_site,
 )
 from .utils.hooks import hook_admin_maintenance
-
 
 session = Session()
 
@@ -34,8 +34,9 @@ def create_app(env="development", static_folder="../../static"):
     app.config.from_object(get_current_config(env))
 
     if app.config.get("DEBUG", False):
-            from flask_debugtoolbar import DebugToolbarExtension
-            DebugToolbarExtension(app)
+        from flask_debugtoolbar import DebugToolbarExtension
+
+        DebugToolbarExtension(app)
 
     # Inicializar extensiones
     bcrypt.init_app(app)
@@ -57,6 +58,7 @@ def create_app(env="development", static_folder="../../static"):
     app.register_blueprint(site_bp)
     app.register_blueprint(city_bp)
     app.register_blueprint(site_history_bp)
+
     # Commands
     @app.cli.command("reset-db")
     def reset_db_command():
@@ -91,6 +93,7 @@ def create_app(env="development", static_folder="../../static"):
     app.jinja_env.globals.update(has_permission=has_permission)
     app.jinja_env.globals.update(is_system_admin=is_system_admin)
     app.jinja_env.globals.update(get_user_role_name=get_user_role_name)
+    app.jinja_env.globals.update(is_validated_site=is_validated_site)
 
     # Error handlers
     app.register_error_handler(404, error.not_found)
