@@ -4,8 +4,8 @@ from core.services import (
     get_all_categories,
     get_all_cities,
     get_all_conservation_state,
+    get_all_not_deleted_tags,
     get_all_provinces,
-    get_all_not_deleted_tags
 )
 
 from .create_site_form import CreateSiteForm

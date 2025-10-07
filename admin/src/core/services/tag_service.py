@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+
 from slugify import slugify
 from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
@@ -40,7 +41,7 @@ def slug_exist(slug):
     return Tag.query.filter_by(slug=slug).first() is not None
 
 
-def validate_tag_name(tag_name):    
+def validate_tag_name(tag_name):
     if len(tag_name) > 50:
         raise ValueError("El tamaño maximo para un nombre es de caracteres es 50")
     if len(tag_name) < 3:
@@ -53,7 +54,7 @@ def validate_tag_name(tag_name):
 def validate_tag_slug(slug):
     if slug_exist(slug=slug):
         raise ValueError(f"Ya existe un tag con el slug: {slug}")
-    
+
 
 def create_tag(name):
     if not name:
