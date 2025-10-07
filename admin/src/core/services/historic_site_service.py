@@ -105,6 +105,7 @@ def update_city(site, city_id):
         site.city = city
     return site
 
+
 def update_name(site, name):
     if not isinstance(name, str):
         raise ValueError("El nombre del sitio debe ser un string")
@@ -128,6 +129,7 @@ def update_full_description(site, description):
         site.full_description = description
     return site
 
+
 def update_location(site, location):
     if not isinstance(location["lat"], (int, float)):
         raise ValueError("La latitude debe ser numerica")
@@ -135,6 +137,7 @@ def update_location(site, location):
         raise ValueError("La longitude debe ser numerica")
     site.location = WKTElement(f"POINT({location["lon"]} {location["lat"]})", srid=4326)
     return site
+
 
 def update_inauguration_year(site, year):
     if not site.same_inauguration_year(year):
@@ -151,8 +154,8 @@ def update_registration_date(site, date):
 def update_is_visible(site, visibility):
     if not isinstance(visibility, bool):
         raise ValueError("El valor de visibilidad debe ser booleano")
-    if (visibility):
-        if site.deleted_at:  
+    if visibility:
+        if site.deleted_at:
             raise ValueError("El sitio no debe estar borrado")
         if site.pending_validation:
             raise ValueError("El sitio debe estar validado")
@@ -162,11 +165,11 @@ def update_is_visible(site, visibility):
 
 
 def update_tags(site, tag_ids):
-    if not tag_ids:
-        raise ValueError("Se requiere al menos un tag")
     tags = []
     for tag_id in tag_ids:
         tag = tag_service.get_tag_by_id(tag_id)
+        if tag.deleted_at:
+            raise ValueError("Se no se pueden asignar tags borrados")
         tags.append(tag)
 
     # Limpiar tags existentes y asignar nuevos usando métodos del modelo
@@ -175,16 +178,18 @@ def update_tags(site, tag_ids):
     for tag in tags:
         site.add_tag(tag)
 
+
 def validate_historic_site(site_id):
     site = get_historic_site_by_id(site_id)
-    if (not site.pending_validation):
+    if not site.pending_validation:
         raise ValueError(f"El sitio con id {site_id} ya se encuentra validado")
-    if (site.deleted_at):
+    if site.deleted_at:
         raise ValueError(f"El sitio con id {site_id} se encuentra borrado")
     site.pending_validation = False
     site.is_visible = True
     db.session.commit()
     return site
+
 
 def assign_tags(site_id, tag_ids):
     """Asigna una lista de tags a un sitio histórico, reemplazando los existentes."""
@@ -269,14 +274,16 @@ def update_historic_site(body):
     except SQLAlchemyError as e:
         db.session.rollback()
         raise RuntimeError(f"Error al editar el sitio histórico: {e}")
-    
+
+
 def restore_historic_site(site_id):
     site = get_historic_site_by_id(site_id)
-    if (not site.is_deleted):
+    if not site.is_deleted:
         raise ValueError(f"El sitio {site_id} no se encuentra borrado")
     site.restore_site()
     db.session.commit()
     return site
+
 
 def get_sites_filtered(
     filters=None,

@@ -4,6 +4,7 @@ from core.services.role_service import get_all_roles
 from core.services.user_service import (
     assign_role,
     change_password,
+    change_password_by_admin,
     create_user,
     delete_user,
     get_paginated_users,
@@ -11,11 +12,14 @@ from core.services.user_service import (
     get_user_by_id,
     restore_user,
     update_user_attribute,
-    change_password_by_admin
 )
-from web.forms.user import ChangePasswordForm, CreateUserForm, EditUserForm, ChangePasswordByAdminForm
+from web.forms.user import (
+    ChangePasswordByAdminForm,
+    ChangePasswordForm,
+    CreateUserForm,
+    EditUserForm,
+)
 from web.utils.auth import get_user_role_name, login_required, permission_required
-
 
 user_bp = Blueprint("users", __name__, url_prefix="/users")
 
@@ -281,9 +285,12 @@ def change_password_post(user_id):
                 "error",
             )
             return redirect(url_for("users.index"))
-        
+
         if user.has_role("Administrador") and not current_user.is_admin():
-            flash("No puede cambiar la contraseña de un administrador si usted no es administrador del sistema", "error")
+            flash(
+                "No puede cambiar la contraseña de un administrador si usted no es administrador del sistema",
+                "error",
+            )
             return redirect(url_for("users.index"))
 
         form = ChangePasswordByAdminForm()
@@ -297,7 +304,9 @@ def change_password_post(user_id):
             except Exception as e:
                 flash(f"Error al cambiar contraseña: {str(e)}", "error")
         # Si el form no valida, se muestra de nuevo
-        return render_template("users/change_password_by_admin.html", form=form, user=user)
+        return render_template(
+            "users/change_password_by_admin.html", form=form, user=user
+        )
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
         return redirect(url_for("users.index"))
@@ -321,13 +330,18 @@ def change_password_get(user_id):
                 "error",
             )
             return redirect(url_for("users.index"))
-    
+
         if user.has_role("Administrador") and not current_user.is_admin():
-            flash("No puede cambiar la contraseña de un administrador si usted no es administrador del sistema", "error")
+            flash(
+                "No puede cambiar la contraseña de un administrador si usted no es administrador del sistema",
+                "error",
+            )
             return redirect(url_for("users.index"))
-        
+
         form = ChangePasswordByAdminForm()
-        return render_template("users/change_password_by_admin.html", form=form, user=user)
+        return render_template(
+            "users/change_password_by_admin.html", form=form, user=user
+        )
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
         return redirect(url_for("users.index"))

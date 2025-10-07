@@ -14,8 +14,8 @@ from wtforms.validators import DataRequired, Length, NumberRange
 from core.services import (
     get_all_categories,
     get_all_conservation_state,
+    get_all_not_deleted_tags,
     get_all_provinces,
-    get_all_tags,
 )
 
 
@@ -116,7 +116,6 @@ class CreateSiteForm(FlaskForm):
     tags = SelectMultipleField(
         "Seleccionar Tags",
         coerce=int,
-        validators=[DataRequired("Al menos un tag es necesario")],
     )
 
     submit = SubmitField("Crear")
@@ -144,5 +143,5 @@ class CreateSiteForm(FlaskForm):
         ]
 
         self.tags.choices = [  # Cargo las tags en el select
-            (tag.id, tag.name) for tag in get_all_tags()
+            (tag.id, tag.name) for tag in get_all_not_deleted_tags()
         ]

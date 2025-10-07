@@ -7,7 +7,7 @@ from core.services import get_all_roles
 
 class ChangePasswordByAdminForm(FlaskForm):
     """Formulario para cambio de contraseña por admin"""
-    
+
     new_password = PasswordField(
         "Contraseña nueva",
         validators=[

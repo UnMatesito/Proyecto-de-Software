@@ -73,7 +73,7 @@ def assign_role(user_id):
         # Mostrar errores de validación
         for field, errors in form.errors.items():
             for error in errors:
-                flash(f"Error en {field}: {error}", "error")
+                flash(f"Error: {error}", "error")
 
     return redirect(url_for("user_management.manage_user", user_id=user_id))
 
@@ -125,6 +125,12 @@ def toggle_block(user_id):
             if not user:
                 flash("Usuario no encontrado", "error")
                 return redirect(url_for("users.index"))
+
+            # Verificar que el usuario actual no se bloquee a sí mismo
+            current_user = get_current_user()
+            if current_user and current_user.id == user.id and form.block.data:
+                flash("No puede bloquear su propia cuenta", "error")
+                return redirect(url_for("user_management.manage_user", user_id=user_id))
 
             # Verificar que no es System Admin o Administrador si se intenta bloquear
             if form.block.data and user.system_admin:
