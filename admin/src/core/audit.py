@@ -1,9 +1,8 @@
 import re
-
-from flask import has_request_context, session
+from flask import session
 from sqlalchemy import event, inspect
+from geoalchemy2.shape import to_shape
 
-from core.database import db
 from core.models.historic_site import HistoricSite
 from core.services.event_type_service import get_event_type_by_name
 from core.services.site_history_service import create_site_history
@@ -14,6 +13,18 @@ def get_current_user_id():
     return session.get("user_id")
 
 
+def _create_history_entry(site, user_id, event_type_name, description):
+    """Helper para crear entradas de historial."""
+    event_type = get_event_type_by_name(event_type_name)
+    if event_type:
+        create_site_history(
+            historic_site_id=site.id,
+            user_id=user_id,
+            event_type=event_type,
+            description=description,
+        )
+
+
 @event.listens_for(HistoricSite, "after_insert")
 def log_creation_history(mapper, connection, target):
     """Registra la creación de un sitio histórico."""
@@ -21,169 +32,175 @@ def log_creation_history(mapper, connection, target):
     if not user_id:
         raise ValueError("User ID no encontrado en la sesión.")
 
-    event_type = get_event_type_by_name("Creación")
-    if event_type:
-        create_site_history(
-            historic_site_id=target.id,
-            user_id=user_id,
-            event_type=event_type,
-            description=f"Sitio '{target.name}' creado.",
-        )
+    _create_history_entry(target, user_id, "Creación", f"Sitio '{target.name}' creado.")
 
+    # Evitar registrar cambios de campos luego de la creación, dado que el after_update se dispara
+    target._skip_next_audit = True
 
 @event.listens_for(HistoricSite, "after_update")
 def log_update_history(mapper, connection, target):
-    """
-    Registra de manera detallada los cambios realizados sobre un sitio histórico.
-    Incluye ediciones, eliminaciones, restauraciones, cambio de estado y cambio de tags.
-    Cada campo modificado genera un registro independiente en site_history.
-    """
+    """Registra cambios detallados sobre un sitio histórico."""
+
+    # Evitar registrar cambios inmediatamente después de la creación
+    if getattr(target, "_skip_next_audit", False):
+        delattr(target, "_skip_next_audit")
+        return
+
+
     user_id = get_current_user_id()
     if not user_id:
         raise ValueError("User ID no encontrado en la sesión.")
 
     instance_state = inspect(target)
-    ignored_fields = ["updated_at", "created_at"]
+    changed_attributes = _get_changed_attributes(instance_state)
 
-    changed_attributes = [
+    if not changed_attributes:
+        return
+
+    # Manejo de casos especiales
+    if "tags" in changed_attributes:
+        _handle_tags_change(instance_state, target, user_id)
+        return
+
+    if "deleted_at" in changed_attributes:
+        _handle_deletion_restoration(instance_state, target, user_id)
+        return
+
+    if "is_visible" in changed_attributes and len(changed_attributes) == 1:
+        _handle_visibility_change(instance_state, target, user_id)
+        return
+
+    if "pending_validation" in changed_attributes and len(changed_attributes) == 1:
+        _handle_validation_change(instance_state, target, user_id)
+        return
+
+    # Edición general
+    _handle_general_edit(instance_state, target, user_id, changed_attributes)
+
+
+def _get_changed_attributes(instance_state):
+    """Obtiene lista de atributos modificados, excluyendo duplicados FK/relación."""
+    ignored_fields = ["updated_at", "created_at"]
+    changed = [
         attr.key
         for attr in instance_state.attrs
         if attr.history.has_changes() and attr.key not in ignored_fields
     ]
 
-    if not changed_attributes:
-        return
+    # Evitar duplicados entre relaciones y sus FK
+    cleaned = []
+    for attr in changed:
+        if attr.endswith("_id") and attr[:-3] in changed:
+            continue
+        cleaned.append(attr)
 
-    # Manejo de cambios en tags
-    if "tags" in changed_attributes:
-        tags_history = instance_state.attrs.tags.history
+    return cleaned
 
-        old_tags = set(tags_history.deleted) if tags_history.deleted else set()
-        new_tags = set(tags_history.added) if tags_history.added else set()
 
-        added_tags = new_tags - old_tags
-        removed_tags = old_tags - new_tags
+def _handle_tags_change(instance_state, target, user_id):
+    """Maneja cambios en tags."""
+    tags_history = instance_state.attrs.tags.history
+    old_tags = set(tags_history.deleted or [])
+    new_tags = set(tags_history.added or [])
 
-        if added_tags or removed_tags:
-            if added_tags:
-                for tag in added_tags:
-                    event_type = get_event_type_by_name("Cambio de tags")
-                    description = (
-                        f'Se agregó el tag "{tag.name}" al sitio "{target.name}".'
-                    )
-                    create_site_history(
-                        historic_site_id=target.id,
-                        user_id=user_id,
-                        event_type=event_type,
-                        description=description,
-                    )
+    for tag in (new_tags - old_tags):
+        desc = f'Se agregó el tag "{tag.name}" al sitio "{target.name}".'
+        _create_history_entry(target, user_id, "Cambio de tags", desc)
 
-            if removed_tags:
-                for tag in removed_tags:
-                    event_type = get_event_type_by_name("Cambio de tags")
-                    description = (
-                        f'Se quitó el tag "{tag.name}" del sitio "{target.name}".'
-                    )
-                    create_site_history(
-                        historic_site_id=target.id,
-                        user_id=user_id,
-                        event_type=event_type,
-                        description=description,
-                    )
+    for tag in (old_tags - new_tags):
+        desc = f'Se quitó el tag "{tag.name}" del sitio "{target.name}".'
+        _create_history_entry(target, user_id, "Cambio de tags", desc)
 
-            return  # Evita que se procese de nuevo más abajo
 
-    # Eliminación o restauración
-    if "deleted_at" in changed_attributes:
-        history = instance_state.attrs.deleted_at.history
-        old_value = history.deleted[0] if history.deleted else None
-        new_value = history.added[0] if history.added else None
+def _handle_deletion_restoration(instance_state, target, user_id):
+    """Maneja eliminación o restauración."""
+    history = instance_state.attrs.deleted_at.history
+    old_value = history.deleted[0] if history.deleted else None
+    new_value = history.added[0] if history.added else None
 
-        if old_value is None and new_value is not None:
-            action_type = "Eliminación"
-            description = f'Sitio "{target.name}" eliminado.'
-        elif old_value is not None and new_value is None:
-            action_type = "Restauración"
-            description = f'Sitio "{target.name}" restaurado.'
-        else:
-            return
+    if old_value is None and new_value is not None:
+        _create_history_entry(target, user_id, "Eliminación", f'Sitio "{target.name}" eliminado.')
+    elif old_value is not None and new_value is None:
+        _create_history_entry(target, user_id, "Restauración", f'Sitio "{target.name}" restaurado.')
 
-        event_type = get_event_type_by_name(action_type)
-        if event_type:
-            create_site_history(
-                historic_site_id=target.id,
-                user_id=user_id,
-                event_type=event_type,
-                description=description,
-            )
-        return
 
-    # Cambio de visibilidad
-    if "is_visible" in changed_attributes and len(changed_attributes) == 1:
-        action_type = "Cambio de estado"
-        description = f'Visibilidad de "{target.name}" modificada.'
-        event_type = get_event_type_by_name(action_type)
-        if event_type:
-            create_site_history(
-                historic_site_id=target.id,
-                user_id=user_id,
-                event_type=event_type,
-                description=description,
-            )
-        return
+def _handle_visibility_change(instance_state, target, user_id):
+    """Maneja cambios de visibilidad."""
+    history = instance_state.attrs.is_visible.history
+    old_value = history.deleted[0] if history.deleted else None
+    new_value = history.added[0] if history.added else None
 
-    # Edición general
-    action_type = "Edición"
+    old_text = "No oculto" if old_value else "Oculto"
+    new_text = "No oculto" if new_value else "Oculto"
 
+    desc = f'Visibilidad de "{target.name}" modificada: {old_text} → {new_text}.'
+    _create_history_entry(target, user_id, "Cambio de estado", desc)
+
+
+def _handle_validation_change(instance_state, target, user_id):
+    """Maneja cambio de validación."""
+    history = instance_state.attrs.pending_validation.history
+    old_val = history.deleted[0] if history.deleted else None
+    new_val = history.added[0] if history.added else None
+
+    if old_val is True and new_val is False:
+        desc = f'El sitio "{target.name}" fue validado y ahora es visible al público.'
+        _create_history_entry(target, user_id, "Cambio de estado", desc)
+
+
+def _handle_general_edit(instance_state, target, user_id, changed_attributes):
+    """Maneja ediciones generales de campos."""
     for attr_name in changed_attributes:
-        # Ignorar si ya fue procesado arriba (ej. deleted_at, is_visible, tags)
-        if attr_name in ["deleted_at", "is_visible", "tags"]:
+        if attr_name in ["deleted_at", "is_visible", "tags", "pending_validation"]:
             continue
 
         attr = instance_state.attrs[attr_name]
         old = attr.history.deleted[0] if attr.history.deleted else None
         new = attr.history.added[0] if attr.history.added else None
 
-        # Formatear nombre y valores
-        field_label = format_field_name(attr_name)
-        old_val = format_field_value(attr_name, old, instance_state)
-        new_val = format_field_value(attr_name, new, instance_state)
+        field_label = _format_field_name(attr_name)
+        old_val = _format_field_value(attr_name, old, instance_state)
+        new_val = _format_field_value(attr_name, new, instance_state)
 
-        # Crear registro individual por campo
-        description = (
-            f"Se modificó el campo '{field_label}' del sitio '{target.name}': "
-            f"{old_val} → {new_val}"
-        )
+        desc = f"Se modificó el campo '{field_label}' del sitio '{target.name}': {old_val} → {new_val}"
+        _create_history_entry(target, user_id, "Edición", desc)
 
-        event_type = get_event_type_by_name(action_type)
-        if event_type:
-            create_site_history(
-                historic_site_id=target.id,
-                user_id=user_id,
-                event_type=event_type,
-                description=description,
-            )
+    # Detectar cambio de provincia al cambiar ciudad
+    if "city" in changed_attributes or "city_id" in changed_attributes:
+        _handle_province_change(instance_state, target, user_id)
 
 
+def _handle_province_change(instance_state, target, user_id):
+    """Detecta y registra cambio de provincia al cambiar ciudad."""
+    try:
+        city_history = instance_state.attrs.city.history
+        old_city = city_history.deleted[0] if city_history.deleted else None
+        new_city = city_history.added[0] if city_history.added else None
 
-# Métodos para deshabilitar y habilitar eventos (necesario para poder hacer seeds)
+        if old_city and new_city and old_city.province_id != new_city.province_id:
+            old_province = old_city.province.name if old_city.province else "sin provincia"
+            new_province = new_city.province.name if new_city.province else "sin provincia"
 
+            desc = f'Se modificó el campo \'Provincia\' del sitio \'{target.name}\': "{old_province}" → "{new_province}"'
+            _create_history_entry(target, user_id, "Edición", desc)
+    except Exception:
+        pass
+
+# Funciones para desactivar/reactivar listeners de auditoría (necesarios para seeds)
 
 def disable_audit_listeners():
-    """Desactiva temporalmente los listeners de auditoría de HistoricSite."""
-    try:
-        event.remove(HistoricSite, "after_insert", log_creation_history)
-    except Exception:
-        pass
-    try:
-        event.remove(HistoricSite, "after_update", log_update_history)
-    except Exception:
-        pass
+    """Desactiva temporalmente los listeners de auditoría."""
+    for listener in [log_creation_history, log_update_history]:
+        try:
+            event_name = "after_insert" if listener == log_creation_history else "after_update"
+            event.remove(HistoricSite, event_name, listener)
+        except Exception:
+            pass
     print("Listeners de auditoría desactivados temporalmente.")
 
 
 def enable_audit_listeners():
-    """Restaura los listeners de auditoría de HistoricSite."""
+    """Restaura los listeners de auditoría."""
     try:
         event.listen(HistoricSite, "after_insert", log_creation_history)
         event.listen(HistoricSite, "after_update", log_update_history)
@@ -191,58 +208,71 @@ def enable_audit_listeners():
     except Exception as e:
         print(f"No se pudieron restaurar los listeners de auditoría: {e}")
 
-# Métodos de utilidades
-def format_field_name(field_name):
-    """Convierte nombres de campos técnicos a nombres legibles en español."""
-    field_names = {
-        "name": "Nombre",
-        "brief_description": "Descripción breve",
-        "full_description": "Descripción completa",
-        "inauguration_year": "Año de inauguración",
-        "is_visible": "Visibilidad",
-        "location": "Ubicación",
-        "city_id": "Ciudad",
-        "conservation_state_id": "Estado de conservación",
-        "category_id": "Categoría",
-    }
-    return field_names.get(field_name, field_name)
+
+# Métodos de utilidades para formateo
+FIELD_NAMES = {
+    "name": "Nombre",
+    "brief_description": "Descripción breve",
+    "full_description": "Descripción completa",
+    "inauguration_year": "Año de inauguración",
+    "is_visible": "Visibilidad",
+    "location": "Ubicación",
+    "city_id": "Ciudad",
+    "city": "Ciudad",
+    "conservation_state_id": "Estado de conservación",
+    "conservation_state": "Estado de conservación",
+    "category_id": "Categoría",
+    "category": "Categoría",
+    "tags": "Etiquetas",
+}
 
 
-def format_field_value(attr_name, value, instance_state):
-    """Formatea valores de campos para mostrar de manera legible."""
+def _format_field_name(field_name):
+    """Convierte nombres de campos técnicos a nombres legibles."""
+    return FIELD_NAMES.get(field_name, field_name)
+
+
+def _format_field_value(attr_name, value, instance_state):
+    """Formatea valores para mostrarlos de manera legible."""
     if value is None:
         return "sin valor"
 
-    # Formatear ubicación (POINT de PostGIS)
+    # Coordenadas (POINT de PostGIS)
     if attr_name == "location":
-        try:
-            # Extraer coordenadas del formato POINT o hexadecimal
-            value_str = str(value)
+        value_str = str(value)
+        if value_str.startswith("01"):  # formato binario WKB
+            point = to_shape(value)
+            return f"({point.x:.6f}, {point.y:.6f})"
 
-            # Si es formato hexadecimal (como 0101000020e6100000...)
-            if value_str.startswith("01"):
-                # Intentar obtener las coordenadas del objeto
-                from geoalchemy2.shape import to_shape
-                point = to_shape(value)
-                return f"({point.x:.6f}, {point.y:.6f})"
+        coords = re.findall(r"-?\d+\.?\d*", value_str)
+        if len(coords) >= 2:
+            return f"({coords[0]}, {coords[1]})"
+        return value_str
 
-            # Si ya es formato POINT
-            coords = re.findall(r'-?\d+\.?\d*', value_str)
-            if len(coords) >= 2:
-                lon, lat = coords[0], coords[1]
-                return f"({lon}, {lat})"
+    # Objetos relacionados
+    display_name = _get_related_display(value)
+    if display_name:
+        return f'"{display_name}"'
 
-            return value_str
-        except:
-            return str(value)
+    # Si es FK, buscar la relación
+    if attr_name.endswith("_id"):
+        related_obj = getattr(instance_state.object, attr_name[:-3], None)
+        display_name = _get_related_display(related_obj)
+        if display_name:
+            return f'"{display_name}"'
 
-    # Formatear relaciones (objetos con atributo 'name')
-    if hasattr(value, 'name'):
-        return f'"{value.name}"'
-
-    # Formatear booleanos
+    # Booleanos
     if isinstance(value, bool):
         return "Sí" if value else "No"
 
-    # Otros valores
     return str(value)
+
+
+def _get_related_display(obj):
+    """Devuelve un nombre legible del objeto relacionado."""
+    if not obj:
+        return None
+    for field in ("name", "nombre", "state", "description", "label"):
+        if hasattr(obj, field):
+            return getattr(obj, field)
+    return None
