@@ -21,6 +21,7 @@ from .utils.auth import (
     has_permission,
     is_authenticated,
     is_system_admin,
+    is_validated_site,
 )
 from .utils.hooks import hook_admin_maintenance
 
@@ -88,6 +89,7 @@ def create_app(env="development", static_folder="../../static"):
     app.jinja_env.globals.update(has_permission=has_permission)
     app.jinja_env.globals.update(is_system_admin=is_system_admin)
     app.jinja_env.globals.update(get_user_role_name=get_user_role_name)
+    app.jinja_env.globals.update(is_validated_site=is_validated_site)
 
     # Error handlers
     app.register_error_handler(404, error.not_found)
