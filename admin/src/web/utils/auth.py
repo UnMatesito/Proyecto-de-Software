@@ -159,3 +159,8 @@ def has_permission(permission_name: str) -> bool:
     if user.system_admin:
         return True
     return user.has_permission(permission_name)
+
+
+def is_validated_site(site):
+    """Devuelve True si el sitio está validado (no pendiente de validación)."""
+    return site and not site.pending_validation
