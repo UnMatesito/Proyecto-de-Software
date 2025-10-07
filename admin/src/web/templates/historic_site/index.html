@@ -1,10 +1,9 @@
 {% extends "layout.html" %}
 
-{% from "macros/button.html" import button, button_blank %}
+{% from "macros/button.html" import button %}
 {% from "macros/paginate.html" import paginate %}
 {% from "macros/table.html" import table %}
 {% from "macros/toast.html" import toast %}
-{% from "macros/input.html" import text_input, select_input, checkbox_input, multi_select_tags, date_input %}
 
 {% block title %}Sitios Historicos{% endblock %}
 
@@ -14,16 +13,6 @@
 {% endblock %}
     
 {% block content %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="mb-4">
-                {% for category, message in messages %}
-                    {{toast(message=message, type=category)}}
-                {% endfor %}
-            </div>
-        {% endif %}
-{% endwith %}
-
 <div class="flex flex-col justify-center items-center">
     <div class="p-4 flex gap-4">
     <div class="w-64 p-4 border-2 border-gray-300 rounded shadow-lg flex-none space-x-4">
@@ -97,136 +86,21 @@
             </li>
         </ul>
     </div>
-
-    <div class="flex flex-row">
-        <div class="flex flex-col">
-            <div>
-                <h3 class="text-xl font-semibold mb-3">Busqueda Avanzada</h3>
-                <form method="get" action="{{ url_for('site_bp.list_paginated_sites') }}" class="flex space-x-2 mb-4">
-                    <div class="flex flex-row gap-x-3 w-full items-center justify-center">
-                        <div class="flex flex-col w-full gap-y-2">
-                        <div class="flex flex-row gap-x-2">
-                        {{ text_input(
-                        name='search_text',
-                        placeholder='Nombre del sitio o Breve descripcion',
-                        value=request.args.get('name', ''),
-                        class='w-64',
-                        required=false
-                        ) }}
-
-                        {{ select_input(
-                            name='province_id',
-                            id='province',
-                            choices=province_choices,
-                            selected=request.args.get('province_id', ''),
-                            placeholder='Seleccionar provincia',
-                            class='w-64'
-                        ) }}
-
-                        {{ select_input(
-                            name='city_id',
-                            id='city',
-                            choices=city_choices,
-                            selected=request.args.get('city_id', ''),
-                            placeholder='Seleccionar Ciudad',
-                            class='w-64'
-                        ) }}
+    
+    {{table(data=sites, 
+        columns=columns, 
+        edit_route="site_bp.get_edit",
+        detail_route="site_bp.detail",
+        delete_route="site_bp.delete",
+        restore_route="site_bp.restore",
+        validate_route="site_bp.validate_site",
+        empty_message="No hay sitios para mostrar", 
+        title="Sitios Historicos",
+        id_param="site_id")}}
 
 
-
-                        {{ select_input(
-                                name='conservation_state_id',
-                                choices=conservation_state_choices,
-                                selected=request.args.get('conservation_status', ''),
-                                placeholder='Estado de conservación',
-                                class='w-64'
-                        ) }}
-
-                        {{ multi_select_tags(
-                            name='tag_id',
-                            choices=tag_choices,
-                            selected_choices=selected_tags,
-                            placeholder='Selecciona tags...'
-                        ) }}
-                    </div>
-
-                    <div class="flex flex-row justify-center">
-                        <div class="flex flex-row gap-x-2">
-                            <div class="flex flex-row items-center gap-x-2">
-                                <label for="date_from">Desde</label>
-                                {{ date_input(
-                                name='date_from',
-                                value=request.args.get('date_from', ''),
-                                class='w-40'
-                                ) }}
-                            </div>
-
-                            <div class="flex flex-row items-center gap-x-2">
-                                <label for="date_to">Hasta</label>
-                                {{ date_input(
-                                    name='date_to',
-                                    value=request.args.get('date_to', ''),
-                                    class='w-40'
-                                ) }}
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col items-center ms-4">
-                        <label for="is_visible">Mostrar Visibles</label>
-                        {{ checkbox_input(
-                            name='is_visible',
-                            checked='is_visible' in request.args,
-                            class='h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
-                        ) }}
-                        </div>
-                    </div>
-                    </div>
-
-
-
-                    <div class="flex flex-col justify-center items-center mr-2 gap-y-1">
-                        {{ button_blank("Limpiar", link=url_for('site_bp.list_paginated_sites'), icon_left_svg='<i class="fa-solid fa-broom mr-1"></i>') }}
-                        {{ button("Buscar", type="submit", class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded", icon_left_svg='<i class="fa-solid fa-magnifying-glass mr-1"></i>') }}
-                    </div>
-                    </div>
-                </form>
-            </div>
-
-
-            {{table(data=sites,
-            columns=columns,
-            edit_route="site_bp.get_edit",
-            detail_route="site_bp.detail",
-            delete_route="site_bp.delete",
-            restore_route="site_bp.restore",
-            validate_route="site_bp.validate_site",
-            empty_message="No hay sitios para mostrar",
-            title="Sitios Historicos (" + sites|length|string + " encontrados)",
-            id_param="site_id"
-            )}}
-        </div>
-    </div>
 </div>
     <!-- Paginación -->
     {{ paginate(pagination=pagination, url='site_bp.list_paginated_sites') }}
-</div>
 
-    <script>
-    //Obtener la ciudades de la prov seleccionada
-        document.getElementById("province").addEventListener("change", function() {
-            const provinceId = this.value;
-            fetch(`/cities/${provinceId}`)
-                .then(response => response.json())
-                .then(data => {
-                    const citySelect = document.getElementById("city");
-                    citySelect.innerHTML = "";
-                    data.forEach(city => {
-                        let option = document.createElement("option");
-                        option.value = city.id;
-                        option.text = city.name;
-                        citySelect.appendChild(option);
-                    });
-                })
-        });
-    </script>
 {% endblock %}

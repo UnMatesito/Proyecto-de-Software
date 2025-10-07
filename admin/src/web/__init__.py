@@ -7,13 +7,13 @@ from flask_session import Session
 from .config import get_current_config
 from .controllers import (
     auth_bp,
-    city_bp,
     feature_flag_bp,
     main_bp,
     site_bp,
     tag_bp,
     user_bp,
     user_management_bp,
+    city_bp,
 )
 from .handlers import error
 from .utils.auth import (
@@ -24,6 +24,7 @@ from .utils.auth import (
 )
 from .utils.hooks import hook_admin_maintenance
 
+
 session = Session()
 
 
@@ -32,9 +33,8 @@ def create_app(env="development", static_folder="../../static"):
     app.config.from_object(get_current_config(env))
 
     if app.config.get("DEBUG", False):
-        from flask_debugtoolbar import DebugToolbarExtension
-
-        DebugToolbarExtension(app)
+            from flask_debugtoolbar import DebugToolbarExtension
+            DebugToolbarExtension(app)
 
     # Inicializar extensiones
     bcrypt.init_app(app)
@@ -53,7 +53,6 @@ def create_app(env="development", static_folder="../../static"):
     app.register_blueprint(auth_bp)
     app.register_blueprint(site_bp)
     app.register_blueprint(city_bp)
-
     # Commands
     @app.cli.command("reset-db")
     def reset_db_command():

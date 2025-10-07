@@ -105,7 +105,6 @@ def update_city(site, city_id):
         site.city = city
     return site
 
-
 def update_name(site, name):
     if not isinstance(name, str):
         raise ValueError("El nombre del sitio debe ser un string")
@@ -129,7 +128,6 @@ def update_full_description(site, description):
         site.full_description = description
     return site
 
-
 def update_location(site, location):
     if not isinstance(location["lat"], (int, float)):
         raise ValueError("La latitude debe ser numerica")
@@ -137,7 +135,6 @@ def update_location(site, location):
         raise ValueError("La longitude debe ser numerica")
     site.location = WKTElement(f"POINT({location["lon"]} {location["lat"]})", srid=4326)
     return site
-
 
 def update_inauguration_year(site, year):
     if not site.same_inauguration_year(year):
@@ -154,8 +151,8 @@ def update_registration_date(site, date):
 def update_is_visible(site, visibility):
     if not isinstance(visibility, bool):
         raise ValueError("El valor de visibilidad debe ser booleano")
-    if visibility:
-        if site.deleted_at:
+    if (visibility):
+        if site.deleted_at:  
             raise ValueError("El sitio no debe estar borrado")
         if site.pending_validation:
             raise ValueError("El sitio debe estar validado")
@@ -178,17 +175,15 @@ def update_tags(site, tag_ids):
     for tag in tags:
         site.add_tag(tag)
 
-
 def validate(site_id):
     site = get_historic_site_by_id(site_id)
-    if not site.pending_validation:
+    if (not site.pending_validation):
         raise ValueError(f"El sitio con id {site_id} ya se encuentra validado")
-    if site.deleted_at:
+    if (site.deleted_at):
         raise ValueError(f"El sitio con id {site_id} se encuentra borrado")
     site.pending_validation = False
     db.session.commit()
     return site
-
 
 def assign_tags(site_id, tag_ids):
     """Asigna una lista de tags a un sitio histórico, reemplazando los existentes."""
@@ -273,15 +268,13 @@ def update_historic_site(body):
     except SQLAlchemyError as e:
         db.session.rollback()
         raise RuntimeError(f"Error al editar el sitio histórico: {e}")
-
-
+    
 def restore_historic_site(site_id):
     site = get_historic_site_by_id(site_id)
     site.deleted_at = None
     site.is_visible = False
     db.session.commit()
     return site
-
 
 def get_sites_filtered(
     filters=None,
@@ -293,7 +286,7 @@ def get_sites_filtered(
 ):
     """
     Devuelve sitios históricos filtrados, ordenados y opcionalmente paginados.
-    Usa GenericSearchBuilder para filtros y paginate_query para paginación.
+    Usa GenericSearchBuilder para filtros    y paginate_query para paginación.
 
     Args:
         filters (dict): filtros a aplicar (ej: {"city_id": 1, "visible": True})
@@ -308,23 +301,10 @@ def get_sites_filtered(
     """
     filters = filters or {}
 
-    from core.models import City, Province
-
-    # If city_id is provided, set province_id from city
-    if filters.get("city_id"):
-        city = City.query.get(filters["city_id"])
-        if not city:
-            raise ValueError("Ciudad no encontrada")
-        filters["province_id"] = city.province_id
-
-    # Build the query with all filters
+    # Construir query con filtros genéricos
     query = build_search_query(HistoricSite, filters)
 
-    # If province_id filter is present, join and filter
-    if filters.get("province_id"):
-        query = query.join(HistoricSite.city).join(City.province)
-        query = query.filter(Province.id == filters["province_id"])
-
+    # Ordenar
     query = apply_ordering(query, HistoricSite, order_by, sorted_by)
 
     if paginate:
