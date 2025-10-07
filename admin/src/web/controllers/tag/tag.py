@@ -28,7 +28,7 @@ def list_paginted_tags():
             {"key": "name", "label": "Nombre"},
             {"key": "slug", "label": "Slug"},
             {"key": "created_at", "label": "Creado", "render": "date"},
-            {"key": "deleted_at", "label": "Estado", "render": 'status'}
+            {"key": "deleted_at", "label": "Estado", "render": "status"},
         ]
         return render_template(
             "tags/index.html",
@@ -39,14 +39,18 @@ def list_paginted_tags():
             columns=columns,
         )
     except Exception as e:
-        flash(f'Error al cargar tags: {str(e)}', 'error')
-        return render_template("tags/index.html", tags = [], order_by = "name", sorted_by = "asc")
+        flash(f"Error al cargar tags: {str(e)}", "error")
+        return render_template(
+            "tags/index.html", tags=[], order_by="name", sorted_by="asc"
+        )
+
 
 @tag_bp.get("/create")
 @login_required
 def show_create_tags():
     form = CreateTagForm()
     return render_template("tags/create.html", form=form)
+
 
 @tag_bp.post("/create")
 @login_required
@@ -64,6 +68,7 @@ def create_tags():
         flash(f"Error al crear tag: Datos invalidos", "error")
         return render_template("tags/create.html", form=form)
 
+
 @tag_bp.get("/edit/<int:tag_id>")
 @login_required
 def show_edit_tag(tag_id):
@@ -74,7 +79,8 @@ def show_edit_tag(tag_id):
     except Exception as e:
         flash(f"Error al seleccinar el tag {tag_id}: {e}", "error")
         return redirect(url_for("tag_bp.list_paginted_tags"))
-    
+
+
 @tag_bp.post("/edit/<int:tag_id>")
 @login_required
 def edit_tag(tag_id):
@@ -94,6 +100,7 @@ def edit_tag(tag_id):
             flash(f"Error al editar el tag {tag_id}, {e}", "error")
             return redirect(url_for("tag_bp.list_paginted_tags"))
 
+
 @tag_bp.post("/delete/<int:tag_id>")
 @login_required
 def delete(tag_id):
@@ -103,7 +110,8 @@ def delete(tag_id):
     except Exception as e:
         flash(f"Error al intentar eliminar el tag {e}", "error")
     return redirect(url_for("tag_bp.list_paginted_tags"))
-    
+
+
 @tag_bp.get("/datail/<int:tag_id>")
 @login_required
 @permission_required("user_show")
