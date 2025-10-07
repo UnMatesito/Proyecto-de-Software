@@ -41,13 +41,12 @@ from .historic_site_service import (
     get_pending_historic_sites,
     get_published_historic_sites,
     get_sites_filtered,
+    restore_historic_site,
     update_category,
     update_city,
     update_conservation_state,
     update_historic_site,
-    get_sites_filtered,
-    restore_historic_site,
-    validate
+    validate,
 )
 
 # Permission services

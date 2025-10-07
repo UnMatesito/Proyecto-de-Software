@@ -20,4 +20,16 @@
             </h1>
         </div>
     </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4">
+          {% for category, message in messages %}
+            <div class="p-2 mb-2 border rounded bg-yellow-100 text-yellow-800">
+              <strong>{{ category|capitalize }}:</strong> {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
 {% endblock %}
