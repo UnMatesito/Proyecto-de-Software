@@ -321,20 +321,31 @@ def export():
 
         # Obtener tags como string separado por comas
         tags_param = request.args.get("tag_id", "")
-        tags_id = [tid.strip() for tid in tags_param.split(",") if tid.strip()]
+        tags_id = []
+        if tags_param:
+            try:
+                tags_id = [int(tid.strip()) for tid in tags_param.split(",") if tid.strip()]
+            except ValueError:
+                flash("IDs de tags inválidos", "error")
+                return redirect(url_for("site_bp.list_paginated_sites"))
+
+        # Procesar is_visible
+        is_visible_value = None
+        if "is_visible" in request.args:
+            is_visible_value = True
 
         search_filters = {
             "search_text": request.args.get("search_text"),
             "province_id": request.args.get("province_id"),
             "city_id": request.args.get("city_id"),
             "conservation_state_id": request.args.get("conservation_state_id"),
-            "is_visible": request.args.get("is_visible"),
+            "is_visible": is_visible_value,
             "date_from": request.args.get("date_from"),
             "date_to": request.args.get("date_to"),
         }
 
         if tags_id:
-            search_filters["tags_id"] = [int(tid) for tid in tags_id]
+            search_filters["tags_id"] = tags_id
 
         sitios = get_sites_filtered(
             filters=search_filters,
@@ -344,7 +355,7 @@ def export():
         )
 
         if not sitios:
-            flash("No hay datos para exportar", "warning")
+            flash("No hay sitios para exportar con los filtros aplicados", "warning")
             return redirect(url_for("site_bp.list_paginated_sites"))
 
         csv_content = export_sites_to_csv(sitios)
@@ -358,6 +369,9 @@ def export():
                 "Content-Type": "text/csv; charset=utf-8",
             },
         )
+    except ValueError as e:
+        flash(f"Error en los filtros: {str(e)}", "error")
+        return redirect(url_for("site_bp.list_paginated_sites"))
     except Exception as e:
-        flash(f"Error al exportar sitios: {e}", "error")
+        flash(f"Error al exportar sitios: {str(e)}", "error")
         return redirect(url_for("site_bp.list_paginated_sites"))
