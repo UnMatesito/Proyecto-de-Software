@@ -1,3 +1,5 @@
+import re
+
 from flask import has_request_context, session
 from sqlalchemy import event, inspect
 
@@ -32,7 +34,9 @@ def log_creation_history(mapper, connection, target):
 @event.listens_for(HistoricSite, "after_update")
 def log_update_history(mapper, connection, target):
     """
-    Registra la Edición, Eliminación, Restauración o el Cambio de Estado de un sitio histórico.
+    Registra de manera detallada los cambios realizados sobre un sitio histórico.
+    Incluye ediciones, eliminaciones, restauraciones, cambio de estado y cambio de tags.
+    Cada campo modificado genera un registro independiente en site_history.
     """
     user_id = get_current_user_id()
     if not user_id:
@@ -50,14 +54,10 @@ def log_update_history(mapper, connection, target):
     if not changed_attributes:
         return
 
-    action_type = None
-    description = None
-
     # Manejo de cambios en tags
     if "tags" in changed_attributes:
         tags_history = instance_state.attrs.tags.history
 
-        # Obtener tags anteriores y actuales
         old_tags = set(tags_history.deleted) if tags_history.deleted else set()
         new_tags = set(tags_history.added) if tags_history.added else set()
 
@@ -65,41 +65,35 @@ def log_update_history(mapper, connection, target):
         removed_tags = old_tags - new_tags
 
         if added_tags or removed_tags:
-            # Construir mensaje combinado
-            description_parts = []
-
             if added_tags:
-                tag_names = ", ".join([f'"{tag.name}"' for tag in added_tags])
-                description_parts.append(
-                    f"Se agregó{'aron' if len(added_tags) > 1 else ''} el{'los' if len(added_tags) > 1 else ''} tag{' s' if len(added_tags) > 1 else ''}: {tag_names}"
-                )
+                for tag in added_tags:
+                    event_type = get_event_type_by_name("Cambio de tags")
+                    description = (
+                        f'Se agregó el tag "{tag.name}" al sitio "{target.name}".'
+                    )
+                    create_site_history(
+                        historic_site_id=target.id,
+                        user_id=user_id,
+                        event_type=event_type,
+                        description=description,
+                    )
 
             if removed_tags:
-                tag_names = ", ".join([f'"{tag.name}"' for tag in removed_tags])
-                description_parts.append(
-                    f"Se quitó{'aron' if len(removed_tags) > 1 else ''} el{'los' if len(removed_tags) > 1 else ''} tag{' s' if len(removed_tags) > 1 else ''}: {tag_names}"
-                )
+                for tag in removed_tags:
+                    event_type = get_event_type_by_name("Cambio de tags")
+                    description = (
+                        f'Se quitó el tag "{tag.name}" del sitio "{target.name}".'
+                    )
+                    create_site_history(
+                        historic_site_id=target.id,
+                        user_id=user_id,
+                        event_type=event_type,
+                        description=description,
+                    )
 
-            tags_description = (
-                " y ".join(description_parts) + f' del sitio "{target.name}".'
-            )
+            return  # Evita que se procese de nuevo más abajo
 
-            event_type = get_event_type_by_name("Cambio de tags")
-            if event_type:
-                create_site_history(
-                    historic_site_id=target.id,
-                    user_id=user_id,
-                    event_type=event_type,
-                    description=tags_description,
-                )
-
-        # Remover 'tags' para evitar que se procese como una edición general
-        changed_attributes.remove("tags")
-
-        # Si no hay más cambios, retornar
-        if not changed_attributes:
-            return
-
+    # Eliminación o restauración
     if "deleted_at" in changed_attributes:
         history = instance_state.attrs.deleted_at.history
         old_value = history.deleted[0] if history.deleted else None
@@ -111,14 +105,9 @@ def log_update_history(mapper, connection, target):
         elif old_value is not None and new_value is None:
             action_type = "Restauración"
             description = f'Sitio "{target.name}" restaurado.'
-    elif "is_visible" in changed_attributes:
-        action_type = "Cambio de estado"
-        description = f'Visibilidad de "{target.name}" modificada.'
-    elif changed_attributes:
-        action_type = "Edición"
-        description = f'Sitio "{target.name}" modificado.'
+        else:
+            return
 
-    if action_type:
         event_type = get_event_type_by_name(action_type)
         if event_type:
             create_site_history(
@@ -127,6 +116,54 @@ def log_update_history(mapper, connection, target):
                 event_type=event_type,
                 description=description,
             )
+        return
+
+    # Cambio de visibilidad
+    if "is_visible" in changed_attributes and len(changed_attributes) == 1:
+        action_type = "Cambio de estado"
+        description = f'Visibilidad de "{target.name}" modificada.'
+        event_type = get_event_type_by_name(action_type)
+        if event_type:
+            create_site_history(
+                historic_site_id=target.id,
+                user_id=user_id,
+                event_type=event_type,
+                description=description,
+            )
+        return
+
+    # Edición general
+    action_type = "Edición"
+
+    for attr_name in changed_attributes:
+        # Ignorar si ya fue procesado arriba (ej. deleted_at, is_visible, tags)
+        if attr_name in ["deleted_at", "is_visible", "tags"]:
+            continue
+
+        attr = instance_state.attrs[attr_name]
+        old = attr.history.deleted[0] if attr.history.deleted else None
+        new = attr.history.added[0] if attr.history.added else None
+
+        # Formatear nombre y valores
+        field_label = format_field_name(attr_name)
+        old_val = format_field_value(attr_name, old, instance_state)
+        new_val = format_field_value(attr_name, new, instance_state)
+
+        # Crear registro individual por campo
+        description = (
+            f"Se modificó el campo '{field_label}' del sitio '{target.name}': "
+            f"{old_val} → {new_val}"
+        )
+
+        event_type = get_event_type_by_name(action_type)
+        if event_type:
+            create_site_history(
+                historic_site_id=target.id,
+                user_id=user_id,
+                event_type=event_type,
+                description=description,
+            )
+
 
 
 # Métodos para deshabilitar y habilitar eventos (necesario para poder hacer seeds)
@@ -153,3 +190,59 @@ def enable_audit_listeners():
         print("Listeners de auditoría restaurados.")
     except Exception as e:
         print(f"No se pudieron restaurar los listeners de auditoría: {e}")
+
+# Métodos de utilidades
+def format_field_name(field_name):
+    """Convierte nombres de campos técnicos a nombres legibles en español."""
+    field_names = {
+        "name": "Nombre",
+        "brief_description": "Descripción breve",
+        "full_description": "Descripción completa",
+        "inauguration_year": "Año de inauguración",
+        "is_visible": "Visibilidad",
+        "location": "Ubicación",
+        "city_id": "Ciudad",
+        "conservation_state_id": "Estado de conservación",
+        "category_id": "Categoría",
+    }
+    return field_names.get(field_name, field_name)
+
+
+def format_field_value(attr_name, value, instance_state):
+    """Formatea valores de campos para mostrar de manera legible."""
+    if value is None:
+        return "sin valor"
+
+    # Formatear ubicación (POINT de PostGIS)
+    if attr_name == "location":
+        try:
+            # Extraer coordenadas del formato POINT o hexadecimal
+            value_str = str(value)
+
+            # Si es formato hexadecimal (como 0101000020e6100000...)
+            if value_str.startswith("01"):
+                # Intentar obtener las coordenadas del objeto
+                from geoalchemy2.shape import to_shape
+                point = to_shape(value)
+                return f"({point.x:.6f}, {point.y:.6f})"
+
+            # Si ya es formato POINT
+            coords = re.findall(r'-?\d+\.?\d*', value_str)
+            if len(coords) >= 2:
+                lon, lat = coords[0], coords[1]
+                return f"({lon}, {lat})"
+
+            return value_str
+        except:
+            return str(value)
+
+    # Formatear relaciones (objetos con atributo 'name')
+    if hasattr(value, 'name'):
+        return f'"{value.name}"'
+
+    # Formatear booleanos
+    if isinstance(value, bool):
+        return "Sí" if value else "No"
+
+    # Otros valores
+    return str(value)
