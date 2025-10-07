@@ -88,6 +88,7 @@ def detail(user_id):
 @login_required
 @permission_required("user_show")
 def search_by_email():
+    """Busca a un usuario por correo"""
     correo = request.args.get("email", "").strip()
     user = get_user_by_email(correo)
     if not user:
@@ -274,8 +275,11 @@ def change_password_post(user_id):
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
         
-        if user.is_admin():
-            flash("No puede cambiar la contraseña de un administrador del sistema", "error")
+        if user.is_admin() and not current_user.is_admin():
+            flash(
+                "No puede cambiar la contraseña de un administrador del sistema si usted no es administrador del sistema",
+                "error",
+            )
             return redirect(url_for("users.index"))
         
         if user.has_role("Administrador") and not current_user.is_admin():
@@ -311,8 +315,11 @@ def change_password_get(user_id):
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
         
-        if user.is_admin():
-            flash("No puede cambiar la contraseña de un administrador del sistema", "error")
+        if user.is_admin() and not current_user.is_admin():
+            flash(
+                "No puede cambiar la contraseña de un administrador del sistema si usted no es administrador del sistema",
+                "error",
+            )
             return redirect(url_for("users.index"))
     
         if user.has_role("Administrador") and not current_user.is_admin():

@@ -231,7 +231,7 @@ def change_password_by_admin(user_id, new_password):
     """Admin cambia la contraseña de un usuario"""
     user = User.query.get(user_id)
     if not user:
-        raise ValueError("No existe tal usaurio")
+        raise ValueError("No existe tal usuario")
     if user.check_password(new_password):
         raise ValueError("La nueva contraseña no puede ser igual a la anterior") 
     user.password = new_password
