@@ -66,7 +66,7 @@ def list_paginated_sites():
                 "label": "Estado de conservación",
                 "render": lambda site: site.conservation_state.state,
             },
-            {"key": "is_visible", "label": "Visibilidad"},
+            {"key": "is_visible", "label": "Visibilidad", "render": "visibility"},
             {"key": "deleted_at", "label": "Estado", "render": "status"},
         ]
 
@@ -186,7 +186,7 @@ def get_edit(site_id):
         lat = float(site.latitude)
 
         return render_template(
-            "historic_site/edit.html", form=form, lat=lat, lon=lon, site_name=site_name
+            "historic_site/edit.html", form=form, lat=lat, lon=lon, site_name=site_name, site=site
         )
     except Exception as e:
         flash(f"Se produjo un error, {e}", "error")
