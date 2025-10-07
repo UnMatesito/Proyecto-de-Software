@@ -96,7 +96,7 @@
       {{ assign_role_form.hidden_tag() }}
       <label for="role_id" class="block text-sm font-medium text-gray-700">Rol</label>
       <select id="role_id" name="role_id" class="w-full rounded-md border-gray-300" required>
-        <option value="">Seleccionar rol...</option>
+        <option selected disabled value="">Seleccionar rol...</option>
         {% for value, label in assign_role_form.role_id.choices %}
           <option value="{{ value }}">{{ label }}</option>
         {% endfor %}

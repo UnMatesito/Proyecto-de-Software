@@ -157,7 +157,7 @@
         }).addTo(map);
 
         mark = L.marker(["{{lat}}", "{{lon}}"]).addTo(map)
-            .bindPopup('{{site_name}}  <br> {{lat}}", "{{lon}}')
+            .bindPopup('{{site_name}}  <br> Latitude: {{lat}} <br> Longitude: {{lon}}')
             .openPopup();
     
         var lat_lng_popup = L.popup();

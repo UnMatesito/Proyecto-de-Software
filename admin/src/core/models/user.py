@@ -14,7 +14,6 @@ class User(db.Model):
     email = db.Column(db.String(120), nullable=False, unique=True, index=True)
     first_name = db.Column(db.String(150), nullable=False)
     last_name = db.Column(db.String(150), nullable=False)
-    active = db.Column(db.Boolean, default=True)
     system_admin = db.Column(db.Boolean, nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey("role.id"), nullable=False)
     blocked = db.Column(db.Boolean, nullable=False, default=False)
@@ -87,12 +86,10 @@ class User(db.Model):
     def delete_user(self):
         """Funcion que setea la fecha de borrado"""
         self.deleted_at = datetime.now(timezone.utc)
-        self.active = False
 
     def restore_user(self):
         """Funcion que recupera el usuaio (setea la fecha de borrado en None)"""
         self.deleted_at = None
-        self.active = True
 
     def __repr__(self):
         return f"<User {self.email}>"
