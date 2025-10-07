@@ -73,7 +73,7 @@ def assign_role(user_id):
         # Mostrar errores de validación
         for field, errors in form.errors.items():
             for error in errors:
-                flash(f"Error en {field}: {error}", "error")
+                flash(f"Error: {error}", "error")
 
     return redirect(url_for("user_management.manage_user", user_id=user_id))
 
