@@ -11,10 +11,11 @@ from core.services.user_service import (
     get_user_by_id,
     restore_user,
     update_user_attribute,
+    change_password_by_admin
 )
-from web.forms.user import ChangePasswordForm, CreateUserForm, EditUserForm
+from web.forms.user import ChangePasswordForm, CreateUserForm, EditUserForm, ChangePasswordByAdminForm
 from web.utils.auth import get_user_role_name, login_required, permission_required
-from web.utils.hooks import hook_admin_maintenance
+
 
 user_bp = Blueprint("users", __name__, url_prefix="/users")
 
@@ -266,16 +267,25 @@ def restore(user_id):
 @permission_required("user_update")
 def change_password_post(user_id):
     """Procesar el cambio de contraseña"""
+    current_user = get_user_by_id(session["user_id"])
     try:
         user = get_user_by_id(user_id)
         if not user:
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
+        
+        if user.is_admin():
+            flash("No puede cambiar la contraseña de un administrador del sistema", "error")
+            return redirect(url_for("users.index"))
+        
+        if user.has_role("Administrador") and not current_user.is_admin():
+            flash("No puede cambiar la contraseña de un administrador si usted no es administrador del sistema", "error")
+            return redirect(url_for("users.index"))
 
-        form = ChangePasswordForm()
+        form = ChangePasswordByAdminForm()
         if form.validate_on_submit():
             try:
-                change_password(user_id, form.old_password.data, form.new_password.data)
+                change_password_by_admin(user_id, form.new_password.data)
                 flash("Contraseña actualizada", "success")
                 return redirect(url_for("users.detail", user_id=user_id))
             except ValueError as e:
@@ -283,10 +293,10 @@ def change_password_post(user_id):
             except Exception as e:
                 flash(f"Error al cambiar contraseña: {str(e)}", "error")
         # Si el form no valida, se muestra de nuevo
-        return render_template("users/change_password.html", form=form, user=user)
+        return render_template("users/change_password_by_admin.html", form=form, user=user)
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
-        return redirect(url_for("users.list_users"))
+        return redirect(url_for("users.index"))
 
 
 @user_bp.get("/<int:user_id>/change-password")
@@ -294,17 +304,26 @@ def change_password_post(user_id):
 @permission_required("user_update")
 def change_password_get(user_id):
     """Mostrar el formulario para cambiar la contraseña"""
+    current_user = get_user_by_id(session["user_id"])
     try:
         user = get_user_by_id(user_id)
         if not user:
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
-
-        form = ChangePasswordForm()
-        return render_template("users/change_password.html", form=form, user=user)
+        
+        if user.is_admin():
+            flash("No puede cambiar la contraseña de un administrador del sistema", "error")
+            return redirect(url_for("users.index"))
+    
+        if user.has_role("Administrador") and not current_user.is_admin():
+            flash("No puede cambiar la contraseña de un administrador si usted no es administrador del sistema", "error")
+            return redirect(url_for("users.index"))
+        
+        form = ChangePasswordByAdminForm()
+        return render_template("users/change_password_by_admin.html", form=form, user=user)
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
-        return redirect(url_for("users.list_users"))
+        return redirect(url_for("users.index"))
 
 
 @user_bp.get("/change-password")
