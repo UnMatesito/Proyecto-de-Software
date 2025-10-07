@@ -417,10 +417,14 @@ def seed_categories():
 def seed_historic_sites():
     """Carga un conjunto de sitios históricos iniciales"""
     from datetime import datetime, timezone
-
+    from core.audit import disable_audit_listeners, enable_audit_listeners
     from core.models import HistoricSite
 
     print("Cargando sitios historicos...")
+
+    # Deshabilitar registros de auditoría temporalmente
+    disable_audit_listeners()
+
     sites = [
         HistoricSite(
             name="Cabildo de Buenos Aires",
@@ -473,13 +477,20 @@ def seed_historic_sites():
 
     db.session.commit()
 
+    # Rehabilitar listeners de auditoría
+    enable_audit_listeners()
+
 
 def seed_site_tags():
     """Asocia sitios históricos con tags de clasificación"""
     from core.services import historic_site_service as HistorcService
     from core.services import tag_service as TagService
+    from core.audit import disable_audit_listeners, enable_audit_listeners
 
     print("Agregando relaciones Sites-Tags")
+
+    # Deshabilitar registros de auditoría temporalmente
+    disable_audit_listeners()
 
     cabildo = HistorcService.get_historic_site_by_id(1)
     san_ignacio = HistorcService.get_historic_site_by_id(2)
@@ -492,6 +503,8 @@ def seed_site_tags():
 
     db.session.commit()
 
+    # Rehabilitar listeners de auditoría
+    enable_audit_listeners()
 
 def seed_users():
     """Crea usuarios adicionales usando Faker"""

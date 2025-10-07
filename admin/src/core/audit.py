@@ -128,3 +128,28 @@ def log_update_history(mapper, connection, target):
                 event_type=event_type,
                 description=description,
             )
+
+
+# Métodos para deshabilitar y habilitar eventos (necesario para poder hacer seeds)
+
+def disable_audit_listeners():
+    """Desactiva temporalmente los listeners de auditoría de HistoricSite."""
+    try:
+        event.remove(HistoricSite, "after_insert", log_creation_history)
+    except Exception:
+        pass
+    try:
+        event.remove(HistoricSite, "after_update", log_update_history)
+    except Exception:
+        pass
+    print("Listeners de auditoría desactivados temporalmente.")
+
+
+def enable_audit_listeners():
+    """Restaura los listeners de auditoría de HistoricSite."""
+    try:
+        event.listen(HistoricSite, "after_insert", log_creation_history)
+        event.listen(HistoricSite, "after_update", log_update_history)
+        print("Listeners de auditoría restaurados.")
+    except Exception as e:
+        print(f"No se pudieron restaurar los listeners de auditoría: {e}")
