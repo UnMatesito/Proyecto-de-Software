@@ -165,8 +165,6 @@ def update_is_visible(site, visibility):
 
 
 def update_tags(site, tag_ids):
-    if not tag_ids:
-        raise ValueError("Se requiere al menos un tag")
     tags = []
     for tag_id in tag_ids:
         tag = tag_service.get_tag_by_id(tag_id)
