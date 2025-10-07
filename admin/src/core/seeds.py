@@ -268,7 +268,6 @@ def seed_system_admin():
         first_name="System",
         last_name="Administrator",
         system_admin=True,
-        active=True,
         role_id=admin_role.id,
     )
 
@@ -298,7 +297,6 @@ def seed_editor():
         first_name="EditorNomb",
         last_name="EditorApe",
         system_admin=False,
-        active=True,
         role_id=editor_role.id,
     )
 
@@ -732,8 +730,7 @@ def seed_users():
                 password="password123",
                 role_id=roles["publico"].id,
                 system_admin=False,
-                active=True,
-            )
+                    )
         )
 
     # Editores
@@ -747,8 +744,7 @@ def seed_users():
                 password="editor123",
                 role_id=roles["editor"].id,
                 system_admin=False,
-                active=True,
-            )
+                    )
         )
 
     # Administradores no system admin
@@ -762,8 +758,7 @@ def seed_users():
                 password="admin123",
                 role_id=roles["admin"].id,
                 system_admin=False,
-                active=True,
-            )
+                    )
         )
 
     # Insertar en DB
