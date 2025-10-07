@@ -11,10 +11,11 @@ from core.services.user_service import (
     get_user_by_id,
     restore_user,
     update_user_attribute,
+    change_password_by_admin
 )
-from web.forms.user import ChangePasswordForm, CreateUserForm, EditUserForm
+from web.forms.user import ChangePasswordForm, CreateUserForm, EditUserForm, ChangePasswordByAdminForm
 from web.utils.auth import get_user_role_name, login_required, permission_required
-from web.utils.hooks import hook_admin_maintenance
+
 
 user_bp = Blueprint("users", __name__, url_prefix="/users")
 
@@ -272,10 +273,10 @@ def change_password_post(user_id):
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
 
-        form = ChangePasswordForm()
+        form = ChangePasswordByAdminForm()
         if form.validate_on_submit():
             try:
-                change_password(user_id, form.old_password.data, form.new_password.data)
+                change_password_by_admin(user_id, form.new_password.data)
                 flash("Contraseña actualizada", "success")
                 return redirect(url_for("users.detail", user_id=user_id))
             except ValueError as e:
@@ -283,10 +284,10 @@ def change_password_post(user_id):
             except Exception as e:
                 flash(f"Error al cambiar contraseña: {str(e)}", "error")
         # Si el form no valida, se muestra de nuevo
-        return render_template("users/change_password.html", form=form, user=user)
+        return render_template("users/change_password_by_admin.html", form=form, user=user)
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
-        return redirect(url_for("users.list_users"))
+        return redirect(url_for("users.index"))
 
 
 @user_bp.get("/<int:user_id>/change-password")
@@ -300,11 +301,11 @@ def change_password_get(user_id):
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
 
-        form = ChangePasswordForm()
-        return render_template("users/change_password.html", form=form, user=user)
+        form = ChangePasswordByAdminForm()
+        return render_template("users/change_password_by_admin.html", form=form, user=user)
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
-        return redirect(url_for("users.list_users"))
+        return redirect(url_for("users.index"))
 
 
 @user_bp.get("/change-password")
