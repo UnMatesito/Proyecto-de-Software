@@ -1,0 +1,185 @@
+{% extends "layout.html" %}
+{% from "macros/button.html" import button %}
+{% from "macros/table.html" import table %}
+{% from "macros/toast.html" import toast %}
+
+{% block title %}Historial - {{ site_name }}{% endblock %}
+
+{% block header %}
+<h1 class="text-2xl font-bold p-4 text-center">Historial de Cambios - {{ site_name }}</h1>
+{% if back_url %}
+{{ button("Volver", link=back_url, icon_left_svg='<i class="fa-solid fa-arrow-left mr-1"></i>', class="absolute top-3 left-3") }}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="p-5 max-w-7xl mx-auto space-y-6">
+<div class="flex flex-col lg:flex-row justify-center items-start gap-4">
+    <div class="w-full lg:w-64 p-4 border-2 border-gray-300 rounded shadow-lg flex-shrink-0">
+        <h3 class="text-lg font-semibold mb-2">Filtros de Historial</h3>
+        <form method="get" action="{{ url_for('site_history.view_site_history', site_id=site_id) }}" class="space-y-4">
+            <!-- Campo oculto para preservar el parámetro next -->
+            {% if request.args.get('next') %}
+            <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+            {% endif %}
+            
+            <!-- Filtro de Usuario -->
+            <div>
+                <label class="block text-sm font-medium mb-2">Usuario</label>
+                <select name="user_id" class="w-full border rounded px-3 py-2 text-sm">
+                    <option value="">Todos los usuarios</option>
+                    {% for user in users %}
+                    <option value="{{ user.id }}" 
+                            {% if request.args.get('user_id')|int == user.id %}selected{% endif %}>
+                        {{ user.email }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Filtro de Tipo de Acción -->
+            <div>
+                <label class="block text-sm font-medium mb-2">Tipo de Acción</label>
+                <select name="event_type" class="w-full border rounded px-3 py-2 text-sm">
+                    <option value="">Todas las acciones</option>
+                    {% for event_type in event_types %}
+                    <option value="{{ event_type.id }}" 
+                            {% if request.args.get('event_type')|int == event_type.id %}selected{% endif %}>
+                        {{ event_type.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Filtro de Fecha Desde -->
+            <div>
+                <label class="block text-sm font-medium mb-2">Desde</label>
+                <input type="date" name="date_from" value="{{ request.args.get('date_from', '') }}" 
+                       class="w-full border rounded px-3 py-2 text-sm">
+            </div>
+            
+            <!-- Filtro de Fecha Hasta -->
+            <div>
+                <label class="block text-sm font-medium mb-2">Hasta</label>
+                <input type="date" name="date_to" value="{{ request.args.get('date_to', '') }}" 
+                       class="w-full border rounded px-3 py-2 text-sm">
+            </div>
+            
+            <!-- Botones de acción -->
+            <div class="space-y-2">
+                <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
+                    <i class="fa-solid fa-filter mr-1"></i>
+                    Filtrar
+                </button>
+                <a href="{{ url_for('site_history.view_site_history', site_id=site_id, next=request.args.get('next')) }}" 
+                   class="block w-full bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-2 px-4 rounded text-center">
+                    <i class="fa-solid fa-eraser mr-1"></i>
+                    Limpiar Filtros
+                </a>
+            </div>
+        </form>
+    </div>        
+
+    <div class="flex-1 flex flex-col gap-4">
+        <div class="bg-white shadow rounded overflow-hidden">
+             <div class="overflow-x-auto w-full">
+            {{ table(   
+                data=site_history,
+                columns=columns,
+                empty_message="No hay registros en el historial" + 
+                    (" con los filtros aplicados" if request.args.get('user_id') or request.args.get('event_type') or request.args.get('date_from') or request.args.get('date_to') else "")
+            ) }}
+            </div>
+        </div>
+
+        <div class="flex justify-center mt-4">
+            {% if pagination %}
+            <nav aria-label="Page navigation">
+                <ul class="inline-flex -space-x-px text-sm">
+                    <!-- Botón Previous -->
+                    {% if pagination.has_prev %}
+                        <li>
+                            <a href="{{ url_for('site_history.view_site_history', site_id=site_id, page=pagination.prev_num, user_id=request.args.get('user_id'), event_type=request.args.get('event_type'), date_from=request.args.get('date_from'), date_to=request.args.get('date_to'), next=request.args.get('next')) }}"
+                               class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> Previous
+                            </a>
+                        </li>
+                    {% else %}
+                        <li>
+                            <span class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-300 bg-gray-100 border border-e-0 border-gray-300 rounded-s-lg cursor-not-allowed">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> Previous
+                            </span>
+                        </li>
+                    {% endif %}
+
+                    <!-- Primera página y ellipsis -->
+                    {% if pagination.has_prev and 1 not in pagination.page_range %}
+                        <li>
+                            <a href="{{ url_for('site_history.view_site_history', site_id=site_id, page=1, user_id=request.args.get('user_id'), event_type=request.args.get('event_type'), date_from=request.args.get('date_from'), date_to=request.args.get('date_to'), next=request.args.get('next')) }}"
+                               class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                                1
+                            </a>
+                        </li>
+                        <li>
+                            <span class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300">
+                                ...
+                            </span>
+                        </li>
+                    {% endif %}
+
+                    <!-- Páginas del rango -->
+                    {% for page in pagination.page_range %}
+                        <li>
+                            {% if pagination.current_page == page %}
+                                <a href="{{ url_for('site_history.view_site_history', site_id=site_id, page=page, user_id=request.args.get('user_id'), event_type=request.args.get('event_type'), date_from=request.args.get('date_from'), date_to=request.args.get('date_to'), next=request.args.get('next')) }}"
+                                   aria-current="page"
+                                   class="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700">
+                                    {{ page }}
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('site_history.view_site_history', site_id=site_id, page=page, user_id=request.args.get('user_id'), event_type=request.args.get('event_type'), date_from=request.args.get('date_from'), date_to=request.args.get('date_to'), next=request.args.get('next')) }}"
+                                   class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                                    {{ page }}
+                                </a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+
+                    <!-- Ellipsis y última página -->
+                    {% if pagination.has_next and pagination.pages not in pagination.page_range %}
+                        <li>
+                            <span class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300">
+                                ...
+                            </span>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('site_history.view_site_history', site_id=site_id, page=pagination.pages, user_id=request.args.get('user_id'), event_type=request.args.get('event_type'), date_from=request.args.get('date_from'), date_to=request.args.get('date_to'), next=request.args.get('next')) }}"
+                               class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                                {{ pagination.pages }}
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <!-- Botón Next -->
+                    {% if pagination.has_next %}
+                        <li>
+                            <a href="{{ url_for('site_history.view_site_history', site_id=site_id, page=pagination.next_num, user_id=request.args.get('user_id'), event_type=request.args.get('event_type'), date_from=request.args.get('date_from'), date_to=request.args.get('date_to'), next=request.args.get('next')) }}"
+                               class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700">
+                                Next <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li>
+                            <span class="flex items-center justify-center px-3 h-8 leading-tight text-gray-300 bg-gray-100 border border-gray-300 rounded-e-lg cursor-not-allowed">
+                                Next <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

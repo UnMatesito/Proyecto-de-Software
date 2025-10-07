@@ -306,3 +306,11 @@ def toggle_system_admin(user_id, make_admin: bool):
         raise RuntimeError(f"Error al actualizar el usuario: {e}")
 
     return True
+
+def get_user_history():
+    """Obtiene todos los usuarios systemAdmin/admin/editores"""
+    return User.query.filter(
+        (User.role.has(name="Administrador")) |
+        (User.role.has(name="Editor")) |
+        (User.system_admin == True)
+    ).all()
