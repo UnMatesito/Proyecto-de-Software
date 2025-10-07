@@ -8,7 +8,12 @@ from core.services import get_user_by_id
 
 
 def get_current_user():
-    """Obtiene el usuario actual de la sesión"""
+    """
+    Obtiene el usuario actual desde la sesión activa.
+
+    Returns:
+        User | None: Usuario autenticado o None si no hay sesión.
+    """
     if "user_id" in session:
         return get_user_by_id(session["user_id"])
     return None
@@ -18,7 +23,7 @@ def get_current_user():
 
 
 def login_required(f):
-    """Decorador que requiere que el usuario esté logueado"""
+    """Decorador que exige que el usuario esté autenticado antes de acceder a una ruta."""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -44,7 +49,12 @@ def login_required(f):
 
 
 def permission_required(permission_name):
-    """Decorador que requiere un permiso específico"""
+    """
+    Decorador que valida que el usuario tenga un permiso específico.
+
+    Args:
+        permission_name (str): Nombre del permiso requerido.
+    """
 
     def decorator(f):
         @wraps(f)
@@ -72,7 +82,12 @@ def permission_required(permission_name):
 
 
 def role_required(role_name):
-    """Decorador que requiere un rol específico"""
+    """
+    Decorador que valida que el usuario tenga un rol específico.
+
+    Args:
+        role_name (str): Nombre del rol requerido.
+    """
 
     def decorator(f):
         @wraps(f)
@@ -99,7 +114,7 @@ def role_required(role_name):
 
 
 def system_admin_required(f):
-    """Decorador que requiere que el usuario sea System Admin"""
+    """Decorador que permite acceso solo a usuarios con flag System Admin."""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -123,12 +138,22 @@ def system_admin_required(f):
 
 
 def is_authenticated():
-    """Devuelve true si el usuario tiene la sesión iniciada"""
+    """
+    Indica si existe un usuario autenticado en la sesión.
+
+    Returns:
+        bool: True si hay sesión activa, False en caso contrario.
+    """
     return "user_id" in session
 
 
 def is_system_admin():
-    """Devuelve True si el usuario actual es System Admin"""
+    """
+    Indica si el usuario autenticado es System Admin.
+
+    Returns:
+        bool: True si es administrador del sistema, False en caso contrario.
+    """
     if "user_id" not in session:
         return False
     user = get_current_user()
@@ -136,8 +161,15 @@ def is_system_admin():
 
 
 def get_user_role_name(user_id):
-    """Obtiene el nombre del rol del usuario dado su ID.
-    Si es System Admin, devuelve 'Administrador del sistema'."""
+    """
+    Obtiene el nombre del rol del usuario o 'Administrador del sistema' si corresponde.
+
+    Args:
+        user_id (int): ID del usuario.
+
+    Returns:
+        str: Nombre del rol o None si el usuario no existe.
+    """
     user = get_user_by_id(user_id)
     if not user:
         return None
@@ -149,7 +181,15 @@ def get_user_role_name(user_id):
 
 
 def has_permission(permission_name: str) -> bool:
-    """Devuelve True si el usuario actual tiene el permiso dado"""
+    """
+    Determina si el usuario actual tiene un permiso específico.
+
+    Args:
+        permission_name (str): Nombre del permiso.
+
+    Returns:
+        bool: True si tiene el permiso, False en caso contrario.
+    """
     if "user_id" not in session:
         return False
     user = get_current_user()
@@ -162,5 +202,13 @@ def has_permission(permission_name: str) -> bool:
 
 
 def is_validated_site(site):
-    """Devuelve True si el sitio está validado (no pendiente de validación)."""
+    """
+    Determina si un sitio histórico está validado.
+
+    Args:
+        site (HistoricSite): Sitio histórico a evaluar.
+
+    Returns:
+        bool: True si el sitio está validado, False si está pendiente.
+    """
     return site and not site.pending_validation

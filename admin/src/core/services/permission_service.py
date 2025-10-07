@@ -7,26 +7,62 @@ from core.database import db
 from core.models.permission import Permission
 from core.models.role import Role
 
-# TODO: Sacar o aplicar typing a todo
+"""
+Módulo de servicios para la gestión de permisos.
+Incluye operaciones CRUD, búsquedas y vinculación con roles.
+"""
 
 
 def get_all_permissions() -> List[Permission]:
-    """Obtiene todos los permisos"""
+    """
+    Obtiene todos los permisos del sistema.
+
+    Returns:
+        List[Permission]: Lista de permisos existentes.
+    """
     return Permission.query.all()
 
 
 def get_permission_by_id(permission_id: int) -> Optional[Permission]:
-    """Obtiene un permiso por su ID"""
+    """
+    Obtiene un permiso por su ID.
+
+    Args:
+        permission_id (int): ID del permiso.
+
+    Returns:
+        Optional[Permission]: Permiso encontrado o None.
+    """
     return Permission.query.get(permission_id)
 
 
 def get_permission_by_name(name: str) -> Optional[Permission]:
-    """Obtiene un permiso por su nombre"""
+    """
+    Obtiene un permiso por su nombre.
+
+    Args:
+        name (str): Nombre del permiso.
+
+    Returns:
+        Optional[Permission]: Permiso encontrado o None.
+    """
     return Permission.query.filter_by(name=name).first()
 
 
 def create_permission(name: str, description: str) -> Permission:
-    """Crea un nuevo permiso"""
+    """
+    Crea un nuevo permiso.
+
+    Args:
+        name (str): Nombre del permiso.
+        description (str): Descripción del permiso.
+
+    Returns:
+        Permission: Instancia del permiso creado.
+
+    Raises:
+        ValueError: Si el nombre ya existe.
+    """
     try:
         permission = Permission(name=name, description=description)
         db.session.add(permission)
@@ -41,13 +77,16 @@ def create_multiple_permissions(
     permissions_data: List[Dict[str, str]],
 ) -> List[Permission]:
     """
-    Crea múltiples permisos
+    Crea múltiples permisos a la vez.
 
     Args:
-        permissions_data: Lista de diccionarios con 'name' y 'description'
+        permissions_data (List[Dict[str, str]]): Lista con nombre y descripción.
 
     Returns:
-        Lista de permisos creados
+        List[Permission]: Lista de permisos creados.
+
+    Raises:
+        ValueError: Si existen duplicados o datos incompletos.
     """
     created_permissions = []
     errors = []
@@ -95,12 +134,18 @@ def update_permission(
     permission_id: int, name: str = None, description: str = None
 ) -> Permission:
     """
-    Actualiza el nombre y/o descripción de un permiso
+    Actualiza los datos de un permiso existente.
 
     Args:
-        permission_id: ID del permiso a actualizar
-        name: Nuevo nombre (opcional)
-        description: Nueva descripción (opcional)
+        permission_id (int): ID del permiso.
+        name (str, optional): Nuevo nombre.
+        description (str, optional): Nueva descripción.
+
+    Returns:
+        Permission: Permiso actualizado.
+
+    Raises:
+        ValueError: Si el permiso no existe o el nombre ya está en uso.
     """
     try:
         permission = Permission.query.get(permission_id)
@@ -127,7 +172,15 @@ def update_permission(
 
 
 def get_permission_roles(permission_id: int) -> List[Role]:
-    """Obtiene los roles que tienen asignado un permiso específico"""
+    """
+    Obtiene los roles que poseen un permiso específico.
+
+    Args:
+        permission_id (int): ID del permiso.
+
+    Returns:
+        List[Role]: Lista de roles asociados.
+    """
     permission = Permission.query.options(joinedload(Permission.roles)).get(
         permission_id
     )
@@ -138,26 +191,53 @@ def get_permission_roles(permission_id: int) -> List[Role]:
 
 
 def permission_exists(permission_id: int) -> bool:
-    """Verifica si un permiso existe por ID"""
+    """
+    Verifica si un permiso existe en la base de datos según su ID.
+
+    Args:
+        permission_id (int): ID del permiso a verificar.
+
+    Returns:
+        bool: True si el permiso existe, False en caso contrario.
+    """
     return Permission.query.get(permission_id) is not None
 
 
 def permission_exists_by_name(name: str) -> bool:
-    """Verifica si un permiso existe por nombre"""
+    """
+    Verifica si un permiso existe en la base de datos según su nombre.
+
+    Args:
+        name (str): Nombre del permiso a verificar.
+
+    Returns:
+        bool: True si el permiso existe, False en caso contrario.
+    """
     return Permission.query.filter_by(name=name).first() is not None
 
 
 def get_permissions_count() -> int:
-    """Obtiene la cantidad total de permisos que existen"""
+    """
+    Obtiene la cantidad total de permisos registrados en el sistema.
+
+    Returns:
+        int: Número total de permisos existentes.
+    """
     return Permission.query.count()
 
 
 def delete_permission(permission_id: int) -> bool:
     """
-    Elimina un permiso. Nota: Esto también eliminará las relaciones con roles
+    Elimina un permiso del sistema.
+
+    Args:
+        permission_id (int): ID del permiso.
 
     Returns:
-        True si se eliminó exitosamente
+        bool: True si se eliminó correctamente.
+
+    Raises:
+        ValueError: Si el permiso no existe.
     """
     permission = Permission.query.get(permission_id)
     if not permission:
@@ -182,12 +262,28 @@ def get_permissions_by_role_count() -> Dict[int, int]:
 
 
 def search_permissions_by_name(search_term: str) -> List[Permission]:
-    """Busca permisos que contengan el término de búsqueda en su nombre"""
+    """
+    Busca permisos por nombre.
+
+    Args:
+        search_term (str): Texto de búsqueda.
+
+    Returns:
+        List[Permission]: Permisos cuyo nombre contiene el término.
+    """
     return Permission.query.filter(Permission.name.ilike(f"%{search_term}%")).all()
 
 
 def search_permissions_by_description(search_term: str) -> List[Permission]:
-    """Busca permisos que contengan el término de búsqueda en su descripción"""
+    """
+    Busca permisos cuyo texto de descripción contenga el término especificado.
+
+    Args:
+        search_term (str): Texto o palabra clave a buscar dentro de la descripción de los permisos.
+
+    Returns:
+        List[Permission]: Lista de permisos cuya descripción coincide parcialmente con el término de búsqueda.
+    """
     return Permission.query.filter(
         Permission.description.ilike(f"%{search_term}%")
     ).all()
