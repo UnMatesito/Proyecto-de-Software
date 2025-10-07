@@ -149,7 +149,6 @@
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         }).addTo(map);
         var mark            
-        console.log(typeof "{{lat}}")
 
         if ("{{lat}}" != "None" && typeof "{{lon}}" != "None" && "{{site_name}}") {
             mark = L.marker(["{{lat}}", "{{lon}}"]).addTo(map)
