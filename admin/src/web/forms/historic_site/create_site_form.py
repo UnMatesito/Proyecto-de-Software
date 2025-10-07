@@ -14,8 +14,8 @@ from wtforms.validators import DataRequired, Length, NumberRange
 from core.services import (
     get_all_categories,
     get_all_conservation_state,
-    get_all_provinces,
     get_all_not_deleted_tags,
+    get_all_provinces,
 )
 
 
@@ -124,7 +124,7 @@ class CreateSiteForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         """Constructor"""
         super(CreateSiteForm, self).__init__(*args, **kwargs)
-        
+
         self.province.choices = [
             (0, "Seleccionar provincia ")
         ] + [  # Cargo las provincias en el select

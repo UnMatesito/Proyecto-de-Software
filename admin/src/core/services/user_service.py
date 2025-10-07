@@ -227,13 +227,14 @@ def change_password(user_id, old_password, new_password):
         raise RuntimeError(f"Error al actualizar la contraseña: {e}")
     return True
 
+
 def change_password_by_admin(user_id, new_password):
     """Admin cambia la contraseña de un usuario"""
     user = User.query.get(user_id)
     if not user:
         raise ValueError("No existe tal usaurio")
     if user.check_password(new_password):
-        raise ValueError("La nueva contraseña no puede ser igual a la anterior") 
+        raise ValueError("La nueva contraseña no puede ser igual a la anterior")
     user.password = new_password
     try:
         db.session.commit()

@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, HiddenField, BooleanField, SubmitField
+from wtforms import BooleanField, HiddenField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional
+
 
 class ToggleFeatureFlagForm(FlaskForm):
     flag_id = HiddenField("Flag ID")

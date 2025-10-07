@@ -1,4 +1,5 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
+
 from core.services.tag_service import (
     create_tag,
     delete_tag,
@@ -10,6 +11,7 @@ from web.forms.tag import CreateTagForm, EditTagForm
 from web.utils.auth import login_required, permission_required
 
 tag_bp = Blueprint("tag_bp", __name__, url_prefix="/tags")
+
 
 @tag_bp.get("/")
 @login_required
@@ -26,7 +28,7 @@ def list_paginated_tags():
             {"key": "name", "label": "Nombre"},
             {"key": "slug", "label": "Slug"},
             {"key": "created_at", "label": "Creado", "render": "date"},
-            {"key": "deleted_at", "label": "Estado", "render": 'status'}
+            {"key": "deleted_at", "label": "Estado", "render": "status"},
         ]
         return render_template(
             "tags/index.html",
@@ -37,8 +39,11 @@ def list_paginated_tags():
             columns=columns,
         )
     except Exception as e:
-        flash(f'Error al cargar tags: {str(e)}', 'error')
-        return render_template("tags/index.html", tags = [], order_by = "name", sorted_by = "asc")
+        flash(f"Error al cargar tags: {str(e)}", "error")
+        return render_template(
+            "tags/index.html", tags=[], order_by="name", sorted_by="asc"
+        )
+
 
 @tag_bp.get("/create")
 @login_required
@@ -46,6 +51,7 @@ def list_paginated_tags():
 def show_create_tags():
     form = CreateTagForm()
     return render_template("tags/create.html", form=form)
+
 
 @tag_bp.post("/create")
 @login_required
@@ -64,6 +70,7 @@ def create_tags():
         flash(f"Error al crear tag: Datos invalidos", "error")
         return render_template("tags/create.html", form=form)
 
+
 @tag_bp.get("/edit/<int:tag_id>")
 @login_required
 @permission_required("tag_update")
@@ -75,7 +82,8 @@ def show_edit_tag(tag_id):
     except Exception as e:
         flash(f"Error al seleccinar el tag, {e}", "error")
         return redirect(url_for("tag_bp.list_paginated_tags"))
-    
+
+
 @tag_bp.post("/edit/<int:tag_id>")
 @login_required
 @permission_required("tag_update")
@@ -96,6 +104,7 @@ def edit_tag(tag_id):
             flash(f"Error al editar el tag, {e}", "error")
             return redirect(url_for("tag_bp.list_paginated_tags"))
 
+
 @tag_bp.get("/delete/<int:tag_id>")
 @login_required
 @permission_required("tag_destroy")
@@ -106,7 +115,8 @@ def delete(tag_id):
     except Exception as e:
         flash(f"Error al intentar eliminar el tag, {e}", "error")
     return redirect(url_for("tag_bp.list_paginated_tags"))
-    
+
+
 @tag_bp.get("/datail/<int:tag_id>")
 @login_required
 @permission_required("tag_show")
