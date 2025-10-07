@@ -1,11 +1,10 @@
-from core.services.event_type_service import get_event_type_by_name
-from core.services.site_history_service import create_site_history
-from flask import session, has_request_context
+from flask import has_request_context, session
 from sqlalchemy import event, inspect
-
 
 from core.database import db
 from core.models.historic_site import HistoricSite
+from core.services.event_type_service import get_event_type_by_name
+from core.services.site_history_service import create_site_history
 
 
 def get_current_user_id():
@@ -131,6 +130,7 @@ def log_update_history(mapper, connection, target):
 
 
 # Métodos para deshabilitar y habilitar eventos (necesario para poder hacer seeds)
+
 
 def disable_audit_listeners():
     """Desactiva temporalmente los listeners de auditoría de HistoricSite."""

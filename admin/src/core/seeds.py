@@ -219,11 +219,11 @@ def seed_event_types():
         "Creación",
         "Edición",
         "Eliminación",
-        "Restauración", 
+        "Restauración",
         "Cambio de estado",  # cambio de visibilidad
         "Cambio de tags",
-        #"Cambio de imágenes",  para etapa 2
-        ]
+        # "Cambio de imágenes",  para etapa 2
+    ]
 
     for event_name in event_types:
         event_type = EventType(name=event_name)
@@ -342,8 +342,9 @@ def seed_feature_flags():
 
 def seed_tags():
     """Crea un conjunto inicial de tags para clasificar sitios históricos"""
-    from core.models import Tag
     from slugify import slugify
+
+    from core.models import Tag
 
     print("Creando tags...")
     tags = ["Colonial", "Patrimonial", "tag 3", "tag 4"]
@@ -417,6 +418,7 @@ def seed_categories():
 def seed_historic_sites():
     """Carga un conjunto de sitios históricos iniciales"""
     from datetime import datetime, timezone
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
     from core.models import HistoricSite
 
@@ -483,9 +485,9 @@ def seed_historic_sites():
 
 def seed_site_tags():
     """Asocia sitios históricos con tags de clasificación"""
+    from core.audit import disable_audit_listeners, enable_audit_listeners
     from core.services import historic_site_service as HistorcService
     from core.services import tag_service as TagService
-    from core.audit import disable_audit_listeners, enable_audit_listeners
 
     print("Agregando relaciones Sites-Tags")
 
@@ -505,6 +507,7 @@ def seed_site_tags():
 
     # Rehabilitar listeners de auditoría
     enable_audit_listeners()
+
 
 def seed_users():
     """Crea usuarios adicionales usando Faker"""
