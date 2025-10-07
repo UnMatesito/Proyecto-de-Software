@@ -11,6 +11,7 @@ class HTTPError:
 
 
 def not_found(e):
+    """Manejador para error 404 - Not Found"""
     error = HTTPError(
         code=404,
         message="Página no encontrada",
@@ -21,6 +22,7 @@ def not_found(e):
 
 
 def internal_server_error(e):
+    """Manejador para error 500 - Internal Server Error"""
     error = HTTPError(
         code=500,
         message="Error interno del servidor",
@@ -30,6 +32,7 @@ def internal_server_error(e):
 
 
 def unauthorized(e):
+    """Manejador para error 401 - Unauthorized"""
     error = HTTPError(
         code=401,
         message="No autorizado",
@@ -39,6 +42,7 @@ def unauthorized(e):
 
 
 def forbidden(e):
+    """Manejador para error 403 - Forbidden"""
     error = HTTPError(
         code=403,
         message="Sin permisos",
