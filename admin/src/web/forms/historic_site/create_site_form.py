@@ -124,6 +124,7 @@ class CreateSiteForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         """Constructor"""
         super(CreateSiteForm, self).__init__(*args, **kwargs)
+        
         self.province.choices = [
             (0, "Seleccionar provincia ")
         ] + [  # Cargo las provincias en el select

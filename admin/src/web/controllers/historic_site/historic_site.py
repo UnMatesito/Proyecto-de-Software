@@ -26,7 +26,8 @@ from core.services import (
     delete_historic_site, 
     restore_historic_site,
     update_historic_site,
-    validate_historic_site
+    validate_historic_site,
+    get_all_cities
 )
 
 from core.utils.export import export_sites_to_csv, get_csv_filename
@@ -142,7 +143,9 @@ def post_create():
             flash(f"Error al crear el sitio, {e}", "error")
             return redirect(url_for("site_bp.get_create"))
     else:
-        flash(f"Error al crear el sitio", "error")
+        form.city.choices = [ 
+            (city.id, city.name) for city in get_all_cities() if (city.province_id == form.province.data)
+        ]
         return render_template("historic_site/create.html", form=form)
 
 @site_bp.get("/edit/<int:site_id>")
