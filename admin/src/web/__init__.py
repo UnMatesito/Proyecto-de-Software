@@ -1,8 +1,8 @@
 from flask import Flask
+from flask_session import Session
 
 from core.database import db
 from core.utils.bcrypt import bcrypt
-from flask_session import Session
 
 from .config import get_current_config
 from .controllers import (

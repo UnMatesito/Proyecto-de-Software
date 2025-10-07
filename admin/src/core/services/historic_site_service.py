@@ -297,7 +297,7 @@ def get_sites_filtered(
 ):
     """
     Devuelve sitios históricos filtrados, ordenados y opcionalmente paginados.
-    Usa GenericSearchBuilder para filtros    y paginate_query para paginación.
+    Usa GenericSearchBuilder para filtros y paginate_query para paginación.
 
     Args:
         filters (dict): filtros a aplicar (ej: {"city_id": 1, "visible": True})
@@ -310,17 +310,37 @@ def get_sites_filtered(
     Returns:
         dict de paginación o lista de objetos HistoricSite
     """
+    from core.models import City, Province
+
     filters = filters or {}
 
-    # Construir query con filtros genéricos
+    # Si se filtra por ciudad, deducir automáticamente la provincia
+    city_id = filters.get("city_id")
+    if city_id:
+        city = City.query.get(city_id)
+        if not city:
+            raise ValueError(f"No existe la ciudad con id {city_id}")
+        # Añadir el province_id derivado, solo si no lo enviaron explícitamente
+        filters.setdefault("province_id", city.province_id)
+
+    # Construir la query base con el builder genérico
     query = build_search_query(HistoricSite, filters)
 
-    # Ordenar
+    # Aplicar join manual si se filtra por provincia (ya que el builder no maneja relaciones)
+    province_id = filters.get("province_id")
+    if province_id:
+        query = (
+            query.join(HistoricSite.city)
+            .join(City.province)
+            .filter(Province.id == province_id)
+        )
+
+    # Ordenar los resultados
     query = apply_ordering(query, HistoricSite, order_by, sorted_by)
 
+    # Aplicar paginación o devolver lista completa
     if paginate:
         return paginate_query(
             query, page=page, per_page=per_page, order_by=order_by, sorted_by=sorted_by
         )
-    else:
-        return query.all()
+    return query.all()
