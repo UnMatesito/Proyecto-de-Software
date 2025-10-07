@@ -182,6 +182,7 @@ def validate_historic_site(site_id):
     if (site.deleted_at):
         raise ValueError(f"El sitio con id {site_id} se encuentra borrado")
     site.pending_validation = False
+    site.is_visible = True
     db.session.commit()
     return site
 
