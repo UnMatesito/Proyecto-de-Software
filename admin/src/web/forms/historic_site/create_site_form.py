@@ -116,7 +116,6 @@ class CreateSiteForm(FlaskForm):
     tags = SelectMultipleField(
         "Seleccionar Tags",
         coerce=int,
-        validators=[DataRequired("Al menos un tag es necesario")],
     )
 
     submit = SubmitField("Crear")
