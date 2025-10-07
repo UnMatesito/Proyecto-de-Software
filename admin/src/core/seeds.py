@@ -23,7 +23,7 @@ def run(env="production"):
     seed_provinces_and_cities()
     seed_consevation_states()
     seed_categories()
-    # seed_event_types()
+    seed_event_types()
 
     # Solo si estamos en development
     if env == "development":
@@ -219,23 +219,11 @@ def seed_event_types():
         "Creación",
         "Edición",
         "Eliminación",
+        "Restauración", 
         "Cambio de estado",  # cambio de visibilidad
         "Cambio de tags",
-        "Cambio de imágenes",  # para etapa 2
-        # Para usuarios
-        "Usuario creado",
-        "Usuario actualizado",
-        "Usuario bloqueado",
-        "Usuario desbloqueado",
-        "Rol asignado",
-        "Contraseña cambiada",
-        # Para propuestas (etapa 2)
-        "Propuesta aprobada",
-        "Propuesta rechazada",
-        # Para reseñas (etapa 2)
-        "Reseña aprobada",
-        "Reseña rechazada",
-    ]
+        #"Cambio de imágenes",  para etapa 2
+        ]
 
     for event_name in event_types:
         event_type = EventType(name=event_name)
