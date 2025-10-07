@@ -2,7 +2,7 @@
 {% from "macros/button.html" import button, button_blank %}
 {% from "macros/paginate.html" import paginate %}
 {% from "macros/table.html" import table %}
-{% from "macros/input.html" import text_input %}
+{% from "macros/input.html" import email_input %}
 {% block title %}Listado de usuarios{% endblock %}
 
 {% block header %}
@@ -17,7 +17,7 @@
     <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2 flex-col">
         <h3 class="text-lg font-semibold mb-2">Buscar por correo electronico</h3>
         <form method="get" action="{{ url_for('users.search_by_email') }}" class="flex space-x-2 w-full max-w-md items-center">
-            {{ text_input('email', 'email', 'Ingresar Correo', value=request.args.get('email', ''), required=True, class="w-80") }}
+            {{ email_input('email', 'email', 'Ingresar Correo', value=request.args.get('email', ''), required=True, class="w-80") }}
             {{ button('Buscar', type='submit', icon_left_svg='<i class="fa-solid fa-magnifying-glass mr-1"></i>') }}
         </form>
     </div>
