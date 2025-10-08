@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from slugify import slugify
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from sqlalchemy.exc import SQLAlchemyError
 
 from core.database import db
@@ -42,14 +42,22 @@ def get_tag_by_name(tag_name):
 def tag_exist(tag_name):
     """Retorna verdadero o falso si un tag existe por su nombre."""
 
-    return Tag.query.filter_by(name=tag_name).first() is not None
-
+    return (
+            db.session.query(Tag.id)
+            .filter(func.lower(Tag.name) == func.lower(tag_name))
+            .first()
+            is not None
+    )
 
 def slug_exist(slug):
     """Retorna verdadero o falso si un tag existe por su slug."""
 
-    return Tag.query.filter_by(slug=slug).first() is not None
-
+    return (
+            db.session.query(Tag.id)
+            .filter(func.lower(Tag.slug) == func.lower(slug))
+            .first()
+            is not None
+    )
 
 def validate_tag_name(tag_name):
     """Valida el nombre de un posible futuro tag."""
@@ -92,10 +100,14 @@ def update_tag(tag_id, new_name):
     if tag.is_deleted():
         raise ValueError("No se puede actualizar un tag eliminado")
 
+    new_name = new_name.strip()
+    slug = slugify(new_name)
     validate_tag_name(new_name)
+    validate_tag_slug(slug)
 
     try:
         tag.name = new_name
+        tag.slug = slug
         db.session.commit()
         return tag
 
@@ -134,7 +146,7 @@ def delete_tag(tag_id):
     if tag.is_deleted():
         raise ValueError("El tag se encuentra borrado")
     if tag.has_sites():
-        raise ValueError("El tag posee sitios asociados")
+        raise ValueError("No se puede eliminar el tag porque está asociado a uno o más sitios históricos.")
     tag.deleted_at = datetime.now(timezone.utc)
     db.session.commit()
     return tag
