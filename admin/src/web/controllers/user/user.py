@@ -38,12 +38,8 @@ def index():
         status = request.args.get("status", None)
         if status == "blocked":
             blocked_param = True
-        elif status == "active":
-            blocked_param = False
         elif status == "deleted":
             deleted_param = True
-        elif status == "not_deleted":
-            deleted_param = False
         role_id = request.args.get("role_id", None)
         email = request.args.get("email", None)
         columns = [
