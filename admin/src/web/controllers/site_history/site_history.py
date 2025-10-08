@@ -36,9 +36,10 @@ def view_site_history(site_id):
         users = get_user_history()
 
         columns = [
-            {"key": "created_at",
-             "label": "Fecha y Hora",
-             "render": lambda h: h.created_at.strftime("%d/%m/%Y %H:%M"),
+            {
+                "key": "created_at",
+                "label": "Fecha y Hora",
+                "render": lambda h: h.created_at.strftime("%d/%m/%Y %H:%M"),
             },
             {
                 "key": "event_type.name",

@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, flash
 
 from core.services import get_province_by_id
 
@@ -12,4 +12,5 @@ def get_cities(province_id):
         province = get_province_by_id(province_id)
         return jsonify([{"id": c.id, "name": c.name} for c in province.cities])
     except Exception as e:
+        flash(f"Error al buscar la ciudades, error: {e}", "error")
         return jsonify([{"id": "", "name": ""}])

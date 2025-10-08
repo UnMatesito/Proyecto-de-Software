@@ -17,15 +17,15 @@ tag_bp = Blueprint("tag_bp", __name__, url_prefix="/tags")
 @login_required
 @permission_required("tag_index")
 def list_paginated_tags():
-    """ Renderiza el index.html de los tags mostrandolos en formato paginado,
-        el cual puede estar ordenado por nombre o fecha de creación 
-        y de manera ascendente o descendente.
+    """Renderiza el index.html de los tags mostrandolos en formato paginado,
+    el cual puede estar ordenado por nombre o fecha de creación
+    y de manera ascendente o descendente.
 
-        columns: Representa las columnas mostradas en la tabla del index.html.
-        order_by: nombre o fecha de creación 
-        sorted_by: ascendente o descendente.
-        page: Pagina acutal, inicialmente en 1
-        pagination: Diccionario que posee los elementos necesarios para la paginación.
+    columns: Representa las columnas mostradas en la tabla del index.html.
+    order_by: nombre o fecha de creación
+    sorted_by: ascendente o descendente.
+    page: Pagina acutal, inicialmente en 1
+    pagination: Diccionario que posee los elementos necesarios para la paginación.
     """
     try:
         order_by = request.args.get("order_by", "name")
@@ -69,20 +69,20 @@ def show_create_tags():
 @login_required
 @permission_required("tag_new")
 def create_tags():
-    """ Recibe y verifica los datos enviados por el formulario de creacion. 
-        Si los datos enviados son válidos hace el alta del tag.
+    """Recibe y verifica los datos enviados por el formulario de creacion.
+    Si los datos enviados son válidos hace el alta del tag.
     """
     form = CreateTagForm()
     if form.validate_on_submit():
         try:
             create_tag(name=form.name.data)
-            flash(f"Tag creado correctamente!", "success")
+            flash("Tag creado correctamente!", "success")
             return redirect(url_for("tag_bp.list_paginated_tags"))
         except Exception as e:
             flash(f"Error al crear tag: {e}", "error")
             return render_template("tags/create.html", form=form)
     else:
-        flash(f"Error al crear tag: Datos invalidos", "error")
+        flash("Error al crear tag: Datos invalidos", "error")
         return render_template("tags/create.html", form=form)
 
 
@@ -105,14 +105,14 @@ def show_edit_tag(tag_id):
 @login_required
 @permission_required("tag_update")
 def edit_tag(tag_id):
-    """ Recibe y verifica los datos enviados por el formulario de edición. 
-        Si los datos enviados son válidos hace el edit del tag.
+    """Recibe y verifica los datos enviados por el formulario de edición.
+    Si los datos enviados son válidos hace el edit del tag.
     """
     form = EditTagForm()
     if form.validate_on_submit():
         try:
             tag = update_tag(tag_id, form.name.data)
-            flash(f"Se ha actualizado correctamente el tag!", "succes")
+            flash("Se ha actualizado correctamente el tag!", "succes")
         except Exception as e:
             flash(f"Error al editar el tag, {e}", "error")
         return redirect(url_for("tag_bp.list_paginated_tags"))
@@ -129,8 +129,8 @@ def edit_tag(tag_id):
 @login_required
 @permission_required("tag_destroy")
 def delete(tag_id):
-    """ Recibe el id del un tag, si existe y no se posee sitios 
-        históricos asociados lo borra.
+    """Recibe el id del un tag, si existe y no se posee sitios
+    históricos asociados lo borra.
     """
     try:
         tag = delete_tag(tag_id)
@@ -145,7 +145,7 @@ def delete(tag_id):
 @permission_required("tag_show")
 def detail_tag(tag_id):
     """Renderiza el detalle del tag al que pertenece el ID enviado por URL."""
-    
+
     try:
         tag = get_tag_by_id(tag_id)
         return render_template("tags/detail.html", tag=tag)

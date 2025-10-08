@@ -295,10 +295,11 @@ def toggle_system_admin(user_id, make_admin: bool):
 
     return True
 
+
 def get_user_history():
     """Obtiene todos los usuarios systemAdmin/admin/editores"""
     return User.query.filter(
-        (User.role.has(name="Administrador")) |
-        (User.role.has(name="Editor")) |
-        (User.system_admin == True)
+        (User.role.has(name="Administrador"))
+        | (User.role.has(name="Editor"))
+        | (User.system_admin == True)
     ).all()
