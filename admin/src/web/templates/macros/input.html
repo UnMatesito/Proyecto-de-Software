@@ -150,9 +150,9 @@
 </select>
 {% endmacro %}
 
-{% macro multi_select_tags(label='', name='', choices=[], selected_choices=[], placeholder='Selecciona opciones...') %}
+{% macro multi_select_tags(label='', name='', choices=[], selected_choices=[], placeholder='Selecciona opciones...', class="") %}
   {% set component_id = name|replace(' ', '_') %}
-  <div class="w-64 flex-none h-12" data-multi-select-id="{{ component_id }}">
+  <div class="{{ class }}" data-multi-select-id="{{ component_id }}">
     {% if label %}
     <label for="{{ component_id }}" class="block mb-2 text-sm font-medium text-gray-900">
       {{ label }}
@@ -163,7 +163,7 @@
     <button
       id="{{ component_id }}_button"
       type="button"
-      class="flex items-center justify-between w-64 h-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+      class="flex items-center justify-between h-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-full"
       onclick="toggleDropdown('{{ component_id }}')"
     >
       <span id="{{ component_id }}_placeholder">{{ placeholder }}</span>
