@@ -17,6 +17,7 @@ feature_flag_bp = Blueprint("feature-flags", __name__, url_prefix="/feature-flag
 @login_required
 @system_admin_required
 def index():
+    """Renderiza los flags"""
     flags = get_all_feature_flags_ordered_by_id()
     form = ToggleFeatureFlagForm()
     return render_template("feature_flags/index.html", flags=flags, form=form)
