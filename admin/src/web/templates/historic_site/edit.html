@@ -22,8 +22,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="flex items-center flex-col">
-
-{{ form_site(lon=lon, lat=lat, lon_view=lon, lat_view=lat, site_name=site_name, site=site, form=form) }}
+<div class="flex items-center flex-col p-4">
+    {{ form_site(lon=lon, 
+        lat=lat, 
+        lon_view=lon, 
+        lat_view=lat, 
+        site_name=site_name, 
+        site=site, 
+        form=form) }}
 </div>
 {% endblock %}
