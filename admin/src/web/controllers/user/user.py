@@ -135,7 +135,7 @@ def create_post():
 
     # Si no valida, vuelve a mostrar el formulario
     return render_template(
-        "users/create.html", form=form, is_system_admin=current_user.is_admin()
+        "users/create.html", form=form, is_system_admin=current_user.is_admin
     )
 
 
@@ -147,7 +147,7 @@ def create_get():
     current_user = get_user_by_id(session["user_id"])
     form = CreateUserForm()
     return render_template(
-        "users/create.html", form=form, is_system_admin=current_user.is_admin()
+        "users/create.html", form=form, is_system_admin=current_user.is_admin
     )
 
 

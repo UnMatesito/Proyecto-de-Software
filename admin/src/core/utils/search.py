@@ -64,11 +64,11 @@ class GenericSearchBuilder:
         if not search_text:
             return query
 
-        # Buscar en todas las columnas de tipo String/Text
+        # Buscar los campos del nombre y descripción breve
         text_columns = [
             getattr(self.model_class, col_name)
-            for col_name, col in self.columns.items()
-            if str(col.type).upper().startswith(("VARCHAR", "TEXT", "STRING"))
+            for col_name in ["name", "brief_description"]
+            if col_name in self.columns
         ]
 
         if not text_columns:

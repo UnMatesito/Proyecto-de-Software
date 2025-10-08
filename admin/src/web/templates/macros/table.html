@@ -2,7 +2,7 @@
 {% from 'macros/status.html' import active_status, blocked_status, eliminated_status, inactive_status%}
 
 {% macro table(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
-<div class="relative overflow-x-auto">
+<div class="hidden lg:block relative overflow-x-auto">
   {% if title %}
     <h2 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">{{ title }}</h2>
   {% endif %}
@@ -29,9 +29,9 @@
 
       <tbody>
         {% for item in items %}
-          <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+          <tr class="bg-white border-b dark:border-gray-700 hover:bg-gray-50 transition-colors duration-200">
             {% for col in columns %}
-              <td class="px-6 py-4">
+              <td class="px-6 py-4 h-20">
                 {% if col.render %}
                   {% if col.render == 'user_name' %}
                     {{ item.first_name }} {{ item.last_name }}
@@ -88,9 +88,11 @@
       </form>
     {% elif delete_route and not item.deleted_at %}
       {% set delete_params = {id_param: item.id} %}
-      <form action="{{ url_for(delete_route, **delete_params) }}" method="post" class="inline" onsubmit="return confirm('¿Está seguro de eliminar este elemento? Esta acción no se puede deshacer.')">
-        {{ button_error("Eliminar", type="submit", icon_left_svg=get_icon("delete")) }}
-      </form>
+        {% if has_permission('site_destroy') %}
+          <form action="{{ url_for(delete_route, **delete_params) }}" method="post" class="inline" onsubmit="return confirm('¿Está seguro de eliminar este elemento? Esta acción no se puede deshacer.')">
+            {{ button_error("Eliminar", type="submit", icon_left_svg=get_icon("delete")) }}
+          </form>
+            {% endif %}
     {% endif %}
 
     {% if validate_route and item.pending_validation %}
@@ -124,4 +126,55 @@
   {% elif icon_name == 'validate' %}
     <i class="fa-solid fa-check mr-1"></i>
   {% endif %}
+{% endmacro %}
+
+{% macro cardTable(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
+    <div class="lg:hidden grid grid-cols-2 md:grid-cols-3 gap-4">
+        {% if data is mapping %}
+            {% set items = data.get("items", []) %}
+        {% else %}
+            {% set items = data %}
+        {% endif %}
+
+        {% if items and items|length > 0 %}
+            {% for item in items %}
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
+                    {% for col in columns %}
+                        <div class="mb-2">
+                            <span class="font-semibold text-gray-700 dark:text-gray-300">{{ col.label }}:</span>
+                            <span class="text-gray-900 dark:text-gray-100">
+                                {% if col.render %}
+                                    {% if col.render == 'user_name' %}
+                                        {{ item.first_name }} {{ item.last_name }}
+                                    {% elif col.render == 'role' %}
+                                        {{ item.role.name if item.role else "Sin rol" }}
+                                    {% elif col.render == 'status' %}
+                                        {{ render_status(item) }}
+                                    {% elif col.render == 'date' %}
+                                        {{ item.created_at.strftime('%d/%m/%Y') if item.created_at else 'N/A' }}
+                                    {% else %}
+                                        {{ col.render(item) }}
+                                    {% endif %}
+                                {% else %}
+                                    {% set value = item|attr(col.key) %}
+                                    {{ value if value is not none else '—' }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    {% endfor %}
+
+                    {% if edit_route or delete_route or detail_route or validate_route or restore_route %}
+                        <div class="mt-4">
+                            {{ render_action_buttons(item, detail_route , edit_route, delete_route, restore_route, validate_route, id_param) }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-12 col-span-full">
+                <div class="text-gray-400 text-6xl mb-4">📋</div>
+                <p class="text-gray-500 dark:text-gray-400">{{ empty_message }}</p>
+            </div>
+        {% endif %}
+    </div>
 {% endmacro %}

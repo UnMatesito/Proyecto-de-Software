@@ -306,3 +306,11 @@ def toggle_system_admin(user_id, make_admin: bool):
         raise RuntimeError(f"Error al actualizar el usuario: {e}")
 
     return True
+
+
+def get_user_full_name(user_id):
+    """Devuelve el nombre completo de un usuario dado su ID."""
+    user = get_user_by_id(user_id)
+    if user:
+        return user.get_full_name()
+    return "Usuario desconocido"

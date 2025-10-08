@@ -22,12 +22,7 @@
 <div class="max-w-2xl mx-auto mt-6 space-y-6">
 
     <!-- Boton volver -->
-    <div>
-        <a href="/sites" 
-            class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow">
-            ← Volver
-        </a>
-    </div>
+    {{ button(text="Volver", link=url_for('site_bp.list_paginated_sites'), type="button", class="mb-4", icon_left_svg='<i class="fa-solid fa-arrow-left mr-1"></i>') }}
 
     <!-- Card con los detalles -->   
     <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
@@ -137,11 +132,9 @@
     </div>
 
     <!-- Mapa del sitio -->
-    <div class="flex items-center justify-center flex-col mt-2 gap-2 " style=" height: 70vh; max-width: 900px;"> 
-        <h3 class="block font-semibold text-gray-700 mb-1">Seleccione la ubicación en el mapa!</h3>
-        <div id="map">
-
-        </div>
+    <div class="flex items-center justify-center flex-col mt-2 gap-2 " style=" height: 70vh; max-width: 900px;">
+        <h3 class="block font-semibold text-gray-700 mb-1">Ubicacion del sitio</h3>
+        <div id="map"></div>
     </div>
 </div>
 
