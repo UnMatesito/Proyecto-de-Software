@@ -33,7 +33,17 @@ def index():
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
         page = request.args.get("page", 1)
-        blocked_param = request.args.get("blocked", None)
+        blocked_param=None
+        deleted_param=None
+        status = request.args.get("status", None)
+        if status == "blocked":
+            blocked_param = True
+        elif status == "active":
+            blocked_param = False
+        elif status == "deleted":
+            deleted_param = True
+        elif status == "not_deleted":
+            deleted_param = False
         role_id = request.args.get("role_id", None)
         email = request.args.get("email", None)
         columns = [
@@ -53,6 +63,7 @@ def index():
             order_by=order_by,
             sorted_by=sorted_by,
             blocked=blocked_param,
+            delete=deleted_param,
             role_id=role_id,
             email=email,
         )
@@ -63,6 +74,7 @@ def index():
             columns=columns,
             roles=roles,
             blocked=blocked_param,
+            delete=deleted_param,
             role_id=role_id,
             sorted_by=sorted_by,
             order_by=order_by,

@@ -29,6 +29,7 @@ def get_paginated_users(
     order_by="created_at",
     sorted_by="asc",
     blocked=None,
+    delete=None,
     role_id=None,
     email=None,
 ):
@@ -39,10 +40,15 @@ def get_paginated_users(
     -role_id parametro para filtrar por rol
     """
     query = User.query
-    if blocked == "1":
+    if blocked:
         query = query.filter_by(blocked=True)
-    elif blocked == "0":
+    else:
         query = query.filter_by(blocked=False)
+    if delete:
+        query = query.filter(User.deleted_at.isnot(None))
+    else:
+        query = query.filter(User.deleted_at.is_(None))
+
     if role_id:
         query = query.filter_by(role_id=int(role_id))
     if email:
