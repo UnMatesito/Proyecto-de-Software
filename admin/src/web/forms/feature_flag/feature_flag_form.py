@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, HiddenField, StringField, SubmitField
-from wtforms.validators import DataRequired, Length, Optional
+from wtforms import HiddenField, StringField, SubmitField
+from wtforms.validators import DataRequired, Length 
 
 
 class ToggleFeatureFlagForm(FlaskForm):
@@ -8,8 +8,10 @@ class ToggleFeatureFlagForm(FlaskForm):
     message = StringField(
         "Mensaje de mantenimiento",
         validators=[
-            Optional(),  # Solo es obligatorio si el flag es de mantenimiento y se activa
-            Length(max=10, message="El mensaje no puede superar los 255 caracteres"),
+            DataRequired(message="El mensaje es obligatorio"),  
+            Length(
+                min=10, max=255, message="La cantidad de caracteres debe ser entre 10 y 255"
+            ),
         ],
     )
     submit = SubmitField("Guardar cambios")
