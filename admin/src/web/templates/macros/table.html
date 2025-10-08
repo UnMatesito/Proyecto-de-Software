@@ -2,7 +2,7 @@
 {% from 'macros/status.html' import active_status, blocked_status, eliminated_status, inactive_status, visibility_status%}
 
 {% macro table(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
-<div class="hidden lg:block relative overflow-x-auto">
+<div class="hidden lg:block relative w-full">
   {% if title %}
     <h2 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">{{ title }}</h2>
   {% endif %}
@@ -19,7 +19,7 @@
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
           {% for col in columns %}
-            <th scope="col" class="px-6 py-3">{{ col.label }}</th>
+            <th scope="col" class="px-6">{{ col.label }}</th>
           {% endfor %}
           {% if edit_route or delete_route or detail_route or validate_route or restore_route %}
             <th scope="col" class="px-6 py-3 text-center">Acciones</th>
@@ -71,35 +71,35 @@
 </div>
 {% endmacro %}
 
-{% macro render_action_buttons(item, detail_route=None, edit_route=None, delete_route=None, restore_route=None, validate_route=None, id_param="id") %}
-  <div class="flex justify-center space-x-2">
+{% macro render_action_buttons(item, detail_route=None, edit_route=None, delete_route=None, restore_route=None, validate_route=None, id_param="id", mobile=False) %}
+  <div class="flex flex-row justify-center space-x-2">
     {% if detail_route %}
       {% set detail_params = {id_param: item.id} %}
-      {{ button("Detalles", link=url_for(detail_route, **detail_params), icon_left_svg=get_icon("view")) }}
+      {{ button("Detalles", link=url_for(detail_route, **detail_params), icon_left_svg=get_icon("view"), mobile=mobile) }}
     {% endif %}
 
     {% if edit_route and not item.deleted_at %}
       {% set edit_params = {id_param: item.id} %}
-      {{ button_warning("Editar", link=url_for(edit_route, **edit_params), icon_left_svg=get_icon("edit")) }}
+      {{ button_warning("Editar", link=url_for(edit_route, **edit_params), icon_left_svg=get_icon("edit"), mobile=mobile) }}
     {% endif %}
 
     {% if item.deleted_at and restore_route %}
       {% set restore_params = {id_param: item.id} %}
       <form action="{{ url_for(restore_route, **restore_params) }}" method="post" class="inline" onsubmit="return confirm('¿Está seguro de restaurar este elemento?')">
-        {{ button_blank("Restaurar", type="submit", icon_left_svg=get_icon("restore")) }}
+        {{ button_blank("Restaurar", type="submit", icon_left_svg=get_icon("restore"), mobile=mobile) }}
       </form>
     {% elif delete_route and not item.deleted_at %}
       {% set delete_params = {id_param: item.id} %}
         {% if has_permission('site_destroy') %}
           <form action="{{ url_for(delete_route, **delete_params) }}" method="post" class="inline" onsubmit="return confirm('¿Está seguro de eliminar este elemento? Esta acción no se puede deshacer.')">
-            {{ button_error("Eliminar", type="submit", icon_left_svg=get_icon("delete")) }}
+            {{ button_error("Eliminar", type="submit", icon_left_svg=get_icon("delete"), mobile=mobile) }}
           </form>
             {% endif %}
     {% endif %}
 
     {% if validate_route and item.pending_validation %}
       {% set validate_params = {id_param: item.id} %}
-      {{ button_validate("Validar", link=url_for(validate_route, **validate_params), icon_left_svg=get_icon("validate")) }}
+      {{ button_validate("Validar", link=url_for(validate_route, **validate_params), icon_left_svg=get_icon("validate"), mobile=mobile) }}
     {% endif %}
   </div>
 {% endmacro %}
@@ -118,20 +118,20 @@
 {# Macro para iconos de botones #}
 {% macro get_icon(icon_name) %}
   {% if icon_name == 'edit' %}
-    <i class="fa-solid fa-pen-to-square mr-1"></i>
+    <i class="fa-solid fa-pen-to-square lg:mr-1"></i>
   {% elif icon_name == 'delete' %}
-    <i class="fa-solid fa-trash mr-1"></i>
+    <i class="fa-solid fa-trash lg:mr-1"></i>
   {% elif icon_name == 'view' %}
-    <i class="fa-solid fa-eye mr-1"></i>
+    <i class="fa-solid fa-eye lg:mr-1"></i>
   {% elif icon_name == 'restore' %}
-    <i class="fa-solid fa-arrow-rotate-right mr-1"></i>
+    <i class="fa-solid fa-arrow-rotate-right lg:mr-1"></i>
   {% elif icon_name == 'validate' %}
-    <i class="fa-solid fa-check mr-1"></i>
+    <i class="fa-solid fa-check lg:mr-1"></i>
   {% endif %}
 {% endmacro %}
 
-{% macro cardTable(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
-    <div class="lg:hidden grid grid-cols-1 md:grid-cols-3 gap-4 break-words">
+{% macro card_table(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
+    <div class="lg:hidden grid grid-cols-1 gap-4 break-words">
         {% if data is mapping %}
             {% set items = data.get("items", []) %}
         {% else %}
@@ -143,8 +143,8 @@
                 <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
                     {% for col in columns %}
                         <div class="mb-2">
-                            <span class="font-semibold text-gray-700 dark:text-gray-300">{{ col.label }}:</span>
-                            <span class="text-gray-900 dark:text-gray-100">
+                            <span class="font-semibold text-gray-700 dark:text-gray-300 text-lg">{{ col.label }}:</span>
+                            <span class="text-proyecto-text text-ellipsis">
                                 {% if col.render %}
                                     {% if col.render == 'user_name' %}
                                         {{ item.first_name }} {{ item.last_name }}
@@ -154,6 +154,8 @@
                                         {{ render_status(item) }}
                                     {% elif col.render == 'date' %}
                                         {{ item.created_at.strftime('%d/%m/%Y') if item.created_at else 'N/A' }}
+                                    {% elif col.render == 'visibility' %}
+                                        {{ "Visible" if item.is_visible else "Oculto" }}
                                     {% else %}
                                         {{ col.render(item) }}
                                     {% endif %}
@@ -162,12 +164,13 @@
                                     {{ value if value is not none else '—' }}
                                 {% endif %}
                             </span>
+                            <div class="border border-gray-100"></div>
                         </div>
                     {% endfor %}
 
                     {% if edit_route or delete_route or detail_route or validate_route or restore_route %}
                         <div class="mt-4">
-                            {{ render_action_buttons(item, detail_route , edit_route, delete_route, restore_route, validate_route, id_param) }}
+                            {{ render_action_buttons(item, detail_route , edit_route, delete_route, restore_route, validate_route, id_param, mobile=True) }}
                         </div>
                     {% endif %}
                 </div>
