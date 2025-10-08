@@ -28,7 +28,7 @@ class HistoricSite(db.Model):
     # Atributos
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    brief_description = db.Column(db.String, nullable=False)
+    brief_description = db.Column(db.String(50), nullable=False)
     full_description = db.Column(db.String, nullable=False)
     inauguration_year = db.Column(db.Integer, nullable=False)
     is_visible = db.Column(db.Boolean, default=False, nullable=False)

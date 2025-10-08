@@ -29,17 +29,17 @@ class CreateSiteForm(FlaskForm):
     )
 
     brief_description = StringField(
-        "Descripcion breve del sitio",
+        "Descripción breve del sitio",
         validators=[
-            DataRequired(message="La descripcion breve del sitio es obligatoria"),
-        ],
-        widget=TextArea(),
+            DataRequired(message="La descripción breve del sitio es obligatoria"),
+            Length(max=50,  message="La descripción debe tener a lo sumo 50 caracteres")
+        ]
     )
 
     full_description = StringField(
-        "Descripcion completa del sitio",
+        "Descripción completa del sitio",
         validators=[
-            DataRequired(message="La descripcion completa del sitio es obligatoria"),
+            DataRequired(message="La descripción completa del sitio es obligatoria"),
         ],
         widget=TextArea(),
     )
