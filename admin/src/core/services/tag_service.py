@@ -116,21 +116,23 @@ def update_tag(tag_id, new_name):
         raise RuntimeError(f"Error al actualizar el tag: {e}")
 
 
-def get_paginated_tags(page=1, order_by="name", sorted_by="asc"):
+def get_paginated_tags(page=1, order_by="name", sorted_by="asc", name=None):
     """Retorna el formato paginado de los tags,
     el cual puede estar ordenado por nombre o fecha de creación
     y de manera ascendente o descendente."""
 
+    query = Tag.query
+
+    # Filtro por nombre (case-insensitive y que empiece por el valor ingresado)
+    if name:
+        query = query.filter(Tag.name.ilike(f"{name}%"))
+
+    # Ordenamiento
     if order_by == "name":
-        if sorted_by == "asc":
-            query = Tag.query.order_by(Tag.name)
-        else:
-            query = Tag.query.order_by(desc(Tag.name))
+        query = query.order_by(Tag.name.asc() if sorted_by == "asc" else desc(Tag.name))
     elif order_by == "created_at":
-        if sorted_by == "asc":
-            query = Tag.query.order_by(Tag.created_at)
-        else:
-            query = Tag.query.order_by(desc(Tag.created_at))
+        query = query.order_by(Tag.created_at.asc() if sorted_by == "asc" else desc(Tag.created_at))
+
     return pagination.paginate_query(
         query, page=page, order_by=order_by, sorted_by=sorted_by
     )

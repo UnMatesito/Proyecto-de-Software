@@ -7,7 +7,7 @@
         {{ button("Volver",  link=url_for('tag_bp.list_paginated_tags') ,icon_left_svg='<i class="fa-solid fa-arrow-left mr-1"></i>') }}
         {% if site %}
             <a href="{{ url_for('site_history.view_site_history', site_id=site.id, next=request.path) }}"
-            class="inline-block bg-blue-500 hover:bg-blue-700  text-white font-semibold py-2 px-4 rounded shadow">
+            class="text-white bg-proyecto-primary hover:bg-blue-800 focus:ring-4 focus:ring-proyecto-primary/20 font-semibold rounded-lg text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center inline-flex items-center">
             Historial de cambios
             </a>
         {% endif %}
