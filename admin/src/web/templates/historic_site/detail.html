@@ -22,10 +22,14 @@
 <div class="max-w-2xl mx-auto mt-6 space-y-6">
 
     <!-- Boton volver -->
-    <div>
+    <div class="flex justify-between items-center">
         <a href="/sites" 
             class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow">
             ← Volver
+        </a>
+        <a href="{{ url_for('site_history.view_site_history', site_id=site.id, next=request.path) }}"
+            class="inline-block bg-blue-500 hover:bg-blue-700  text-white font-semibold py-2 px-4 rounded shadow">
+            Historial de cambios
         </a>
     </div>
 
