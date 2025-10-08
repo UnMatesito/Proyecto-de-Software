@@ -7,12 +7,12 @@
 
 {% block header %}
     <h1 class="text-2xl font-bold p-4 text-center">Usuarios</h1>
-    {{ button('Volver al Inicio', link="/", icon_left_svg='<i class="fa-solid fa-arrow-left"></i>', class="absolute top-3 left-3") }}
+    <p>Aqui puedes ver toda la información sobre los usuarios registrados en el sistema</p>
 {% endblock %}
 
 {% block content %}
 <!-- Contenedor general -->
-<div class="p-6 max-w-7xl mx-auto space-y-6">
+<div class="px-6 mx-auto space-y-6">
     <!-- Contenedor del buscador -->
     <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2 flex-col">
         <h3 class="text-lg font-semibold mb-2">Buscar por correo electronico</h3>
@@ -85,7 +85,7 @@
     </div>
 
    <!-- Contenedor tabla de usuarios -->
-    <div class="bg-white shadow rounded overflow-hidden">
+    <div class="bg-white shadow rounded overflow-x-auto">
         {{ table(
             data=pagination,
             columns=columns,

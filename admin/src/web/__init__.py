@@ -1,8 +1,8 @@
 from flask import Flask
-from flask_session import Session
 
 from core.database import db
 from core.utils.bcrypt import bcrypt
+from flask_session import Session
 
 from .config import get_current_config
 from .controllers import (
@@ -75,6 +75,12 @@ def create_app(env="development", static_folder="../../static"):
         env = os.getenv("FLASK_ENV", "production")
 
         seed_db(env)
+
+    @app.context_processor
+    def get_user():
+        from web.utils.auth import get_current_user
+
+        return dict(user=get_current_user())
 
     # Inicialización automática para producción
     with app.app_context():

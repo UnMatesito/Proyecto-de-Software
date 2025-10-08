@@ -10,7 +10,7 @@ main_bp = Blueprint("main_bp", __name__)
 def home():
     """Página principal después de login"""
     user = get_current_user()
-    return render_template("home.html", user=user)
+    return render_template("home.html")
 
 
 @main_bp.route("/profile")

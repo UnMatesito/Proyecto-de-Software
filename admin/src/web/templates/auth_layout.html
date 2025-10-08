@@ -20,34 +20,9 @@
 
 <body class="flex flex-col h-screen w-screen bg-gray-50 text-proyecto-text">
 
-    {% from 'macros/toast.html' import toast %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="absolute top-4 right-4 space-y-4 z-50">
-                {% for category, message in messages %}
-                    {{toast(message=message, type=category, name="toast-" + loop.index0|string)}}
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
-
-    {% include 'components/navbar.html' %}
-
-    <div class="flex flex-row">
-        <div>
-            {% include 'components/sidebar.html' %}
-        </div>
-
-        <div class="w-full">
-            <header class="text-center">
-                {% block header %}{% endblock %}
-            </header>
-
-            <main class="flex-grow p-6 overflow-y-auto">
-                {% block content %}{% endblock %}
-            </main>
-        </div>
-    </div>
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
 
     <footer class="bg-proyecto-primary text-white text-center p-6">
         <h3> Proyecto de software - Grupo 09</h3>

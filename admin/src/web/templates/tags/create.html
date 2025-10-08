@@ -11,7 +11,7 @@
         {% if messages %}
             <div class="mb-4">
                 {% for category, message in messages %}
-                    {{toast(message=message, type=category)}}
+                    {{toast(message=message, type=category, name="toast-" + loop.index0|string)}}
                 {% endfor %}
             </div>
         {% endif %}
