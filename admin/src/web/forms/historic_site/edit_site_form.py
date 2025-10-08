@@ -13,10 +13,7 @@ from .create_site_form import CreateSiteForm
 
 class EditSiteForm(CreateSiteForm):
 
-    is_visible = BooleanField(
-        "Visibilizar",
-        render_kw={"disabled ": False},
-    )
+    is_visible = BooleanField("Visibilizar")
 
     submit = SubmitField("Editar")
 
@@ -35,8 +32,6 @@ class EditSiteForm(CreateSiteForm):
                 is_visible=site.is_visible
             )
 
-            if site.deleted_at is None and site.pending_validation:
-                self.is_visible.render_kw["disabled"] = True
             self.province.choices = [
                 (site.city.province.id, site.city.province.name)
             ] + [  # Cargo las provincias en el select

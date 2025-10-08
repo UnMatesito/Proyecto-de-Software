@@ -69,6 +69,7 @@ def list_paginated_sites():
             paginate=True,
             page=page,
             per_page=25,
+            text_search_columns=["name", "brief_description"],
         )
 
         sites = pagination["items"]
@@ -277,7 +278,7 @@ def post_edit(site_id):
         return redirect(url_for("site_bp.get_edit", site_id=site_id))
 
 
-@site_bp.get("/delete/<int:site_id>")
+@site_bp.post("/delete/<int:site_id>")
 @login_required
 @permission_required("site_destroy")
 def delete(site_id):

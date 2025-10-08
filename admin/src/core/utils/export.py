@@ -23,7 +23,7 @@ def export_sites_to_csv(sites):
         "Tags",
     ]
 
-    writer = csv.DictWriter(output, fieldnames=fieldnames, delimiter=",")
+    writer = csv.DictWriter(output, fieldnames=fieldnames, delimiter=",", quoting=csv.QUOTE_ALL)
     writer.writeheader()
 
     for site in sites:
@@ -46,8 +46,8 @@ def export_sites_to_csv(sites):
                     if site.created_at
                     else ""
                 ),
-                "Latitud": site.latitude,
-                "Longitud": site.longitude,
+                "Latitud": f"{site.latitude:.6f}" if site.latitude else "",
+                "Longitud": f"{site.longitude:.6f}" if site.longitude else "",
                 "Tags": tags_str,
             }
         )

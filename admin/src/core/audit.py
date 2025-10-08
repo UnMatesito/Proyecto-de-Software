@@ -66,12 +66,12 @@ def log_update_history(mapper, connection, target):
         _handle_deletion_restoration(instance_state, target, user_id)
         return
 
-    if "is_visible" in changed_attributes and len(changed_attributes) == 1:
-        _handle_visibility_change(instance_state, target, user_id)
+    if "pending_validation" in changed_attributes and "is_visible" in changed_attributes:
+        _handle_validation_change(instance_state, target, user_id)
         return
 
-    if "pending_validation" in changed_attributes and len(changed_attributes) == 1:
-        _handle_validation_change(instance_state, target, user_id)
+    if "is_visible" in changed_attributes and "pending_validation" not in changed_attributes:
+        _handle_visibility_change(instance_state, target, user_id)
         return
 
     # Edición general

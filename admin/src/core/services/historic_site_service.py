@@ -306,6 +306,7 @@ def get_sites_filtered(
     paginate: bool = True,
     page: int = 1,
     per_page: int = 25,
+    text_search_columns=None,
 ):
     """
     Devuelve sitios históricos filtrados, ordenados y opcionalmente paginados.
@@ -318,6 +319,8 @@ def get_sites_filtered(
         paginate (bool): si True devuelve dict con paginación, si False lista completa
         page (int): número de página (si paginate=True)
         per_page (int): tamaño de página (si paginate=True)
+        text_search_columns (list): columnas específicas para búsqueda de texto.
+                                   Si es None, busca en TODAS las columnas de tipo texto.
 
     Returns:
         dict de paginación o lista de objetos HistoricSite
@@ -336,7 +339,8 @@ def get_sites_filtered(
         filters.setdefault("province_id", city.province_id)
 
     # Construir la query base con el builder genérico
-    query = build_search_query(HistoricSite, filters)
+    # Si no se especifican columnas, busca en TODAS las columnas de tipo texto
+    query = build_search_query(HistoricSite, filters, text_search_columns)
 
     # Aplicar join manual si se filtra por provincia (ya que el builder no maneja relaciones)
     province_id = filters.get("province_id")
