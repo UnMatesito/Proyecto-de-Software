@@ -1,7 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 from core.services.feature_flag_service import (
-    get_all_feature_flags,
+    get_all_feature_flags_ordered_by_id,
     get_feature_flag_by_id,
     set_maintenance_message,
     toggle_feature_flag,
@@ -18,7 +18,7 @@ feature_flag_bp = Blueprint("feature-flags", __name__, url_prefix="/feature-flag
 @system_admin_required
 def index():
     """Renderiza los flags"""
-    flags = get_all_feature_flags()
+    flags = get_all_feature_flags_ordered_by_id()
     form = ToggleFeatureFlagForm()
     return render_template("feature_flags/index.html", flags=flags, form=form)
 
