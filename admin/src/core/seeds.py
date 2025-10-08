@@ -28,9 +28,9 @@ def run(env="production"):
     # Solo si estamos en development
     if env == "development":
         seed_editor()
+        seed_users()
         seed_historic_sites()
         seed_site_tags()
-        seed_users()
 
     print("Seed finalizado")
 
@@ -50,6 +50,11 @@ def seed_permissions():
         ("user_show", "Ver detalle de usuario"),
         ("user_block", "Bloquear/desbloquear usuario"),
         ("user_assign_role", "Asignar roles"),
+    ]
+
+    # Permisos para módulo de ciudades
+    city_permissions = [
+        ("city_index", "Listar ciudades"),
     ]
 
     # Permisos para sitios históricos
@@ -102,6 +107,7 @@ def seed_permissions():
         + flag_permissions
         + proposal_permissions
         + review_permissions
+        + city_permissions
     )
 
     # Transformar la lista de tuplas en la lista de dicts que espera create_multiple_permissions
@@ -155,6 +161,8 @@ def seed_roles():
             "review_show",
             "review_approve",
             "review_reject",
+            # Ciudades
+            "city_index",
         ],
         "Administrador": [
             # Usuarios
@@ -191,9 +199,13 @@ def seed_roles():
             "review_show",
             "review_approve",
             "review_reject",
+            # Ciudades
+            "city_index",
         ],
         "Usuario público": [
+            # Reseñas
             "review_new",
+            # Sitios
             "proposal_new",
         ],
     }

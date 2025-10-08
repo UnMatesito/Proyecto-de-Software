@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from os import name
 
 from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
