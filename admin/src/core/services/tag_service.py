@@ -8,6 +8,7 @@ from core.database import db
 from core.models import Tag
 from core.utils import pagination
 
+
 def get_all_not_deleted_tags():
     """Obtiene todos los tags no borrados."""
 
@@ -104,10 +105,10 @@ def update_tag(tag_id, new_name):
 
 
 def get_paginated_tags(page=1, order_by="name", sorted_by="asc"):
-    """ Retorna el formato paginado de los tags, 
-        el cual puede estar ordenado por nombre o fecha de creación 
-        y de manera ascendente o descendente."""
-    
+    """Retorna el formato paginado de los tags,
+    el cual puede estar ordenado por nombre o fecha de creación
+    y de manera ascendente o descendente."""
+
     if order_by == "name":
         if sorted_by == "asc":
             query = Tag.query.order_by(Tag.name)

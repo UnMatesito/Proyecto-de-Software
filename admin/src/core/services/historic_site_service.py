@@ -171,6 +171,7 @@ def update_inauguration_year(site, year):
         site.inauguration_year = year
     return site
 
+
 def update_is_visible(site, visibility):
     """Actualiza el estado de visibilidad de un sitio histórico si no está borrado y está validado."""
 
@@ -274,12 +275,12 @@ def delete_historic_site(site_id):
 
 
 def update_historic_site(body):
-    """ Actualiza todos los dados del sitio histórico.
-        
-        operations: Es un diccionario el cual es accedido por el cuerpo
-        del parametro "body". Cada indice ejecuta la función de actilización 
-        para determinado campo del modelo HistoricSite. 
-    
+    """Actualiza todos los dados del sitio histórico.
+
+    operations: Es un diccionario el cual es accedido por el cuerpo
+    del parametro "body". Cada indice ejecuta la función de actilización
+    para determinado campo del modelo HistoricSite.
+
     """
     try:
         site = get_historic_site_by_id(body["historic_site_id"])

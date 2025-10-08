@@ -9,9 +9,8 @@ from wtforms import (
     StringField,
     SubmitField,
 )
-from wtforms.widgets import TextArea
-
 from wtforms.validators import DataRequired, Length, NumberRange
+from wtforms.widgets import TextArea
 
 from core.services import (
     get_all_categories,
@@ -34,7 +33,7 @@ class CreateSiteForm(FlaskForm):
         validators=[
             DataRequired(message="La descripcion breve del sitio es obligatoria"),
         ],
-        widget=TextArea()
+        widget=TextArea(),
     )
 
     full_description = StringField(
@@ -42,7 +41,7 @@ class CreateSiteForm(FlaskForm):
         validators=[
             DataRequired(message="La descripcion completa del sitio es obligatoria"),
         ],
-        widget=TextArea()
+        widget=TextArea(),
     )
 
     inauguration_year = IntegerField(

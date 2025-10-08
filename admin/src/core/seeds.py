@@ -733,7 +733,7 @@ def seed_users():
                 password="password123",
                 role_id=roles["publico"].id,
                 system_admin=False,
-                    )
+            )
         )
 
     # Editores
@@ -747,7 +747,7 @@ def seed_users():
                 password="editor123",
                 role_id=roles["editor"].id,
                 system_admin=False,
-                    )
+            )
         )
 
     # Administradores no system admin
@@ -761,7 +761,7 @@ def seed_users():
                 password="admin123",
                 role_id=roles["admin"].id,
                 system_admin=False,
-                    )
+            )
         )
 
     # Insertar en DB

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, StringField, SubmitField, EmailField
+from wtforms import BooleanField, EmailField, StringField, SubmitField
 from wtforms.validators import DataRequired, Email, Length
 
 from core.services import get_all_roles
@@ -7,6 +7,7 @@ from core.services import get_all_roles
 
 class EditUserForm(FlaskForm):
     """Form para editar un usuario"""
+
     first_name = StringField(
         "Nombre",
         validators=[

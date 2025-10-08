@@ -54,7 +54,7 @@ def index():
             sorted_by=sorted_by,
             blocked=blocked_param,
             role_id=role_id,
-            email=email
+            email=email,
         )
         roles = get_all_roles()
         return render_template(
@@ -99,8 +99,8 @@ def search_by_email():
     user = get_user_by_email(correo)
     if not user:
         return render_template("users/index.html", pagination=[], columns=[])
-    
-    return redirect(url_for("users.index",email=correo))
+
+    return redirect(url_for("users.index", email=correo))
 
 
 @user_bp.post("/create")
@@ -115,7 +115,9 @@ def create_post():
             if get_user_by_email(form.email.data):
                 form.email.errors.append("El correo ya está registrado.")
                 return render_template(
-                "users/create.html", form=form, is_system_admin=current_user.is_admin()
+                    "users/create.html",
+                    form=form,
+                    is_system_admin=current_user.is_admin(),
                 )
             user_data = {
                 "first_name": form.first_name.data,
@@ -214,9 +216,9 @@ def edit_post(user_id):
             if get_user_by_email(form.email.data):
                 form.email.errors.append("El correo ya está registrado.")
                 return render_template(
-                "users/edit.html",
-                form=form,
-                user=user,
+                    "users/edit.html",
+                    form=form,
+                    user=user,
                 )
             update_user_attribute(user_id, "first_name", form.first_name.data)
             update_user_attribute(user_id, "last_name", form.last_name.data)
@@ -283,7 +285,7 @@ def change_password_post(user_id):
         if not user:
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
-        
+
         if user.is_admin() and not current_user.is_admin():
             flash(
                 "No puede cambiar la contraseña de un administrador del sistema si usted no es administrador del sistema",
@@ -328,7 +330,7 @@ def change_password_get(user_id):
         if not user:
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
-        
+
         if user.is_admin() and not current_user.is_admin():
             flash(
                 "No puede cambiar la contraseña de un administrador del sistema si usted no es administrador del sistema",
@@ -387,7 +389,7 @@ def change_self_password_post():
                     session["user_id"], form.old_password.data, form.new_password.data
                 )
                 flash("Contraseña actualizada", "success")
-                return redirect(url_for('main_bp.profile'))
+                return redirect(url_for("main_bp.profile"))
             except ValueError as e:
                 flash(str(e), "warning")
             except Exception as e:
