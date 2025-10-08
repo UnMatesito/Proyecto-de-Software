@@ -16,6 +16,7 @@
                     <div>
                         {{ form.name.label(class="block font-medium text-gray-700 mb-1") }}
                         {{ form.name(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200")}}
+                        
                         {% for error in form.name.errors %}
                             <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
@@ -23,9 +24,17 @@
 
                     <div>
                         {{ form.province.label(class="block font-medium text-gray-700 mb-1") }}
-                        {{ form.province(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                        <select id="{{ form.province.id }}" name="{{ form.province.name }}" required
+                                class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
+                            {% if not site %}
+                                <option value="" selected hidden>Seleccionar provincia</option>
+                            {% endif %}
+                            {% for value, label in form.province.choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
                         {% for error in form.province.errors %}
-                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                                <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
 
@@ -36,14 +45,23 @@
                             <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
-
+                    
                     <div>
                         {{ form.conservation_state.label(class="block font-medium text-gray-700 mb-1") }}
-                        {{ form.conservation_state(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
-                        {% for error in form.conservation_state.errors %}
-                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        <select id="{{ form.conservation_state.id }}" name="{{ form.conservation_state.name }}" required
+                                class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
+                            {% if not site %}
+                                <option value="" selected hidden>Seleccionar estado de conservación</option>
+                            {% endif %}
+                            {% for value, label in form.conservation_state.choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% for error in form.province.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
+
                     {% if is_validated_site(site=site) %}
                         {% if form.is_visible %}
                             <div>
@@ -58,14 +76,23 @@
                 </div>
 
                 <div>
+
                     <div>
                         {{ form.category.label(class="block font-medium text-gray-700 mb-1") }}
-                        {{ form.category(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
-                        {% for error in form.category.errors %}
-                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        <select id="{{ form.category.id }}" name="{{ form.category.name }}" required
+                                class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
+                            {% if not site %}
+                                <option value="" selected hidden>Seleccionar categoría</option>
+                            {% endif %}
+                            {% for value, label in form.category.choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% for error in form.province.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
-
+                    
                     <div>
                         {{ form.inauguration_year.label(class="block font-medium text-gray-700 mb-1") }}
                         {{ form.inauguration_year(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
@@ -96,6 +123,7 @@
                             <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
+
                     <div>
                         {{form.latitude(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 hidden")}}
                         {% for error in form.latitude.errors %}
@@ -131,6 +159,7 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
 
+
         new MultiSelectTag('tags', {
         rounded: true,   
         shadow: true,
@@ -141,7 +170,7 @@
         });
 
         document.getElementById("tag-input").className = "w-full"
-
+        
         lonInput = document.getElementById("longitude")
         latIpunt = document.getElementById("latitude")
         var map = L.map('map').setView(["{{lat_view}}", "{{lon_view}}"], 13);
@@ -149,7 +178,6 @@
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         }).addTo(map);
         var mark            
-        console.log(typeof "{{lat}}")
 
         if ("{{lat}}" != "None" && typeof "{{lon}}" != "None" && "{{site_name}}") {
             mark = L.marker(["{{lat}}", "{{lon}}"]).addTo(map)
