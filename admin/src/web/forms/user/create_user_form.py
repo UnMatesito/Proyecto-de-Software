@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, PasswordField, SelectField, StringField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, Length
+from wtforms import BooleanField, PasswordField, SelectField, StringField, SubmitField, EmailField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 
 from core.services import get_all_roles
 
@@ -24,7 +24,7 @@ class CreateUserForm(FlaskForm):
         ],
     )
 
-    email = StringField(
+    email = EmailField(
         "Correo",
         validators=[
             DataRequired(message="El correo es obligatorio"),
@@ -60,8 +60,14 @@ class CreateUserForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         """Constructor"""
         super(CreateUserForm, self).__init__(*args, **kwargs)
-        self.role_id.choices = [
-            (0, "Seleccionar rol ")
-        ] + [  # Cargo los roles en el select
+        self.role_id.choices =[  # Cargo los roles en el select
             (role.id, role.name) for role in get_all_roles()
         ]
+
+    def validate_system_admin(self, field):
+        """Evita marcar system admin si el rol no es Administrador"""
+        from core.services import get_role_by_id
+        selected_role = get_role_by_id(self.role_id.data)
+        if selected_role:
+            if field.data and selected_role.name.lower() != "administrador":
+                raise ValidationError("Solo los usuarios con rol 'Administrador' pueden ser administradores del sistema.")

@@ -124,21 +124,15 @@ class CreateSiteForm(FlaskForm):
         """Constructor"""
         super(CreateSiteForm, self).__init__(*args, **kwargs)
 
-        self.province.choices = [
-            (0, "Seleccionar provincia ")
-        ] + [  # Cargo las provincias en el select
+        self.province.choices =  [  # Cargo las provincias en el select
             (province.id, province.name) for province in get_all_provinces()
         ]
 
-        self.conservation_state.choices = [
-            (0, "Seleccionar estado de conservación")
-        ] + [  # Cargo los estados en el select
+        self.conservation_state.choices = [  # Cargo los estados en el select
             (state.id, state.state) for state in get_all_conservation_state()
         ]
 
-        self.category.choices = [
-            (0, "Seleccionar category")
-        ] + [  # Cargo las categorias en el select
+        self.category.choices = [  # Cargo las categorias en el select
             (category.id, category.name) for category in get_all_categories()
         ]
 

@@ -11,7 +11,7 @@ class ChangePasswordByAdminForm(FlaskForm):
     new_password = PasswordField(
         "Contraseña nueva",
         validators=[
-            DataRequired(message="La contraseña es obligatorio"),
+            DataRequired(message="La contraseña es obligatoria"),
             Length(min=6, message="Minimo 6 caracteres"),
         ],
     )
