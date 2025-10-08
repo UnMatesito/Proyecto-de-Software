@@ -52,6 +52,11 @@ def seed_permissions():
         ("user_assign_role", "Asignar roles"),
     ]
 
+    # Permisos para módulo de ciudades
+    city_permissions = [
+        ("city_index", "Listar ciudades"),
+    ]
+
     # Permisos para sitios históricos
     site_permissions = [
         ("site_index", "Listar sitios"),

@@ -1,10 +1,11 @@
 from flask import Blueprint, jsonify, flash
-
 from core.services import get_province_by_id
+from web.utils.auth import login_required, permission_required
 
 city_bp = Blueprint("city_bp", __name__, url_prefix="/cities")
 
-
+@login_required
+@permission_required("city_index")
 @city_bp.get("/<int:province_id>")
 def get_cities(province_id):
     """Retorna las ciudades de una provincia, determinada por su ID que se envía como parámetro en la URL."""
