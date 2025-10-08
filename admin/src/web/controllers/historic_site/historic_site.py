@@ -69,6 +69,7 @@ def list_paginated_sites():
             paginate=True,
             page=page,
             per_page=25,
+            text_search_columns=["name", "brief_description"],
         )
 
         sites = pagination["items"]
