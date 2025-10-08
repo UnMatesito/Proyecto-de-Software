@@ -12,7 +12,7 @@ from core.utils import pagination
 
 
 def get_all_not_deleted_tags():
-    return Tag.query.filter_by(deleted_at=None)
+    return Tag.query.filter_by(deleted_at=None).all()
 
 
 def get_all_tags():
