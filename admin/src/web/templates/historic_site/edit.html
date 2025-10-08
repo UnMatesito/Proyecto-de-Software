@@ -23,15 +23,15 @@
 
 {% block content %}
 <div class="flex items-center flex-col">
-{% with messages = get_flashed_messages(with_categories=true) %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div class="mb-4">
                 {% for category, message in messages %}
-                    {{toast(message=message, type=category)}}
+                    {{toast(message=message, type=category, name="toast-" + loop.index0|string)}}
                 {% endfor %}
             </div>
         {% endif %}
-{% endwith %}
+    {% endwith %}
 
 {{ form_site(lon=lon, lat=lat, lon_view=lon, lat_view=lat, site_name=site_name, site=site, form=form) }}
 </div>

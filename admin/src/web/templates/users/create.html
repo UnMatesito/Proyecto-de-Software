@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from 'macros/button.html' import button %}
 
 {% block title %}Crear Usuario{% endblock %}
 
@@ -7,15 +8,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto mt-6 space-y-6">
+<div class="max-w-2xl mx-auto mt-2 space-y-6">
 
     <!-- Boton para volver a users -->
-    <div>
-        <a href="/users" 
-            class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow">
-            ← Volver
-        </a>
-    </div>
+    {{ button(text="Volver", link=url_for('users.index'), type="button", icon_left_svg='<i class="fa-solid fa-arrow-left mr-1"></i>') }}
 
     <!-- Card del formulario -->
     <div class="p-6 bg-white shadow-lg rounded-lg border border-gray-200">

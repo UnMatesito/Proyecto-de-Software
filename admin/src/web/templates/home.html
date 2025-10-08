@@ -1,35 +1,10 @@
 {% extends "layout.html" %}
-{% from "macros/table.html" import render_table %}
 
 {% block title %}Pagina Principal{% endblock %}
 
-{% block header %}
-    {% include 'components/navbar.html' %}
-{%endblock%}
-
 {% block content %}
-    <div class="flex min-h-screen flex-row">
-        {# Sidebar #}
-        <div>
-            {% include 'components/sidebar.html' %}
-        </div>
-        <div>
-            {# Content #}
-            <h1 class="text-2xl font-bold m-4 relative top-8 left-8">
-                Bienvenido al panel de administracion de Histori.ar. <br>Esta es la pagina principal de la etapa 1 de la entrega de la materia Proyecto de software.
-            </h1>
-        </div>
-    </div>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="mb-4">
-          {% for category, message in messages %}
-            <div class="p-2 mb-2 border rounded bg-yellow-100 text-yellow-800">
-              <strong>{{ category|capitalize }}:</strong> {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+    {# Content #}
+    <h1 class="text-2xl font-bold m-4 relative top-8 left-8">
+        Bienvenido al panel de administracion de Histori.ar. <br>Esta es la pagina principal de la etapa 1 de la entrega de la materia Proyecto de software.
+    </h1>
 {% endblock %}
