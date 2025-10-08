@@ -20,6 +20,7 @@ from .feature_flag_service import (
     create_feature_flag,
     delete_feature_flag,
     get_all_feature_flags,
+    get_all_feature_flags_ordered_by_id,
     get_feature_flag_by_id,
     get_feature_flag_by_name,
     get_maintenance_message,
