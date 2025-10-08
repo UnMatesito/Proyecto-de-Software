@@ -66,6 +66,14 @@
                 <dd class="col-span-2 text-gray-900">{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A' }}</dd>
             </div>
         </dl>
+         {% if request.path == '/profile' %}
+        <!-- Botón Administrar -->
+         <!-- Contenedor cambiar contraseña -->
+        <div class="mt-6 flex justify-center">
+            <a href="{{ url_for('users.change_self_password_get') }}"
+               class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Cambiar Contraseña</a>
+        </div>
+        {% endif %}
 
         {% if request.path != '/profile' %}
         <!-- Botón Administrar -->

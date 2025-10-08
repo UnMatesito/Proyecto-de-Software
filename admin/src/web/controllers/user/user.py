@@ -384,7 +384,7 @@ def change_self_password_post():
                     session["user_id"], form.old_password.data, form.new_password.data
                 )
                 flash("Contraseña actualizada", "success")
-                return redirect(url_for("users.detail", user_id=session["user_id"]))
+                return redirect(url_for('main_bp.profile'))
             except ValueError as e:
                 flash(str(e), "warning")
             except Exception as e:
