@@ -1,8 +1,9 @@
 {% extends "layout.html" %}
-{% from "macros/button.html" import button %}
+{% from "macros/button.html" import button, button_blank %}
 {% from "macros/paginate.html" import paginate %}
 {% from "macros/table.html" import table, card_table %}
 {% from "macros/toast.html" import toast %}
+{% from "macros/input.html" import text_input %}
 {% block title %}Listado de tags{% endblock %}
 
 {% block header %}
@@ -10,6 +11,15 @@
 {% endblock %}
 
 {% block content %}
+    <!-- Contenedor del buscador -->
+<div class="bg-white shadow rounded p-4 flex items-center justify-center gap-3 flex-col">
+    <h3 class="text-lg font-semibold mb-2">Buscar por nombre</h3>
+    <form method="get" action="{{ url_for('tag_bp.list_paginated_tags') }}" class="flex space-x-2 w-full max-w-md items-center">
+            {{ text_input('name', 'name', 'Ingresar nombre', value=request.args.get('name', ''), required=True, class="w-80") }}
+            {{ button('Buscar', type='submit', icon_left_svg='<i class="fa-solid fa-magnifying-glass mr-1"></i>') }}
+    </form>
+    {{ button_blank('Restaurar busqueda', link=url_for('tag_bp.list_paginated_tags'), icon_left_svg='<i class="fa-solid fa-rotate-left mr-1"></i>') }}
+</div>
 <div class="flex flex-col justify-center items-center">
     <div class="xl:p-4 flex flex-col lg:flex-row gap-4">
         <!-- Panel de ordenación -->
