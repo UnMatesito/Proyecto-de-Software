@@ -17,6 +17,16 @@ tag_bp = Blueprint("tag_bp", __name__, url_prefix="/tags")
 @login_required
 @permission_required("tag_index")
 def list_paginated_tags():
+    """ Renderiza el index.html de los tags mostrandolos en formato paginado,
+        el cual puede estar ordenado por nombre o fecha de creación 
+        y de manera ascendente o descendente.
+
+        columns: Representa las columnas mostradas en la tabla del index.html.
+        order_by: nombre o fecha de creación 
+        sorted_by: ascendente o descendente.
+        page: Pagina acutal, inicialmente en 1
+        pagination: Diccionario que posee los elementos necesarios para la paginación.
+    """
     try:
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
@@ -49,6 +59,8 @@ def list_paginated_tags():
 @login_required
 @permission_required("tag_new")
 def show_create_tags():
+    """Renderiza el formulario para crear tags."""
+
     form = CreateTagForm()
     return render_template("tags/create.html", form=form)
 
@@ -57,6 +69,9 @@ def show_create_tags():
 @login_required
 @permission_required("tag_new")
 def create_tags():
+    """ Recibe y verifica los datos enviados por el formulario de creacion. 
+        Si los datos enviados son válidos hace el alta del tag.
+    """
     form = CreateTagForm()
     if form.validate_on_submit():
         try:
@@ -75,6 +90,8 @@ def create_tags():
 @login_required
 @permission_required("tag_update")
 def show_edit_tag(tag_id):
+    """Renderiza el formulario para modificar los tags."""
+
     try:
         form = EditTagForm()
         tag = get_tag_by_id(tag_id)
@@ -88,6 +105,9 @@ def show_edit_tag(tag_id):
 @login_required
 @permission_required("tag_update")
 def edit_tag(tag_id):
+    """ Recibe y verifica los datos enviados por el formulario de edición. 
+        Si los datos enviados son válidos hace el edit del tag.
+    """
     form = EditTagForm()
     if form.validate_on_submit():
         try:
@@ -109,6 +129,9 @@ def edit_tag(tag_id):
 @login_required
 @permission_required("tag_destroy")
 def delete(tag_id):
+    """ Recibe el id del un tag, si existe y no se posee sitios 
+        históricos asociados lo borra.
+    """
     try:
         tag = delete_tag(tag_id)
         flash(f"Se ha eliminado correctamente el tag {tag.name}", "succes")
@@ -121,6 +144,8 @@ def delete(tag_id):
 @login_required
 @permission_required("tag_show")
 def detail_tag(tag_id):
+    """Renderiza el detalle del tag al que pertenece el ID enviado por URL."""
+    
     try:
         tag = get_tag_by_id(tag_id)
         return render_template("tags/detail.html", tag=tag)
