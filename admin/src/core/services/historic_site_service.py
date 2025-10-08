@@ -131,11 +131,25 @@ def update_full_description(site, description):
 
 
 def update_location(site, location):
+    """
+    Actualiza la ubicación del sitio histórico solo si cambió realmente.
+    """
     if not isinstance(location["lat"], (int, float)):
         raise ValueError("La latitude debe ser numerica")
     if not isinstance(location["lon"], (int, float)):
         raise ValueError("La longitude debe ser numerica")
-    site.location = WKTElement(f"POINT({location["lon"]} {location["lat"]})", srid=4326)
+
+    new_lat = float(location["lat"])
+    new_lon = float(location["lon"])
+
+    # Obtener coordenadas actuales
+    current_lat = site.latitude
+    current_lon = site.longitude
+
+    # Solo actualizar si hay un cambio
+    if current_lat != new_lat or current_lon != new_lon:
+        site.location = WKTElement(f"POINT({new_lon} {new_lat})", srid=4326)
+
     return site
 
 
@@ -165,8 +179,6 @@ def update_is_visible(site, visibility):
 
 
 def update_tags(site, tag_ids):
-    if not tag_ids:
-        raise ValueError("Se requiere al menos un tag")
     tags = []
     for tag_id in tag_ids:
         tag = tag_service.get_tag_by_id(tag_id)

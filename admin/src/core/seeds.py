@@ -23,7 +23,7 @@ def run(env="production"):
     seed_provinces_and_cities()
     seed_consevation_states()
     seed_categories()
-    # seed_event_types()
+    seed_event_types()
 
     # Solo si estamos en development
     if env == "development":
@@ -219,22 +219,10 @@ def seed_event_types():
         "Creación",
         "Edición",
         "Eliminación",
+        "Restauración",
         "Cambio de estado",  # cambio de visibilidad
         "Cambio de tags",
-        "Cambio de imágenes",  # para etapa 2
-        # Para usuarios
-        "Usuario creado",
-        "Usuario actualizado",
-        "Usuario bloqueado",
-        "Usuario desbloqueado",
-        "Rol asignado",
-        "Contraseña cambiada",
-        # Para propuestas (etapa 2)
-        "Propuesta aprobada",
-        "Propuesta rechazada",
-        # Para reseñas (etapa 2)
-        "Reseña aprobada",
-        "Reseña rechazada",
+        # "Cambio de imágenes",  para etapa 2
     ]
 
     for event_name in event_types:
@@ -268,7 +256,6 @@ def seed_system_admin():
         first_name="System",
         last_name="Administrator",
         system_admin=True,
-        active=True,
         role_id=admin_role.id,
     )
 
@@ -298,7 +285,6 @@ def seed_editor():
         first_name="EditorNomb",
         last_name="EditorApe",
         system_admin=False,
-        active=True,
         role_id=editor_role.id,
     )
 
@@ -431,9 +417,14 @@ def seed_historic_sites():
     """Carga un conjunto de sitios históricos iniciales"""
     from datetime import datetime, timezone
 
+    from core.audit import disable_audit_listeners, enable_audit_listeners
     from core.models import HistoricSite
 
     print("Cargando sitios historicos...")
+
+    # Deshabilitar registros de auditoría temporalmente
+    disable_audit_listeners()
+
     sites = [
         HistoricSite(
             name="Cabildo de Buenos Aires",
@@ -677,13 +668,20 @@ def seed_historic_sites():
 
     db.session.commit()
 
+    # Rehabilitar listeners de auditoría
+    enable_audit_listeners()
+
 
 def seed_site_tags():
     """Asocia sitios históricos con tags de clasificación"""
+    from core.audit import disable_audit_listeners, enable_audit_listeners
     from core.services import historic_site_service as HistoricService
     from core.services import tag_service as TagService
 
     print("Agregando relaciones Sites-Tags")
+
+    # Deshabilitar registros de auditoría temporalmente
+    disable_audit_listeners()
 
     cabildo = HistoricService.get_historic_site_by_id(1)
     san_ignacio = HistoricService.get_historic_site_by_id(2)
@@ -695,6 +693,9 @@ def seed_site_tags():
     san_ignacio.tags.extend([tag1, tag2])
 
     db.session.commit()
+
+    # Rehabilitar listeners de auditoría
+    enable_audit_listeners()
 
 
 def seed_users():
@@ -732,8 +733,7 @@ def seed_users():
                 password="password123",
                 role_id=roles["publico"].id,
                 system_admin=False,
-                active=True,
-            )
+                    )
         )
 
     # Editores
@@ -747,8 +747,7 @@ def seed_users():
                 password="editor123",
                 role_id=roles["editor"].id,
                 system_admin=False,
-                active=True,
-            )
+                    )
         )
 
     # Administradores no system admin
@@ -762,8 +761,7 @@ def seed_users():
                 password="admin123",
                 role_id=roles["admin"].id,
                 system_admin=False,
-                active=True,
-            )
+                    )
         )
 
     # Insertar en DB

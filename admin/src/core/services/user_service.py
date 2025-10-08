@@ -23,18 +23,6 @@ def get_user_by_email(email):
     return User.query.filter_by(email=email).first()
 
 
-def get_filtered_users(active=None, role_id=None):
-    """Filtro usuarios por activo y role"""
-    query = User.query
-    if active == "1":
-        query = query.filter_by(active=True)
-    elif active == "0":
-        query = query.filter_by(active=False)
-    if role_id:
-        query = query.filter_by(role_id=int(role_id))
-    return query.all()
-
-
 def get_paginated_users(
     page=1,
     order_by="created_at",
@@ -307,10 +295,10 @@ def toggle_system_admin(user_id, make_admin: bool):
 
     return True
 
-
-def get_user_full_name(user_id):
-    """Devuelve el nombre completo de un usuario dado su ID."""
-    user = get_user_by_id(user_id)
-    if user:
-        return user.get_full_name()
-    return "Usuario desconocido"
+def get_user_history():
+    """Obtiene todos los usuarios systemAdmin/admin/editores"""
+    return User.query.filter(
+        (User.role.has(name="Administrador")) |
+        (User.role.has(name="Editor")) |
+        (User.system_admin == True)
+    ).all()
