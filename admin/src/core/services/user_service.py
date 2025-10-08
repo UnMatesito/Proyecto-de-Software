@@ -300,5 +300,5 @@ def get_user_history():
     return User.query.filter(
         (User.role.has(name="Administrador")) |
         (User.role.has(name="Editor")) |
-        (User.system_admin == True)
+        (User.is_admin())
     ).all()
