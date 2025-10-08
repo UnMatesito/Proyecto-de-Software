@@ -114,7 +114,7 @@ def delete(tag_id):
         flash(f"Se ha eliminado correctamente el tag {tag.name}", "succes")
     except Exception as e:
         flash(f"Error al intentar eliminar el tag {e}", "error")
-    return redirect(url_for("tag_bp.list_paginted_tags"))
+    return redirect(url_for("tag_bp.list_paginated_tags"))
 
 
 @tag_bp.get("/detail/<int:tag_id>")
