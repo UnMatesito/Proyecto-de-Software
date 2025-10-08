@@ -5,12 +5,12 @@ from core.models import FeatureFlag
 
 
 def get_all_feature_flags():
-    """Retorna todo los flags"""
+    """Retorna todos los flags"""
     return FeatureFlag.query.all()
 
 
 def get_all_feature_flags_ordered_by_id():
-    """Retorna todo los flags ordenados por id de forma ascendente (para mostrarlos en la vista y que no se muevan)"""
+    """Retorna todos los flags ordenados por id de forma ascendente (para mostrarlos en la vista y que no se muevan)"""
     return FeatureFlag.query.order_by(FeatureFlag.id.asc()).all()
 
 
