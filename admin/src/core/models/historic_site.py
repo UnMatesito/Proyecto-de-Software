@@ -88,28 +88,34 @@ class HistoricSite(db.Model):
     # Metodos
     def is_deleted(self):
         """Chequea si el sitio historico ha sido eliminado."""
+
         return self.deleted_at is not None
 
     def is_active(self):
         """Chequea si el sitio histórico está activo"""
+
         return self.is_visible is True
 
     def needs_validation(self):
         """Chequea si el sitio histórico está pendiente de validación"""
+
         return self.pending_validation is True
 
     def validate(self):
         """Valida el sitio histórico, marcándolo como visible y no pendiente de validación."""
+
         self.pending_validation = False
         self.is_visible = True
 
     def delete_site(self):
         """Marca el sitio histórico como eliminado, estableciendo la fecha de eliminación y haciéndolo no visible."""
+
         self.deleted_at = datetime.now(timezone.utc)
         self.is_visible = False
 
     def restore_site(self):
         """Restaura el sitio histórico, eliminando la fecha de eliminación, haciéndolo no visible y en estado de validacion."""
+
         self.deleted_at = None
         self.is_visible = False
         self.pending_validation = True
@@ -117,56 +123,82 @@ class HistoricSite(db.Model):
 
     def get_coordinates(self):
         """Devuelve un diccionario con las coordenadas del sitio histórico."""
+
         return {"latitude": self.latitude, "longitude": self.longitude}
 
     def add_tag(self, tag):
         """Agrega una etiqueta al sitio histórico si no está ya presente."""
+
         if tag not in self.tags:
             self.tags.append(tag)
 
     def remove_tag(self, tag):
         """Elimina una etiqueta del sitio histórico si está presente."""
+
         if tag in self.tags:
             self.tags.remove(tag)
 
     def same_city(self, city):
+        """Retorna verdadero o falso si el sitio histórico posee la misma ciuedad"""
+
         return city == self.city
 
     def same_conservation_state(self, state):
+        """Retorna verdadero o falso si el sitio histórico posee el mismo estado de conservación"""
+
         return state == self.conservation_state
 
     def same_category(self, category):
+        """Retorna verdadero o falso si el sitio histórico posee la misma categoria"""
+
         return category == self.category
 
     def same_tags(self, tags):
+        """Retorna verdadero o falso si el sitio histórico posee los mismos tags"""
+
         return tags == self.tags
 
     def same_name(self, name):
+        """Retorna verdadero o falso si el sitio histórico posee el mismo nombre"""
+
         return name == self.name
 
     def same_brief_description(self, brief_description):
+        """Retorna verdadero o falso si el sitio histórico posee la misma descripción breve"""
+
         return brief_description == self.brief_description
 
     def same_full_description(self, full_description):
+        """Retorna verdadero o falso si el sitio histórico posee la descripción completa"""
+
         return full_description == self.full_description
 
     def same_latitude(self, latitude):
+        """Retorna verdadero o falso si el sitio histórico posee la misma latitud"""
+
         return latitude == self.latitude
 
     def same_longitude(self, longitude):
+        """Retorna verdadero o falso si el sitio histórico posee la misma longitud"""
+
         return longitude == self.longitude
 
     def same_inauguration_year(self, inauguration_year):
+        """Retorna verdadero o falso si el sitio histórico posee el mismo año de inaguración"""
+
         return inauguration_year == self.inauguration_year
 
-    def same_registration_date(self, registration_date):
-        return registration_date == self.registration_date
-
     def same_visibility(self, is_visible):
+        """Retorna verdadero o falso si el sitio histórico posee el mismo estado de visibilidad"""
+
         return is_visible == self.is_visible
 
     def same_pending_validation(self, pending_validation):
+        """Retorna verdadero o falso si el sitio histórico posee el mismo estado de validación pendiente"""
+
         return pending_validation == self.pending_validation
 
     def __repr__(self):
+        """Retorna una representación de sitio histórico la cual posee su nombre"""
+
         return f"<Historic Site {self.name}>"
