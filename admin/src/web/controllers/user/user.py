@@ -35,6 +35,7 @@ def index():
         page = request.args.get("page", 1)
         blocked_param = request.args.get("blocked", None)
         role_id = request.args.get("role_id", None)
+        email = request.args.get("email", None)
         columns = [
             {"key": "id", "label": "ID"},
             {"key": "full_name", "label": "Usuario", "render": "user_name"},
@@ -53,6 +54,7 @@ def index():
             sorted_by=sorted_by,
             blocked=blocked_param,
             role_id=role_id,
+            email=email
         )
         roles = get_all_roles()
         return render_template(
@@ -96,10 +98,9 @@ def search_by_email():
     correo = request.args.get("email", "").strip()
     user = get_user_by_email(correo)
     if not user:
-        return redirect(url_for("users.index"))
-    users_page = get_paginated_users(email=correo)
-
-    return render_template("users/index.html", pagination=users_page)
+        return render_template("users/index.html", pagination=[], columns=[])
+    
+    return redirect(url_for("users.index",email=correo))
 
 
 @user_bp.post("/create")
