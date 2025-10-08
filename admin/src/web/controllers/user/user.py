@@ -112,6 +112,11 @@ def create_post():
     form = CreateUserForm()
     if form.validate_on_submit():
         try:
+            if get_user_by_email(form.email.data):
+                form.email.errors.append("El correo ya está registrado.")
+                return render_template(
+                "users/create.html", form=form, is_system_admin=current_user.is_admin()
+                )
             user_data = {
                 "first_name": form.first_name.data,
                 "last_name": form.last_name.data,
@@ -209,7 +214,7 @@ def edit_post(user_id):
             update_user_attribute(user_id, "first_name", form.first_name.data)
             update_user_attribute(user_id, "last_name", form.last_name.data)
             if get_user_by_email(form.email.data):
-                flash("El mail ya corresponde a un usuario")
+                form.email.errors.append("El correo ya está registrado.")
                 return render_template(
                 "users/edit.html",
                 form=form,
