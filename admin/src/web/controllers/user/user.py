@@ -208,11 +208,15 @@ def edit_post(user_id):
             # Actualizo los atributos
             update_user_attribute(user_id, "first_name", form.first_name.data)
             update_user_attribute(user_id, "last_name", form.last_name.data)
+            if get_user_by_email(form.email.data):
+                flash("El mail ya corresponde a un usuario")
+                return render_template(
+                "users/edit.html",
+                form=form,
+                user=user,
+                is_system_admin=current_user.is_admin(),
+                )
             update_user_attribute(user_id, "email", form.email.data)
-
-            # Si cambia el rol lo actualizo
-            if user.role_id != form.role_id.data:
-                assign_role(user_id, form.role_id.data)
 
             flash("Usuario actualizado correctamente", "success")
             return redirect(url_for("users.detail", user_id=user_id))
