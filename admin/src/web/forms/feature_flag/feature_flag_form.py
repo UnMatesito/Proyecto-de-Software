@@ -4,6 +4,7 @@ from wtforms.validators import DataRequired, Length
 
 
 class ToggleFeatureFlagForm(FlaskForm):
+    """Form para los flags de mantenimiento, ingresar el mensaje """
     flag_id = HiddenField("Flag ID")
     message = StringField(
         "Mensaje de mantenimiento",

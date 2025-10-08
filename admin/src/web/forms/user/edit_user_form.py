@@ -6,6 +6,7 @@ from core.services import get_all_roles
 
 
 class EditUserForm(FlaskForm):
+    """Form para editar un usuario"""
     first_name = StringField(
         "Nombre",
         validators=[
