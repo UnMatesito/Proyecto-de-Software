@@ -175,7 +175,7 @@ class GenericSearchBuilder:
         return query
 
     def _apply_column_filter(
-            self, query: Query, column_name: str, filter_value: Any
+        self, query: Query, column_name: str, filter_value: Any
     ) -> Query:
         """Aplica filtro directo a una columna"""
         if column_name not in self.columns:
@@ -229,7 +229,7 @@ class GenericSearchBuilder:
         for col_name, col in self.columns.items():
             col_type = str(col.type).upper()
             if any(
-                    date_type in col_type for date_type in ["DATETIME", "DATE", "TIMESTAMP"]
+                date_type in col_type for date_type in ["DATETIME", "DATE", "TIMESTAMP"]
             ):
                 date_columns.append(getattr(self.model_class, col_name))
         return date_columns
@@ -253,7 +253,7 @@ class GenericSearchBuilder:
 
 # Funciones de conveniencia
 def build_search_query(
-        model_class, filters: Dict[str, Any], text_search_columns=None
+    model_class, filters: Dict[str, Any], text_search_columns=None
 ) -> Query:
     """
     Función de conveniencia para construir queries de búsqueda
@@ -272,7 +272,7 @@ def build_search_query(
 
 
 def apply_ordering(
-        query: Query, model_class, order_by: str, order_dir: str = "asc"
+    query: Query, model_class, order_by: str, order_dir: str = "asc"
 ) -> Query:
     """
     Aplica ordenamiento a una query de forma genérica
@@ -295,13 +295,13 @@ def apply_ordering(
 
 # Función completa que combina todo
 def search_with_pagination(
-        model_class,
-        filters: Dict,
-        page: int = 1,
-        per_page: int = 25,
-        order_by: str = None,
-        order_dir: str = "asc",
-        text_search_columns=None,
+    model_class,
+    filters: Dict,
+    page: int = 1,
+    per_page: int = 25,
+    order_by: str = None,
+    order_dir: str = "asc",
+    text_search_columns=None,
 ):
     """
     Función completa que combina búsqueda, ordenamiento y paginación

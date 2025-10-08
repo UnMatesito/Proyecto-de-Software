@@ -23,7 +23,9 @@ def export_sites_to_csv(sites):
         "Tags",
     ]
 
-    writer = csv.DictWriter(output, fieldnames=fieldnames, delimiter=",", quoting=csv.QUOTE_ALL)
+    writer = csv.DictWriter(
+        output, fieldnames=fieldnames, delimiter=",", quoting=csv.QUOTE_ALL
+    )
     writer.writeheader()
 
     for site in sites:

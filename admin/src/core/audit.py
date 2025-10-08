@@ -1,7 +1,8 @@
 import re
+
 from flask import session
-from sqlalchemy import event, inspect
 from geoalchemy2.shape import to_shape
+from sqlalchemy import event, inspect
 
 from core.models.historic_site import HistoricSite
 from core.services.event_type_service import get_event_type_by_name
@@ -37,6 +38,7 @@ def log_creation_history(mapper, connection, target):
     # Evitar registrar cambios de campos luego de la creación, dado que el after_update se dispara
     target._skip_next_audit = True
 
+
 @event.listens_for(HistoricSite, "after_update")
 def log_update_history(mapper, connection, target):
     """Registra cambios detallados sobre un sitio histórico."""
@@ -45,7 +47,6 @@ def log_update_history(mapper, connection, target):
     if getattr(target, "_skip_next_audit", False):
         delattr(target, "_skip_next_audit")
         return
-
 
     user_id = get_current_user_id()
     if not user_id:
@@ -66,11 +67,17 @@ def log_update_history(mapper, connection, target):
         _handle_deletion_restoration(instance_state, target, user_id)
         return
 
-    if "pending_validation" in changed_attributes and "is_visible" in changed_attributes:
+    if (
+        "pending_validation" in changed_attributes
+        and "is_visible" in changed_attributes
+    ):
         _handle_validation_change(instance_state, target, user_id)
         return
 
-    if "is_visible" in changed_attributes and "pending_validation" not in changed_attributes:
+    if (
+        "is_visible" in changed_attributes
+        and "pending_validation" not in changed_attributes
+    ):
         _handle_visibility_change(instance_state, target, user_id)
         return
 
@@ -103,11 +110,11 @@ def _handle_tags_change(instance_state, target, user_id):
     old_tags = set(tags_history.deleted or [])
     new_tags = set(tags_history.added or [])
 
-    for tag in (new_tags - old_tags):
+    for tag in new_tags - old_tags:
         desc = f'Se agregó el tag "{tag.name}" al sitio "{target.name}".'
         _create_history_entry(target, user_id, "Cambio de tags", desc)
 
-    for tag in (old_tags - new_tags):
+    for tag in old_tags - new_tags:
         desc = f'Se quitó el tag "{tag.name}" del sitio "{target.name}".'
         _create_history_entry(target, user_id, "Cambio de tags", desc)
 
@@ -119,9 +126,13 @@ def _handle_deletion_restoration(instance_state, target, user_id):
     new_value = history.added[0] if history.added else None
 
     if old_value is None and new_value is not None:
-        _create_history_entry(target, user_id, "Eliminación", f'Sitio "{target.name}" eliminado.')
+        _create_history_entry(
+            target, user_id, "Eliminación", f'Sitio "{target.name}" eliminado.'
+        )
     elif old_value is not None and new_value is None:
-        _create_history_entry(target, user_id, "Restauración", f'Sitio "{target.name}" restaurado.')
+        _create_history_entry(
+            target, user_id, "Restauración", f'Sitio "{target.name}" restaurado.'
+        )
 
 
 def _handle_visibility_change(instance_state, target, user_id):
@@ -178,21 +189,29 @@ def _handle_province_change(instance_state, target, user_id):
         new_city = city_history.added[0] if city_history.added else None
 
         if old_city and new_city and old_city.province_id != new_city.province_id:
-            old_province = old_city.province.name if old_city.province else "sin provincia"
-            new_province = new_city.province.name if new_city.province else "sin provincia"
+            old_province = (
+                old_city.province.name if old_city.province else "sin provincia"
+            )
+            new_province = (
+                new_city.province.name if new_city.province else "sin provincia"
+            )
 
-            desc = f'Se modificó el campo \'Provincia\' del sitio \'{target.name}\': "{old_province}" → "{new_province}"'
+            desc = f"Se modificó el campo 'Provincia' del sitio '{target.name}': \"{old_province}\" → \"{new_province}\""
             _create_history_entry(target, user_id, "Edición", desc)
     except Exception:
         pass
 
+
 # Funciones para desactivar/reactivar listeners de auditoría (necesarios para seeds)
+
 
 def disable_audit_listeners():
     """Desactiva temporalmente los listeners de auditoría."""
     for listener in [log_creation_history, log_update_history]:
         try:
-            event_name = "after_insert" if listener == log_creation_history else "after_update"
+            event_name = (
+                "after_insert" if listener == log_creation_history else "after_update"
+            )
             event.remove(HistoricSite, event_name, listener)
         except Exception:
             pass
