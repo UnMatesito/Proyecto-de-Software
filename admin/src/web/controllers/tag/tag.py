@@ -6,6 +6,7 @@ from core.services.tag_service import (
     get_paginated_tags,
     get_tag_by_id,
     update_tag,
+    get_tag_by_name
 )
 from web.forms.tag import CreateTagForm, EditTagForm
 from web.utils.auth import login_required, permission_required
@@ -26,13 +27,15 @@ def list_paginated_tags():
     sorted_by: ascendente o descendente.
     page: Pagina acutal, inicialmente en 1
     pagination: Diccionario que posee los elementos necesarios para la paginación.
+    tag: Se utiliza para recibir y mostrar un tag en particular.
     """
     try:
+        name = request.args.get("name", None)
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
         page = request.args.get("page", 1)
         pagination = get_paginated_tags(
-            page=page, order_by=order_by, sorted_by=sorted_by
+            page=page, order_by=order_by, sorted_by=sorted_by, name=name
         )
         columns = [
             {"key": "name", "label": "Nombre"},

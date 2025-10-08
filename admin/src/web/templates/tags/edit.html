@@ -18,7 +18,7 @@
     {% endwith %}
 
     <div class="p-4 max-w-lg mx-auto ">
-        <form method="POST">
+        <form method="POST" class="mt-8">
             {{ form.hidden_tag() }}
             <p class="font-bold text-xl">
                Tag: {{tag.name}}
@@ -31,7 +31,7 @@
                 {% endfor %}
             </div>
             <div class="mt-6">
-                {{ form.submit(class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700") }}
+                {{ form.submit(class="text-white bg-proyecto-primary hover:bg-blue-800 focus:ring-4 focus:ring-proyecto-primary/20 font-semibold rounded-lg text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center inline-flex items-center ") }}
                 <a href="{{ url_for('tag_bp.list_paginated_tags') }}"
                    class="ml-2 text-gray-600 hover:underline">Cancelar</a>
             </div>
