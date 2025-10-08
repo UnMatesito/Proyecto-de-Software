@@ -124,7 +124,7 @@ class CreateSiteForm(FlaskForm):
         """Constructor"""
         super(CreateSiteForm, self).__init__(*args, **kwargs)
 
-        self.province.choices =  [  # Cargo las provincias en el select
+        self.province.choices = [  # Cargo las provincias en el select
             (province.id, province.name) for province in get_all_provinces()
         ]
 
