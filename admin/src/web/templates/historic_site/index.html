@@ -22,61 +22,48 @@
             <div class="w-full lg:w-auto px-3 py-2 border-2 border-gray-300 rounded shadow-lg flex-none">
                 <h3 class="text-lg font-semibold mb-2">Ordenar Sitios</h3>
 
+                {% set current_args = request.args.to_dict() %}
+                {% set _ = current_args.update({'sorted_by': 'asc', 'order_by': 'name'}) %}
 
                 <div class="flex flex-row flex-wrap justify-center 2xl:flex-col overflow-x-auto 2xl:overflow-x-visible gap-2 2xl:gap-0 2xl:space-y-2 pb-2 2xl:pb-0">
                     <div class="flex-shrink-0 2xl:flex-shrink">
-                        <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='asc', order_by='name') }}"
-                        class="
-                        block px-3 py-2 rounded-md whitespace-nowrap
-                        {% if order_by == 'name' and sorted_by == 'asc' %}
-                            bg-green-300
-                            font-semibold
-                        {% else %}
-                            bg-green-100 hover:bg-green-200
-                        {% endif %}">
+                        {% set sort_args = current_args.copy() %}
+                        {% set _ = sort_args.update({'sorted_by': 'asc', 'order_by': 'name'}) %}
+                        <a href="{{ url_for('site_bp.list_paginated_sites', **sort_args) }}"
+                        class="block px-3 py-2 rounded-md whitespace-nowrap
+                        {% if order_by == 'name' and sorted_by == 'asc' %}bg-green-300 font-semibold{% else %}bg-green-100 hover:bg-green-200{% endif %}">
                             Ordenar A-Z
                         </a>
                     </div>
                     <div class="flex-shrink-0 2xl:flex-shrink">
-                        <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='desc', order_by='name') }}"
-                            class="
-                            block px-3 py-2 rounded-md whitespace-nowrap
-                            {% if order_by == 'name' and sorted_by == 'desc' %}
-                                bg-green-300
-                                font-semibold
-                            {% else %}
-                                bg-green-100 hover:bg-green-200
-                            {% endif %}">
+                        {% set sort_args = current_args.copy() %}
+                        {% set _ = sort_args.update({'sorted_by': 'desc', 'order_by': 'name'}) %}
+                        <a href="{{ url_for('site_bp.list_paginated_sites', **sort_args) }}"
+                        class="block px-3 py-2 rounded-md whitespace-nowrap
+                        {% if order_by == 'name' and sorted_by == 'desc' %}bg-green-300 font-semibold{% else %}bg-green-100 hover:bg-green-200{% endif %}">
                             Ordenar Z-A
                         </a>
                     </div>
                     <div class="flex-shrink-0 2xl:flex-shrink">
-                        <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='desc', order_by='created_at') }}"
-                            class="
-                            block px-3 py-2 rounded-md whitespace-nowrap
-                            {% if order_by == 'created_at' and sorted_by == 'desc' %}
-                                bg-green-300
-                                font-semibold
-                            {% else %}
-                                bg-green-100 hover:bg-green-200
-                            {% endif %}">
+                        {% set sort_args = current_args.copy() %}
+                        {% set _ = sort_args.update({'sorted_by': 'desc', 'order_by': 'created_at'}) %}
+                        <a href="{{ url_for('site_bp.list_paginated_sites', **sort_args) }}"
+                        class="block px-3 py-2 rounded-md whitespace-nowrap
+                        {% if order_by == 'created_at' and sorted_by == 'desc' %}bg-green-300 font-semibold{% else %}bg-green-100 hover:bg-green-200{% endif %}">
                             Más reciente primero
                         </a>
                     </div>
                     <div class="flex-shrink-0 2xl:flex-shrink">
-                        <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='asc', order_by='created_at') }}"
-                            class="
-                            block px-3 py-2 rounded-md whitespace-nowrap
-                            {% if order_by == 'created_at' and sorted_by == 'asc' %}
-                                bg-green-300
-                                font-semibold
-                            {% else %}
-                                bg-green-100 hover:bg-green-200
-                            {% endif %}">
+                        {% set sort_args = current_args.copy() %}
+                        {% set _ = sort_args.update({'sorted_by': 'asc', 'order_by': 'created_at'}) %}
+                        <a href="{{ url_for('site_bp.list_paginated_sites', **sort_args) }}"
+                        class="block px-3 py-2 rounded-md whitespace-nowrap
+                        {% if order_by == 'created_at' and sorted_by == 'asc' %}bg-green-300 font-semibold{% else %}bg-green-100 hover:bg-green-200{% endif %}">
                             Más antiguo primero
                         </a>
                     </div>
                 </div>
+
 
                 <!-- Divisor y botones de acción -->
                 <div class="border-t border-2 mt-2"></div>
