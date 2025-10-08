@@ -11,10 +11,10 @@ from .controllers import (
     feature_flag_bp,
     main_bp,
     site_bp,
+    site_history_bp,
     tag_bp,
     user_bp,
     user_management_bp,
-    site_history_bp,
 )
 from .handlers import error
 from .utils.auth import (
@@ -42,9 +42,9 @@ def create_app(env="development", static_folder="../../static"):
     bcrypt.init_app(app)
     db.init_app(app)
     session.init_app(app)
- 
+
     import core.audit
-    
+
     # Hooks
     app.before_request(hook_admin_maintenance)
 

@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% from "macros/button.html" import button %}
-{% from "macros/table.html" import table, cardTable %}
+{% from "macros/table.html" import table, card_table %}
 {% from "macros/toast.html" import toast %}
 
 {% block title %}Historial - {{ site_name }}{% endblock %}
@@ -16,7 +16,7 @@
         {{ button("Volver", link=back_url, icon_left_svg='<i class="fa-solid fa-arrow-left mr-1"></i>') }}
     </div>
     {% endif %}
-<div class="flex flex-col lg:flex-row justify-center items-start gap-4">
+<div class="flex flex-col lg:flex-row justify-center items-stretch gap-4">
     <div class="w-full lg:w-64 p-4 border-2 border-gray-300 rounded shadow-lg flex-shrink-0">
         <h3 class="text-lg font-semibold mb-2">Filtros de Historial</h3>
         <form method="get" action="{{ url_for('site_history.view_site_history', site_id=site_id) }}" class="space-y-4">
@@ -92,7 +92,7 @@
                     (" con los filtros aplicados" if request.args.get('user_id') or request.args.get('event_type') or request.args.get('date_from') or request.args.get('date_to') else "")
             ) }}
 
-            {{ cardTable(   
+            {{ card_table(   
                 data=site_history,
                 columns=columns,
                 empty_message="No hay registros en el historial"
@@ -191,4 +191,44 @@
     </div>
 </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateFrom = document.querySelector('input[name="date_from"]');
+        const dateTo = document.querySelector('input[name="date_to"]');
+
+        function updateDateToMin() {
+            if (dateFrom.value) {
+                dateTo.min = dateFrom.value;
+            } else {
+                dateTo.removeAttribute('min');
+            }
+        }
+
+        function updateDateFromMax() {
+            if (dateTo.value) {
+                dateFrom.max = dateTo.value;
+            } else {
+                dateFrom.removeAttribute('max');
+            }
+        }
+
+        dateFrom.addEventListener('change', function() {
+            updateDateToMin();
+            if (dateTo.value && dateTo.value < dateFrom.value) {
+                dateTo.value = dateFrom.value;
+            }
+        });
+
+        dateTo.addEventListener('change', function() {
+            updateDateFromMax();
+            if (dateFrom.value && dateFrom.value > dateTo.value) {
+                dateFrom.value = dateTo.value;
+            }
+        });
+
+        updateDateToMin();
+        updateDateFromMax();
+    });
+    </script>
 {% endblock %}

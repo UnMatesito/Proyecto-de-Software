@@ -60,6 +60,7 @@ def create_historic_site(**kwargs):
 
 def get_historic_site_by_id(site_id: int):
     """Obtiene un sitio histórico por su ID."""
+
     site = HistoricSite.query.get(site_id)
     if not site:
         raise ValueError(f"No existe el sitio histórico con id {site_id}")
@@ -70,6 +71,7 @@ def assign_relations_to_historic_site(
     historic_site, conservation_state, category, user, city, tags=None
 ):
     """Asigna relaciones a un sitio histórico."""
+
     historic_site.conservation_state = conservation_state
     historic_site.category = category
     historic_site.user = user
@@ -83,6 +85,7 @@ def assign_relations_to_historic_site(
 
 def update_conservation_state(site, conservation_id):
     """Actualiza el estado de conservación de un sitio histórico."""
+
     conservation_state = conservation_state_service.get_conservation_state_by_id(
         conservation_id
     )
@@ -92,6 +95,8 @@ def update_conservation_state(site, conservation_id):
 
 
 def update_category(site, category_id):
+    """Actualiza la categoria de un sitio histórico."""
+
     category = category_service.get_category_by_id(category_id)
     if not site.same_category(category):
         site.category = category
@@ -100,6 +105,7 @@ def update_category(site, category_id):
 
 def update_city(site, city_id):
     """Actualiza la ciudad de un sitio histórico."""
+
     city = city_service.get_city_by_id(city_id)
     if not site.same_city(city):
         site.city = city
@@ -107,6 +113,8 @@ def update_city(site, city_id):
 
 
 def update_name(site, name):
+    """Actualiza le nombre de un sitio histórico."""
+
     if not isinstance(name, str):
         raise ValueError("El nombre del sitio debe ser un string")
     if not site.same_name(name):
@@ -115,6 +123,8 @@ def update_name(site, name):
 
 
 def update_brief_description(site, description):
+    """Actualiza la descripción breve de un sitio histórico."""
+
     if not isinstance(description, str):
         raise ValueError("La descripcion breve debe ser un string")
     if not site.same_brief_description(description):
@@ -123,6 +133,8 @@ def update_brief_description(site, description):
 
 
 def update_full_description(site, description):
+    """Actualiza la descripción completa de un sitio histórico."""
+
     if not isinstance(description, str):
         raise ValueError("La descripcion completa debe ser un string")
     if not site.same_full_description(description):
@@ -131,9 +143,8 @@ def update_full_description(site, description):
 
 
 def update_location(site, location):
-    """
-    Actualiza la ubicación del sitio histórico solo si cambió realmente.
-    """
+    """Actualiza la ubicación del sitio histórico solo si cambió realmente."""
+
     if not isinstance(location["lat"], (int, float)):
         raise ValueError("La latitude debe ser numerica")
     if not isinstance(location["lon"], (int, float)):
@@ -154,18 +165,16 @@ def update_location(site, location):
 
 
 def update_inauguration_year(site, year):
+    """Actualiza el año de inaguración de un sitio histórico."""
+
     if not site.same_inauguration_year(year):
         site.inauguration_year = year
     return site
 
 
-def update_registration_date(site, date):
-    if not site.same_registration_date(date):
-        site.registration_date = date
-    return site
-
-
 def update_is_visible(site, visibility):
+    """Actualiza el estado de visibilidad de un sitio histórico si no está borrado y está validado."""
+
     if not isinstance(visibility, bool):
         raise ValueError("El valor de visibilidad debe ser booleano")
     if visibility:
@@ -179,6 +188,8 @@ def update_is_visible(site, visibility):
 
 
 def update_tags(site, tag_ids):
+    """Actualiza los tags de un sitio histórico."""
+
     tags = []
     for tag_id in tag_ids:
         tag = tag_service.get_tag_by_id(tag_id)
@@ -194,6 +205,8 @@ def update_tags(site, tag_ids):
 
 
 def validate_historic_site(site_id):
+    """Valida un sitio histórico si no está borrado ni validado."""
+
     site = get_historic_site_by_id(site_id)
     if not site.pending_validation:
         raise ValueError(f"El sitio con id {site_id} ya se encuentra validado")
@@ -224,6 +237,7 @@ def assign_tags(site_id, tag_ids):
 
 def add_tags(site_id, tag_ids):
     """Agrega tags adicionales a un sitio histórico sin eliminar los existentes."""
+
     if not tag_ids:
         raise ValueError("Se requiere al menos un tag")
 
@@ -247,6 +261,7 @@ def add_tags(site_id, tag_ids):
 
 def delete_historic_site(site_id):
     """Marca un sitio histórico como eliminado usando el método del modelo."""
+
     site = get_historic_site_by_id(site_id)
     if site.is_deleted():
         raise ValueError(f"El sitio histórico {site.name} ya está eliminado")
@@ -260,6 +275,13 @@ def delete_historic_site(site_id):
 
 
 def update_historic_site(body):
+    """Actualiza todos los dados del sitio histórico.
+
+    operations: Es un diccionario el cual es accedido por el cuerpo
+    del parametro "body". Cada indice ejecuta la función de actilización
+    para determinado campo del modelo HistoricSite.
+
+    """
     try:
         site = get_historic_site_by_id(body["historic_site_id"])
         operations = {
@@ -291,6 +313,8 @@ def update_historic_site(body):
 
 
 def restore_historic_site(site_id):
+    """Restaura un sitio historico que se encontraba borrado."""
+
     site = get_historic_site_by_id(site_id)
     if not site.is_deleted:
         raise ValueError(f"El sitio {site_id} no se encuentra borrado")

@@ -13,32 +13,13 @@
 <div class="max-w-3xl mx-auto mt-6 space-y-6">
 
     <!-- Botón volver -->
-  <div class="flex justify-start">
+  <nav class="flex justify-start" aria-label="Navegación de retorno">
     {{ button("Volver", link=url_for('users.detail', user_id=user.id), icon_left_svg='<i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i>') }}
-  </div>
-
-    <!-- Flash Messages -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="space-y-3">
-        {% for category, message in messages %}
-          <div class="
-              p-4 rounded shadow
-              {% if category == 'success' %} bg-green-100 text-green-800
-              {% elif category == 'error' %} bg-red-100 text-red-800
-              {% elif category == 'warning' %} bg-yellow-100 text-yellow-800
-              {% else %} bg-gray-100 text-gray-800 {% endif %}
-            ">
-            {{ message }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
-
+  </nav>
 
     <!-- Card con info básica -->
-  <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
+  <section class="bg-white shadow rounded-lg p-6 border border-gray-200" aria-labelledby="user-info-heading">
+    <h2 id="user-info-heading" class="sr-only">Información del usuario</h2>
     <dl class="divide-y divide-gray-200">
       <div class="py-3 grid grid-cols-3 gap-4">
         <dt class="font-semibold text-gray-700">Email:</dt>
@@ -86,12 +67,12 @@
         </dd>
       </div>
     </dl>
-  </div>
+  </section>
 
 
   <!-- Card gestión de roles -->
-  <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Gestión de Roles</h3>
+  <section class="bg-white shadow rounded-lg p-6 border border-gray-200" aria-labelledby="role-management-heading">
+    <h2 id="role-management-heading" class="text-lg font-semibold text-gray-900 mb-4">Gestión de Roles</h2>
     <form method="POST" action="{{ url_for('user_management.assign_role', user_id=user.id) }}" class="space-y-4">
       {{ assign_role_form.hidden_tag() }}
       <label for="role_id" class="block text-sm font-medium text-gray-700">Rol</label>
@@ -105,15 +86,15 @@
         {{ button("Asignar Rol", type="submit", icon_left_svg='<i class="fa-solid fa-user-plus mr-2" aria-hidden="true"></i>') }}
       </div>
     </form>
-  </div>
+  </section>
 
     {% if is_system_admin() %}
     <!-- Cards gestión de estado + system admin -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
     <!-- Card gestión de estado -->
-    <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Gestión de Estado</h3>
+    <section class="bg-white shadow rounded-lg p-6 border border-gray-200" aria-labelledby="state-management-heading">
+      <h2 id="state-management-heading" class="text-lg font-semibold text-gray-900 mb-4">Gestión de Estado</h2>
       <form method="POST" action="{{ url_for('user_management.toggle_block', user_id=user.id) }}" class="space-y-4">
         {{ block_form.hidden_tag() }}
         <div class="flex items-center">
@@ -125,11 +106,11 @@
           {{ button("Actualizar Estado", type="submit", icon_left_svg='<i class="fa-solid fa-lock mr-2" aria-hidden="true"></i>') }}
         </div>
       </form>
-    </div>
+    </section>
 
     <!-- Card gestión de System Admin -->
-    <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Gestión de System Admin</h3>
+    <section class="bg-white shadow rounded-lg p-6 border border-gray-200" aria-labelledby="system-admin-heading">
+      <h2 id="system-admin-heading" class="text-lg font-semibold text-gray-900 mb-4">Gestión de System Admin</h2>
       <form method="POST" action="{{ url_for('user_management.toggle_system_admin', user_id=user.id) }}" class="space-y-4">
         {{ system_admin_form.hidden_tag() }}
         <div class="flex items-center">
@@ -141,11 +122,12 @@
           {{ button("Actualizar", type="submit", icon_left_svg='<i class="fa-solid fa-shield-halved mr-2" aria-hidden="true"></i>') }}
         </div>
       </form>
-    </div>
+    </section>
+  </div>
       {% else %}
       <!-- Card gestión de estado -->
-    <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Gestión de Estado</h3>
+    <section class="bg-white shadow rounded-lg p-6 border border-gray-200" aria-labelledby="state-management-single-heading">
+      <h2 id="state-management-single-heading" class="text-lg font-semibold text-gray-900 mb-4">Gestión de Estado</h2>
       <form method="POST" action="{{ url_for('user_management.toggle_block', user_id=user.id) }}" class="space-y-4">
         {{ block_form.hidden_tag() }}
         <div class="flex items-center">
@@ -157,8 +139,7 @@
           {{ button("Actualizar Estado", type="submit", icon_left_svg='<i class="fa-solid fa-lock mr-2" aria-hidden="true"></i>') }}
         </div>
       </form>
-    </div>
+    </section>
     {% endif %}
-  </div>
 </div>
 {% endblock %}

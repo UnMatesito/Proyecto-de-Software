@@ -33,7 +33,17 @@ def index():
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
         page = request.args.get("page", 1)
-        blocked_param = request.args.get("blocked", None)
+        blocked_param=None
+        deleted_param=None
+        status = request.args.get("status", None)
+        if status == "blocked":
+            blocked_param = True
+        elif status == "active":
+            blocked_param = False
+        elif status == "deleted":
+            deleted_param = True
+        elif status == "not_deleted":
+            deleted_param = False
         role_id = request.args.get("role_id", None)
         email = request.args.get("email", None)
         columns = [
@@ -53,8 +63,9 @@ def index():
             order_by=order_by,
             sorted_by=sorted_by,
             blocked=blocked_param,
+            delete=deleted_param,
             role_id=role_id,
-            email=email
+            email=email,
         )
         roles = get_all_roles()
         return render_template(
@@ -63,6 +74,7 @@ def index():
             columns=columns,
             roles=roles,
             blocked=blocked_param,
+            delete=deleted_param,
             role_id=role_id,
             sorted_by=sorted_by,
             order_by=order_by,
@@ -99,8 +111,8 @@ def search_by_email():
     user = get_user_by_email(correo)
     if not user:
         return render_template("users/index.html", pagination=[], columns=[])
-    
-    return redirect(url_for("users.index",email=correo))
+
+    return redirect(url_for("users.index", email=correo))
 
 
 @user_bp.post("/create")
@@ -115,7 +127,9 @@ def create_post():
             if get_user_by_email(form.email.data):
                 form.email.errors.append("El correo ya está registrado.")
                 return render_template(
-                "users/create.html", form=form, is_system_admin=current_user.is_admin()
+                    "users/create.html",
+                    form=form,
+                    is_system_admin=current_user.is_admin(),
                 )
             user_data = {
                 "first_name": form.first_name.data,
@@ -214,9 +228,9 @@ def edit_post(user_id):
             if get_user_by_email(form.email.data):
                 form.email.errors.append("El correo ya está registrado.")
                 return render_template(
-                "users/edit.html",
-                form=form,
-                user=user,
+                    "users/edit.html",
+                    form=form,
+                    user=user,
                 )
             update_user_attribute(user_id, "first_name", form.first_name.data)
             update_user_attribute(user_id, "last_name", form.last_name.data)
@@ -283,7 +297,7 @@ def change_password_post(user_id):
         if not user:
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
-        
+
         if user.is_admin() and not current_user.is_admin():
             flash(
                 "No puede cambiar la contraseña de un administrador del sistema si usted no es administrador del sistema",
@@ -328,7 +342,7 @@ def change_password_get(user_id):
         if not user:
             flash("Usuario no encontrado", "error")
             return redirect(url_for("users.index"))
-        
+
         if user.is_admin() and not current_user.is_admin():
             flash(
                 "No puede cambiar la contraseña de un administrador del sistema si usted no es administrador del sistema",
@@ -387,7 +401,7 @@ def change_self_password_post():
                     session["user_id"], form.old_password.data, form.new_password.data
                 )
                 flash("Contraseña actualizada", "success")
-                return redirect(url_for('main_bp.profile'))
+                return redirect(url_for("main_bp.profile"))
             except ValueError as e:
                 flash(str(e), "warning")
             except Exception as e:

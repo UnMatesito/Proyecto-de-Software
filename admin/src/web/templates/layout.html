@@ -18,7 +18,7 @@
     <link rel="manifest" href="{{ url_for('static', filename='img/favicon/site.webmanifest') }}" />
 </head>
 
-<body class="flex flex-col h-screen w-screen bg-gray-50 text-proyecto-text">
+<body class="flex flex-col min-h-screen w-full bg-gray-50 text-proyecto-text">
 
     {% from 'macros/toast.html' import toast %}
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -33,17 +33,17 @@
 
     {% include 'components/navbar.html' %}
 
-    <div class="flex flex-row">
-        <div>
+    <div class="flex flex-row flex-1 overflow-hidden">
+        <div class="flex-shrink-0">
             {% include 'components/sidebar.html' %}
         </div>
 
-        <div class="w-full">
-            <header class="text-center">
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="text-center flex-shrink-0">
                 {% block header %}{% endblock %}
             </header>
 
-            <main class="flex-grow p-6 overflow-y-auto">
+            <main class="flex-1 overflow-y-auto overflow-x-hidden">
                 {% block content %}{% endblock %}
             </main>
         </div>

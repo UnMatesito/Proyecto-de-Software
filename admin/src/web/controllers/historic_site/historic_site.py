@@ -40,6 +40,50 @@ site_bp = Blueprint("site_bp", __name__, url_prefix="/sites")
 @login_required
 @permission_required("site_index")
 def list_paginated_sites():
+    """
+    Muestra la lista paginada de sitios históricos con opciones de filtrado y ordenamiento.
+
+    Este endpoint permite visualizar los sitios históricos con capacidades de:
+    - Paginación (25 elementos por página)
+    - Filtrado múltiple por diversos criterios
+    - Ordenamiento por diferentes columnas
+    - Búsqueda textual en nombre y descripción breve
+
+    Parámetros URL:
+        page (int): Número de página para paginación (default: 1)
+        order_by (str): Campo para ordenar resultados (default: "name")
+        sorted_by (str): Dirección de ordenamiento "asc" o "desc" (default: "asc")
+        search_text (str): Texto para búsqueda en nombre y descripción breve
+        province_id (int): ID de provincia para filtrar
+        city_id (int): ID de ciudad para filtrar
+        conservation_state_id (int): ID de estado de conservación
+        is_visible (str): Filtro por visibilidad ("true" para visibles)
+        date_from (str): Fecha desde para filtrar por creación (formato YYYY-MM-DD)
+        date_to (str): Fecha hasta para filtrar por creación (formato YYYY-MM-DD)
+        tag_id (str): IDs de tags separados por comas para filtro múltiple
+
+    Returns:
+        Response: Renderiza template con lista de sitios y datos para filtros
+
+    Template:
+        historic_site/index.html
+
+    Contexto template:
+        sites (list): Lista de sitios históricos de la página actual
+        pagination (dict): Información de paginación
+        columns (list): Configuración de columnas para la tabla
+        filters (dict): Filtros aplicados actualmente
+        order_by (str): Campo de ordenamiento actual
+        sorted_by (str): Dirección de ordenamiento actual
+        province_choices (list): Opciones para dropdown de provincias
+        city_choices (list): Opciones para dropdown de ciudades
+        conservation_state_choices (list): Opciones para dropdown de estados de conservación
+        tag_choices (list): Opciones para dropdown de tags
+        selected_tags (list): Tags seleccionados actualmente
+
+    Raises:
+        Exception: Si ocurre un error durante la carga de datos
+    """
     try:
         # Obtener tags como string separado por comas y convertir a lista
         tags_param = request.args.get("tag_id", "")
@@ -132,6 +176,8 @@ def list_paginated_sites():
 @login_required
 @permission_required("site_show")
 def detail(site_id):
+    """Renderiza el detalle del sitio histórico al que pertenece el ID enviado por URL."""
+
     try:
         site = get_historic_site_by_id(site_id)
         province = get_province_by_id(site.city.province.id)
@@ -154,6 +200,8 @@ def detail(site_id):
 @login_required
 @permission_required("site_new")
 def get_create():
+    """Renderiza el formulario para crear sitios históricos."""
+
     try:
         form = CreateSiteForm()
         return render_template("historic_site/create.html", form=form)
@@ -166,6 +214,9 @@ def get_create():
 @login_required
 @permission_required("site_new")
 def post_create():
+    """Recibe y verifica los datos enviados por el formulario de creacion.
+    Si los datos enviados son válidos hace el alta del sitio histórico.
+    """
     current_user = get_user_by_id(session["user_id"])
     form = CreateSiteForm()
     if form.validate_on_submit():
@@ -213,6 +264,8 @@ def post_create():
 @login_required
 @permission_required("site_update")
 def get_edit(site_id):
+    """Renderiza el formulario para modificar los sitios históricos."""
+
     try:
         site = get_historic_site_by_id(site_id=site_id)
         site_name = site.name
@@ -230,7 +283,12 @@ def get_edit(site_id):
         lat = float(site.latitude)
 
         return render_template(
-            "historic_site/edit.html", form=form, lat=lat, lon=lon, site_name=site_name, site=site
+            "historic_site/edit.html",
+            form=form,
+            lat=lat,
+            lon=lon,
+            site_name=site_name,
+            site=site,
         )
     except Exception as e:
         flash(f"Se produjo un error, {e}", "error")
@@ -241,6 +299,9 @@ def get_edit(site_id):
 @login_required
 @permission_required("site_update")
 def post_edit(site_id):
+    """Recibe y verifica los datos enviados por el formulario de edición.
+    Si los datos enviados son válidos hace el edit del sitio histórico.
+    """
     form = EditSiteForm()
     if form.validate_on_submit():
         try:
@@ -282,6 +343,9 @@ def post_edit(site_id):
 @login_required
 @permission_required("site_destroy")
 def delete(site_id):
+    """Recibe el id del un sitio histórico, si existe y
+    no está borrado lo borra.
+    """
     try:
         delete_historic_site(site_id=site_id)
         flash(f"El sitio {site_id} fue eliminado exitosamente", "success")
@@ -295,6 +359,9 @@ def delete(site_id):
 @login_required
 @permission_required("site_restore")
 def restore(site_id):
+    """Recibe el id del un sitio histórico, si existe y
+    está borrado lo restaura.
+    """
     try:
         restore_historic_site(site_id=site_id)
         flash(f"El sitio {site_id} fue restaurado exitosamente", "success")
@@ -307,6 +374,9 @@ def restore(site_id):
 @login_required
 @permission_required("proposal_approve")
 def validate(site_id):
+    """Recibe el id del un sitio histórico, si existe y
+    está borrado lo válida.
+    """
     try:
         validate_historic_site(site_id=site_id)
         flash(f"Se valido correctamente el sitio {site_id}", "success")
@@ -319,6 +389,32 @@ def validate(site_id):
 @login_required
 @permission_required("site_export")
 def export():
+    """
+    Exporta sitios históricos a formato CSV según filtros aplicados.
+
+    Procesa múltiples parámetros de filtrado (búsqueda textual, provincia, ciudad,
+    estado de conservación, visibilidad, fechas y tags) para generar un archivo CSV
+    con los sitios que coincidan con los criterios especificados.
+
+    Parámetros URL:
+        order_by (str): Campo para ordenar los resultados (default: "name")
+        sorted_by (str): Dirección del ordenamiento "asc" o "desc" (default: "asc")
+        search_text (str): Texto para búsqueda en nombre y descripción
+        province_id (int): ID de provincia para filtrar
+        city_id (int): ID de ciudad para filtrar
+        conservation_state_id (int): ID de estado de conservación
+        is_visible (bool): Filtro por visibilidad del sitio
+        date_from (str): Fecha desde para filtrar por creación
+        date_to (str): Fecha hasta para filtrar por creación
+        tag_id (str): IDs de tags separados por comas
+
+    Returns:
+        Response: Archivo CSV para descarga o redirección con mensaje flash
+
+    Raises:
+        ValueError: Si los parámetros de filtrado son inválidos
+        Exception: Si ocurre un error durante la exportación
+    """
     try:
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
