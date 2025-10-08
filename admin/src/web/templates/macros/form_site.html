@@ -123,16 +123,10 @@
 
                     <div>
                         {{form.longitude(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 hidden")}}
-                        {% for error in form.longitude.errors %}
-                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
-                        {% endfor %}
                     </div>
 
                     <div>
                         {{form.latitude(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 hidden")}}
-                        {% for error in form.latitude.errors %}
-                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
-                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -154,6 +148,9 @@
 
 <div class="flex items-center justify-center flex-col mt-2 gap-2 " style=" height: 70vh; max-width: 900px; width: 70%;"> 
     <h3 class="block font-semibold text-gray-700 mb-1">Seleccione la ubicación en el mapa!</h3>
+     {% if form.longitude.errors or form.latitude.errors  %}
+        <p class="text-red-500 text-sm mt-1">La ubicación es obligatoria</p>
+    {% endif %}
     <div id="map">
 
     </div>
