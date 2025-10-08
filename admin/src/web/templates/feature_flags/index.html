@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 justify-items-center px-4">
         {% for flag in flags %}
             {{ feature_flag_card(
                 name=flag.name,
