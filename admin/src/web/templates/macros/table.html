@@ -131,7 +131,7 @@
 {% endmacro %}
 
 {% macro cardTable(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
-    <div class="lg:hidden grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div class="lg:hidden grid grid-cols-1 md:grid-cols-3 gap-4 break-words">
         {% if data is mapping %}
             {% set items = data.get("items", []) %}
         {% else %}
