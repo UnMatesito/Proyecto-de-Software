@@ -1,14 +1,11 @@
 {% macro paginate(pagination = None, url = None) %}
-    {% set current_args = request.args.to_dict() %}
     {% if pagination %}
     <nav aria-label="Page navigation">
         <ul class="inline-flex -space-x-px text-sm">
             <!-- Botón Previous -->
             {% if pagination.has_prev %}
-                {% set page_args = current_args.copy() %}
-                {% set _ = page_args.update({'page': pagination.prev_num}) %}
                 <li>
-                    <a href="{{ url_for(url, **page_args) }}"
+                    <a href="{{ url_for(url, sorted_by=pagination.sorted_by, order_by=pagination.order_by, page=pagination.prev_num) }}"
                        class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                         <i class="fa-solid fa-arrow-left mr-1"></i> Anterior
                     </a>
@@ -23,10 +20,8 @@
 
             <!-- Primera página y ellipsis si es necesario -->
             {% if pagination.has_prev and 1 not in pagination.page_range %}
-                {% set page_args = current_args.copy() %}
-                {% set _ = page_args.update({'page': 1}) %}
                 <li>
-                    <a href="{{ url_for(url, **page_args) }}"
+                    <a href="{{ url_for(url, sorted_by=pagination.sorted_by, order_by=pagination.order_by, page=1) }}"
                        class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                         1
                     </a>
@@ -40,17 +35,15 @@
 
             <!-- Páginas del rango -->
             {% for page in pagination.page_range %}
-                {% set page_args = current_args.copy() %}
-                {% set _ = page_args.update({'page': page}) %}
                 <li>
                     {% if pagination.current_page == page %}
-                        <a href="{{ url_for(url, **page_args) }}"
+                        <a href="{{ url_for(url, sorted_by=pagination.sorted_by, order_by=pagination.order_by, page=page) }}"
                            aria-current="page"
                            class="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">
                             {{ page }}
                         </a>
                     {% else %}
-                        <a href="{{ url_for(url, **page_args) }}"
+                        <a href="{{ url_for(url, sorted_by=pagination.sorted_by, order_by=pagination.order_by, page=page) }}"
                            class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                             {{ page }}
                         </a>
@@ -65,10 +58,8 @@
                         ...
                     </span>
                 </li>
-                {% set page_args = current_args.copy() %}
-                {% set _ = page_args.update({'page': pagination.pages}) %}
                 <li>
-                    <a href="{{ url_for(url, **page_args) }}"
+                    <a href="{{ url_for(url, sorted_by=pagination.sorted_by, order_by=pagination.order_by, page=pagination.pages) }}"
                        class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                         {{ pagination.pages }}
                     </a>
@@ -77,10 +68,8 @@
 
             <!-- Botón Next -->
             {% if pagination.has_next %}
-                {% set page_args = current_args.copy() %}
-                {% set _ = page_args.update({'page': pagination.next_num}) %}
                 <li>
-                    <a href="{{ url_for(url, **page_args) }}"
+                    <a href="{{ url_for(url, sorted_by=pagination.sorted_by, order_by=pagination.order_by, page=pagination.next_num) }}"
                        class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                         Siguiente <i class="fa-solid fa-arrow-right ml-1"></i>
                     </a>
