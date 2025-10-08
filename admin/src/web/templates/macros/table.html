@@ -15,7 +15,7 @@
   {% endif %}
 
   {% if items and items|length > 0 %}
-    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+    <table class="max-w-full text-sm text-left text-gray-500">
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
           {% for col in columns %}
@@ -72,7 +72,7 @@
 {% endmacro %}
 
 {% macro render_action_buttons(item, detail_route=None, edit_route=None, delete_route=None, restore_route=None, validate_route=None, id_param="id", mobile=False) %}
-  <div class="flex flex-row justify-center space-x-2">
+  <div class="flex flex-row justify-center space-x-2 scale-[0.95]">
     {% if detail_route %}
       {% set detail_params = {id_param: item.id} %}
       {{ button("Detalles", link=url_for(detail_route, **detail_params), icon_left_svg=get_icon("view"), mobile=mobile) }}

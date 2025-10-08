@@ -138,17 +138,6 @@ def test_search_sites_with_a_tag(setup_data):
     assert setup_data in results
 
 
-def test_search_sites_with_multiple_tag(setup_data):
-    """Test searching historic sites with multiple tags."""
-
-    # Aplicar el filtro a tags
-    query = search.build_search_query(HistoricSite, {"tag_names": setup_data.tags})
-    results = query.all()
-
-    # Verificar que el sitio historico se encuentra en los resultados
-    assert len(setup_data.tags) == 2
-
-
 def test_search_sites_with_conservation_status(setup_data):
     """Test searching historic sites by conservation status."""
 

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% from "macros/button.html" import button, button_blank %}
 {% from "macros/paginate.html" import paginate %}
-{% from "macros/table.html" import table %}
+{% from "macros/table.html" import table, card_table %}
 {% from "macros/input.html" import email_input %}
 {% block title %}Listado de usuarios{% endblock %}
 
@@ -16,14 +16,14 @@
     <!-- Contenedor del buscador -->
     <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2 flex-col">
         <h3 class="text-lg font-semibold mb-2">Buscar por correo electronico</h3>
-        <form method="get" action="{{ url_for('users.search_by_email') }}" class="flex space-x-2 w-full max-w-md items-center">
-            {{ email_input('email', 'email', 'Ingresar Correo', value=request.args.get('email', ''), required=True, class="w-80") }}
-            {{ button('Buscar', type='submit', icon_left_svg='<i class="fa-solid fa-magnifying-glass mr-1"></i>') }}
+        <form method="get" action="{{ url_for('users.search_by_email') }}" class="flex flex-col md:flex-row space-y-2 md:space-y-0 space-x-2 w-full max-w-md items-center">
+            {{ email_input('email', 'email', 'Ingresar Correo', value=request.args.get('email', ''), required=True, class="w-full md:w-80") }}
+            {{ button('Buscar', type='submit', icon_left_svg='<i class="fa-solid fa-magnifying-glass mr-1"></i>', class="w-[100%]") }}
         </form>
     </div>
 
     <!-- Contenedor filtro y ordenamiento -->
-    <div class="bg-white shadow rounded p-4 flex flex-wrap flex-row items-end justify-between gap-4">
+    <div class="bg-white shadow rounded p-4 flex flex-wrap flex-row items-end md:justify-center lg:justify-between gap-4">
         <!-- Contenedor ordenamiento -->
         <div>
             <h3 class="text-lg font-semibold mb-2">Ordenar Usuarios</h3>
@@ -89,6 +89,17 @@
    <!-- Contenedor tabla de usuarios -->
     <div class="bg-white shadow rounded overflow-x-auto">
         {{ table(
+            data=pagination,
+            columns=columns,
+            edit_route='users.edit_get',
+            delete_route='users.delete',
+            detail_route='users.detail',
+            restore_route='users.restore',
+            id_param='user_id',
+            empty_message="No hay usuarios cargados."
+        ) }}
+
+        {{ card_table(
             data=pagination,
             columns=columns,
             edit_route='users.edit_get',
