@@ -79,7 +79,7 @@
             </div>  
             <!-- Admin  -->
             {% if is_system_admin %}
-                <div class="flex items-center">
+                <div class="flex items-center" id="system_admin_div">
                     {{ form.system_admin(class="mr-2", id="system_admin") }}
                     {{ form.system_admin.label(class="text-gray-700") }}
                 </div>
@@ -98,18 +98,19 @@
 document.addEventListener("DOMContentLoaded", function() {
   const roleSelect = document.querySelector('[name="role_id"]');
   const sysAdminCheck = document.getElementById("system_admin");
+  const sysAdminDiv = document.getElementById("system_admin_div")
 
   function toggleSystemAdmin() {
     //Funcion para deshabilitar checkbox en caso de no ser admin
     const selectedText = roleSelect.options[roleSelect.selectedIndex].text;
     console.log(selectedText)
     if (selectedText !== "Administrador") {
-        console.log("ENTREEEE")
       sysAdminCheck.checked = false;
       sysAdminCheck.disabled = true;
+      sysAdminDiv.classList.add("hidden")
     } else {
-        console.log("ENTRE Al esle")
       sysAdminCheck.disabled = false;
+      sysAdminDiv.classList.remove("hidden")
     }
   }
 
