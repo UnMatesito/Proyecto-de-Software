@@ -8,16 +8,21 @@ from sqlalchemy.orm import Query
 class GenericSearchBuilder:
     """Constructor genérico de queries de búsqueda para cualquier modelo SQLAlchemy"""
 
-    def __init__(self, model_class):
+    def __init__(self, model_class, text_search_columns=None):
         """
         Inicializa el builder para un modelo específico
 
         Args:
             model_class: Clase del modelo SQLAlchemy
+            text_search_columns: Lista de nombres de columnas para búsqueda de texto.
+                               Si es None, busca en todas las columnas de tipo texto.
         """
         self.model_class = model_class
         self.inspector = inspect(model_class)
         self.columns = {col.name: col for col in self.inspector.columns}
+
+        # Configurar columnas de búsqueda de texto
+        self.text_search_columns = text_search_columns
 
     def build_query(self, filters: Dict[str, Any]) -> Query:
         """
@@ -60,16 +65,27 @@ class GenericSearchBuilder:
         return self._apply_column_filter(query, filter_name, filter_value)
 
     def _apply_text_search(self, query: Query, search_text: str) -> Query:
-        """Aplica búsqueda de texto en columnas de texto configurables"""
+        """
+        Aplica búsqueda de texto en columnas configurables.
+        Si text_search_columns no fue especificado, busca en todas las columnas de tipo texto.
+        """
         if not search_text:
             return query
 
-        # Buscar los campos del nombre y descripción breve
-        text_columns = [
-            getattr(self.model_class, col_name)
-            for col_name in ["name", "brief_description"]
-            if col_name in self.columns
-        ]
+        # Si se especificaron columnas, usar solo esas
+        if self.text_search_columns is not None:
+            text_columns = [
+                getattr(self.model_class, col_name)
+                for col_name in self.text_search_columns
+                if col_name in self.columns
+            ]
+        else:
+            # Si no se especificaron, buscar en TODAS las columnas de tipo texto
+            text_columns = [
+                getattr(self.model_class, col_name)
+                for col_name, col in self.columns.items()
+                if str(col.type).upper().startswith(("VARCHAR", "TEXT", "STRING"))
+            ]
 
         if not text_columns:
             return query
@@ -159,7 +175,7 @@ class GenericSearchBuilder:
         return query
 
     def _apply_column_filter(
-        self, query: Query, column_name: str, filter_value: Any
+            self, query: Query, column_name: str, filter_value: Any
     ) -> Query:
         """Aplica filtro directo a una columna"""
         if column_name not in self.columns:
@@ -213,7 +229,7 @@ class GenericSearchBuilder:
         for col_name, col in self.columns.items():
             col_type = str(col.type).upper()
             if any(
-                date_type in col_type for date_type in ["DATETIME", "DATE", "TIMESTAMP"]
+                    date_type in col_type for date_type in ["DATETIME", "DATE", "TIMESTAMP"]
             ):
                 date_columns.append(getattr(self.model_class, col_name))
         return date_columns
@@ -236,23 +252,27 @@ class GenericSearchBuilder:
 
 
 # Funciones de conveniencia
-def build_search_query(model_class, filters: Dict[str, Any]) -> Query:
+def build_search_query(
+        model_class, filters: Dict[str, Any], text_search_columns=None
+) -> Query:
     """
     Función de conveniencia para construir queries de búsqueda
 
     Args:
         model_class: Clase del modelo SQLAlchemy
         filters: Diccionario con filtros
+        text_search_columns: Lista de columnas para búsqueda de texto.
+                           Si es None, busca en todas las columnas de tipo texto.
 
     Returns:
         Query filtrada
     """
-    builder = GenericSearchBuilder(model_class)
+    builder = GenericSearchBuilder(model_class, text_search_columns)
     return builder.build_query(filters)
 
 
 def apply_ordering(
-    query: Query, model_class, order_by: str, order_dir: str = "asc"
+        query: Query, model_class, order_by: str, order_dir: str = "asc"
 ) -> Query:
     """
     Aplica ordenamiento a una query de forma genérica
@@ -275,20 +295,25 @@ def apply_ordering(
 
 # Función completa que combina todo
 def search_with_pagination(
-    model_class,
-    filters: Dict,
-    page: int = 1,
-    per_page: int = 25,
-    order_by: str = None,
-    order_dir: str = "asc",
+        model_class,
+        filters: Dict,
+        page: int = 1,
+        per_page: int = 25,
+        order_by: str = None,
+        order_dir: str = "asc",
+        text_search_columns=None,
 ):
     """
     Función completa que combina búsqueda, ordenamiento y paginación
+
+    Args:
+        text_search_columns: Lista de columnas para búsqueda de texto.
+                           Si es None, busca en todas las columnas de tipo texto.
     """
     from .pagination import paginate_query
 
     # Construir query con filtros
-    query = build_search_query(model_class, filters)
+    query = build_search_query(model_class, filters, text_search_columns)
 
     # Aplicar ordenamiento
     if order_by:
