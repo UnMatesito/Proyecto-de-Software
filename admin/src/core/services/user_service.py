@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from os import name
 
 from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
@@ -297,9 +298,9 @@ def toggle_system_admin(user_id, make_admin: bool):
 
 
 def get_user_history():
-    """Obtiene todos los usuarios systemAdmin/admin/editores"""
-    return User.query.filter(
-        (User.role.has(name="Administrador")) |
-        (User.role.has(name="Editor")) |
-        (User.system_admin.is_(True))
-    ).all()
+    """Obtiene todos los usuarios con el permiso 'site_update'"""
+    return (
+        User.query
+        .filter(User.role.has(Role.permissions.any(name="site_update")))
+        .all()
+    )
