@@ -211,16 +211,15 @@ def edit_post(user_id):
         form = EditUserForm(obj=user)
         if form.validate_on_submit():
             # Actualizo los atributos
-            update_user_attribute(user_id, "first_name", form.first_name.data)
-            update_user_attribute(user_id, "last_name", form.last_name.data)
             if get_user_by_email(form.email.data):
                 form.email.errors.append("El correo ya está registrado.")
                 return render_template(
                 "users/edit.html",
                 form=form,
                 user=user,
-                is_system_admin=current_user.is_admin(),
                 )
+            update_user_attribute(user_id, "first_name", form.first_name.data)
+            update_user_attribute(user_id, "last_name", form.last_name.data)
             update_user_attribute(user_id, "email", form.email.data)
 
             flash("Usuario actualizado correctamente", "success")
@@ -231,7 +230,6 @@ def edit_post(user_id):
             "users/edit.html",
             form=form,
             user=user,
-            is_system_admin=current_user.is_admin(),
         )
     except Exception as e:
         flash(f"Error al editar el usuario: {str(e)}", "error")
