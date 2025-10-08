@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% from "macros/button.html" import button %}
 {% from "macros/paginate.html" import paginate %}
-{% from "macros/table.html" import table %}
+{% from "macros/table.html" import table, card_table %}
 {% from "macros/toast.html" import toast %}
 {% block title %}Listado de tags{% endblock %}
 
@@ -11,70 +11,75 @@
 
 {% block content %}
 <div class="flex flex-col justify-center items-center">
-    <div class="p-4 flex gap-4">
-    <div class="w-64 p-4 border-2 border-gray-300 rounded shadow-lg flex-none space-x-4">
-        <h3 class="text-lg font-semibold mb-2">Ordenar Tags</h3>
-        <ul class="space-y-2">
-            <li>
-                <a href="{{ url_for('tag_bp.list_paginated_tags', sorted_by='asc', order_by='name') }}"
-                class="
-                block px-3 py-2 rounded
-                {% if order_by == 'name' and sorted_by == 'asc' %}
-                    bg-green-300
-                    font-semibold
-                {% else %}
-                bg-green-100  hover:bg-green-200
-                {% endif %}">
-                    Ordenar A-Z
-                </a>
-            </li>
-            <li>
-                <a href="{{ url_for('tag_bp.list_paginated_tags', sorted_by='desc', order_by='name') }}"
-                    class="
-                    block px-3 py-2 rounded
-                    {% if order_by == 'name' and sorted_by == 'desc' %}
-                    bg-green-300
-                    font-semibold
-                    {% else %}
-                    bg-green-100  hover:bg-green-200
-                    {% endif %}">
-                    Ordenar Z-A
-                </a>
-            </li>
-            <li>
-                <a href="{{ url_for('tag_bp.list_paginated_tags', sorted_by='desc', order_by='created_at') }}"
-                    class="
-                    block px-3 py-2 rounded
-                    {% if order_by == 'created_at' and sorted_by == 'desc' %}
-                    bg-green-300
-                    font-semibold
-                    {% else %}
-                    bg-green-100  hover:bg-green-200
-                    {% endif %}">
-                    Más reciente primero
-                </a>
-            </li>
-            <li>
-                <a href="{{ url_for('tag_bp.list_paginated_tags', sorted_by='asc', order_by='created_at') }}"
-                    class="
-                    block px-3 py-2 rounded
-                    {% if order_by == 'created_at' and sorted_by == 'asc' %}
-                    bg-green-300
-                    font-semibold
-                    {% else %}
-                    bg-green-100  hover:bg-green-200
-                    {% endif %}">
-                    Más antiguo primero
-                </a>
-            </li>
-            <div class="border-t border-2"></div>
-            <li>
-                {{ button("Crear Tag", link=url_for('tag_bp.show_create_tags'), icon_left_svg='<i class="fa-solid fa-plus mr-1"></i>', class="w-full h-14") }}
-            </li>
-        </ul>
-    </div>
+    <div class="xl:p-4 flex flex-col lg:flex-row gap-4">
+        <!-- Panel de ordenación -->
+        <div class="w-full lg:w-64 p-4 border-2 border-gray-300 rounded shadow-lg space-x-4">
+            <h3 class="text-lg font-semibold mb-2">Ordenar Tags</h3>
 
-    <div class="flex flex-col items-center gap-y-3">
+            <!-- Lista horizontal para móviles y tablets, vertical para desktop -->
+            <ul class="flex flex-row lg:flex-col flex-wrap justify-center lg:overflow-x-visible gap-2 lg:gap-0 lg:space-y-2 pb-2 lg:pb-0" style="margin-left: 0">
+                <li class="flex-shrink-0 lg:flex-shrink">
+                    <a href="{{ url_for('tag_bp.list_paginated_tags', sorted_by='asc', order_by='name') }}"
+                    class="
+                    block px-3 py-2 rounded whitespace-nowrap
+                    {% if order_by == 'name' and sorted_by == 'asc' %}
+                        bg-green-300
+                        font-semibold
+                    {% else %}
+                    bg-green-100  hover:bg-green-200
+                    {% endif %}">
+                        Ordenar A-Z
+                    </a>
+                </li>
+                <li class="flex-shrink-0 lg:flex-shrink">
+                    <a href="{{ url_for('tag_bp.list_paginated_tags', sorted_by='desc', order_by='name') }}"
+                        class="
+                        block px-3 py-2 rounded whitespace-nowrap
+                        {% if order_by == 'name' and sorted_by == 'desc' %}
+                        bg-green-300
+                        font-semibold
+                        {% else %}
+                        bg-green-100  hover:bg-green-200
+                        {% endif %}">
+                        Ordenar Z-A
+                    </a>
+                </li>
+                <li class="flex-shrink-0 lg:flex-shrink">
+                    <a href="{{ url_for('tag_bp.list_paginated_tags', sorted_by='desc', order_by='created_at') }}"
+                        class="
+                        block px-3 py-2 rounded whitespace-nowrap
+                        {% if order_by == 'created_at' and sorted_by == 'desc' %}
+                        bg-green-300
+                        font-semibold
+                        {% else %}
+                        bg-green-100  hover:bg-green-200
+                        {% endif %}">
+                        Más reciente primero
+                    </a>
+                </li>
+                <li class="flex-shrink-0 lg:flex-shrink">
+                    <a href="{{ url_for('tag_bp.list_paginated_tags', sorted_by='asc', order_by='created_at') }}"
+                        class="
+                        block px-3 py-2 rounded whitespace-nowrap
+                        {% if order_by == 'created_at' and sorted_by == 'asc' %}
+                        bg-green-300
+                        font-semibold
+                        {% else %}
+                        bg-green-100  hover:bg-green-200
+                        {% endif %}">
+                        Más antiguo primero
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Divisor y botón de crear -->
+            <div class="border-t border-2 mt-2"></div>
+            <div class="mt-2 mr-0">
+                {{ button("Crear Tag", link=url_for('tag_bp.show_create_tags'), icon_left_svg='<i class="fa-solid fa-plus mr-1"></i>', class="w-full h-14") }}
+            </div>
+        </div>
+
+        <!-- Contenedor de tablas y paginación -->
         {{ table(
         data=tags,
         columns=columns,
@@ -86,6 +91,19 @@
         id_param='tag_id'
         ) }}
 
+        {{ card_table(
+        data=tags,
+        columns=columns,
+        title="Lista de Tags (" + tags|length|string + " encontrados)",
+        empty_message="No se encontraron tags",
+        delete_route='tag_bp.delete',
+        edit_route='tag_bp.edit_tag',
+        detail_route='tag_bp.detail_tag',
+        id_param='tag_id'
+        ) }}
+    </div>
+
+    <div class="mt-4">
         {{ paginate(pagination=pagination, url='tag_bp.list_paginated_tags') }}
     </div>
 </div>
