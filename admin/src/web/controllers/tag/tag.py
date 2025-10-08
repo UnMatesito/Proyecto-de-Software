@@ -117,7 +117,7 @@ def delete(tag_id):
     return redirect(url_for("tag_bp.list_paginted_tags"))
 
 
-@tag_bp.get("/datail/<int:tag_id>")
+@tag_bp.get("/detail/<int:tag_id>")
 @login_required
 @permission_required("tag_show")
 def detail_tag(tag_id):
