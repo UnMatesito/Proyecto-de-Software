@@ -25,6 +25,7 @@ class CreateSiteForm(FlaskForm):
         "Nombre del sitio",
         validators=[
             DataRequired(message="El nombre del sitio es obligatorio"),
+            Length(max=255, message="El nombre debe tener a lo sumo 255 caracteres")
         ],
     )
 
@@ -51,7 +52,7 @@ class CreateSiteForm(FlaskForm):
             NumberRange(
                 min=1000,
                 max=datetime.now(timezone.utc).year,
-                message="La latitud se debe encontrar en un rago de -90 a 90",
+                message="El año debe estar entre 1000 y el año actual",
             ),
         ],
     )
