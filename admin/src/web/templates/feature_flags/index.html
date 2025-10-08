@@ -7,12 +7,12 @@
 {% block header %}
     <div class="text-center mb-4 mt-2">
         <h1 class="text-5xl font-bold p-4">Feature Flags</h1>
-        <p class="text-xl">Aqui puedes administrar todas las Flags presentes en el sistema.</p>
+        <p class="text-xl">Aquí puedes administrar todos los Flags presentes en el sistema.</p>
     </div>
 {% endblock %}
 
 {% block content %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 justify-items-center px-4">
         {% for flag in flags %}
             {{ feature_flag_card(
                 name=flag.name,
