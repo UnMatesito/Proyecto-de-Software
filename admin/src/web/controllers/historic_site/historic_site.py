@@ -14,6 +14,9 @@ from core.services import (
     create_historic_site,
     delete_historic_site,
     get_all_cities,
+    get_all_conservation_state,
+    get_all_provinces,
+    get_all_tags,
     get_category_by_id,
     get_city_by_id,
     get_conservation_state_by_id,
@@ -38,12 +41,29 @@ site_bp = Blueprint("site_bp", __name__, url_prefix="/sites")
 @permission_required("site_index")
 def list_paginated_sites():
     try:
+        # Obtener tags como string separado por comas y convertir a lista
+        tags_param = request.args.get("tag_id", "")
+        tags_id = [tid.strip() for tid in tags_param.split(",") if tid.strip()]
+
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
         page = request.args.get("page", 1)
 
+        search_filters = {
+            "search_text": request.args.get("search_text"),
+            "province_id": request.args.get("province_id"),
+            "city_id": request.args.get("city_id"),
+            "conservation_state_id": request.args.get("conservation_state_id"),
+            "is_visible": request.args.get("is_visible"),
+            "date_from": request.args.get("date_from"),
+            "date_to": request.args.get("date_to"),
+        }
+
+        if tags_id:
+            search_filters["tags_id"] = [int(tid) for tid in tags_id]
+
         pagination = get_sites_filtered(
-            filters=request.args,
+            filters=search_filters,
             order_by=order_by,
             sorted_by=sorted_by,
             paginate=True,
@@ -55,12 +75,13 @@ def list_paginated_sites():
 
         columns = [
             {"key": "name", "label": "Nombre"},
-            {"key": "city", "label": "Ciudad", "render": lambda site: site.city.name},
             {
                 "key": "city.province.name",
                 "label": "Provincia",
                 "render": lambda site: site.city.province.name,
             },
+            {"key": "city", "label": "Ciudad", "render": lambda site: site.city.name},
+            {"key": "brief_description", "label": "Descripción breve"},
             {
                 "key": "conservation_state.state",
                 "label": "Estado de conservación",
@@ -70,6 +91,22 @@ def list_paginated_sites():
             {"key": "deleted_at", "label": "Estado", "render": "status"},
         ]
 
+        cities = get_all_cities()
+        city_choices = [(city.id, city.name) for city in cities]
+
+        provinces = get_all_provinces()
+        province_choices = [(province.id, province.name) for province in provinces]
+
+        conservation_states = get_all_conservation_state()
+        conservation_state_choices = [
+            (state.id, state.state) for state in conservation_states
+        ]
+
+        tags = get_all_tags()
+        tag_choices = [(tag.id, tag.name) for tag in tags]
+
+        selected_tags = tags_id
+
         return render_template(
             "historic_site/index.html",
             sites=sites,
@@ -77,6 +114,12 @@ def list_paginated_sites():
             sorted_by=sorted_by,
             pagination=pagination,
             columns=columns,
+            filters=search_filters,
+            province_choices=province_choices,
+            conservation_state_choices=conservation_state_choices,
+            city_choices=city_choices,
+            tag_choices=tag_choices,
+            selected_tags=selected_tags,
         )
     except Exception as e:
         flash(f"Error al cargar los sitios, error: {e}", "error")
@@ -278,17 +321,46 @@ def export():
     try:
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
-        filters = request.args.to_dict()
+
+        # Obtener tags como string separado por comas
+        tags_param = request.args.get("tag_id", "")
+        tags_id = []
+        if tags_param:
+            try:
+                tags_id = [
+                    int(tid.strip()) for tid in tags_param.split(",") if tid.strip()
+                ]
+            except ValueError:
+                flash("IDs de tags inválidos", "error")
+                return redirect(url_for("site_bp.list_paginated_sites"))
+
+        # Procesar is_visible
+        is_visible_value = None
+        if "is_visible" in request.args:
+            is_visible_value = True
+
+        search_filters = {
+            "search_text": request.args.get("search_text"),
+            "province_id": request.args.get("province_id"),
+            "city_id": request.args.get("city_id"),
+            "conservation_state_id": request.args.get("conservation_state_id"),
+            "is_visible": is_visible_value,
+            "date_from": request.args.get("date_from"),
+            "date_to": request.args.get("date_to"),
+        }
+
+        if tags_id:
+            search_filters["tags_id"] = tags_id
 
         sitios = get_sites_filtered(
-            filters=filters,
+            filters=search_filters,
             order_by=order_by,
             sorted_by=sorted_by,
             paginate=False,
         )
 
         if not sitios:
-            flash("No hay datos para exportar", "warning")
+            flash("No hay sitios para exportar con los filtros aplicados", "warning")
             return redirect(url_for("site_bp.list_paginated_sites"))
 
         csv_content = export_sites_to_csv(sitios)
@@ -302,6 +374,9 @@ def export():
                 "Content-Type": "text/csv; charset=utf-8",
             },
         )
+    except ValueError as e:
+        flash(f"Error en los filtros: {str(e)}", "error")
+        return redirect(url_for("site_bp.list_paginated_sites"))
     except Exception as e:
-        flash(f"Error al exportar sitios: {e}", "error")
+        flash(f"Error al exportar sitios: {str(e)}", "error")
         return redirect(url_for("site_bp.list_paginated_sites"))

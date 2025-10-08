@@ -208,9 +208,6 @@ def edit_post(user_id):
             update_user_attribute(user_id, "first_name", form.first_name.data)
             update_user_attribute(user_id, "last_name", form.last_name.data)
             update_user_attribute(user_id, "email", form.email.data)
-            update_user_attribute(user_id, "active", form.active.data)
-            if current_user.is_admin():
-                update_user_attribute(user_id, "system_admin", form.system_admin.data)
 
             # Si cambia el rol lo actualizo
             if user.role_id != form.role_id.data:

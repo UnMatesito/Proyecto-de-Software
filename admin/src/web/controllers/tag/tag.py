@@ -105,7 +105,7 @@ def edit_tag(tag_id):
             return redirect(url_for("tag_bp.list_paginated_tags"))
 
 
-@tag_bp.get("/delete/<int:tag_id>")
+@tag_bp.post("/delete/<int:tag_id>")
 @login_required
 @permission_required("tag_destroy")
 def delete(tag_id):
@@ -113,8 +113,8 @@ def delete(tag_id):
         tag = delete_tag(tag_id)
         flash(f"Se ha eliminado correctamente el tag {tag.name}", "succes")
     except Exception as e:
-        flash(f"Error al intentar eliminar el tag, {e}", "error")
-    return redirect(url_for("tag_bp.list_paginated_tags"))
+        flash(f"Error al intentar eliminar el tag {e}", "error")
+    return redirect(url_for("tag_bp.list_paginted_tags"))
 
 
 @tag_bp.get("/datail/<int:tag_id>")

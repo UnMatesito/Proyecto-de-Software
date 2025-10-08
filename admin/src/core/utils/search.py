@@ -50,6 +50,7 @@ class GenericSearchBuilder:
             "date_to": self._apply_date_to,
             "date_range": self._apply_date_range,
             "in_list": self._apply_in_list,
+            "tags_id": self._apply_tags_id,
         }
 
         if filter_name in special_filters:
@@ -77,6 +78,39 @@ class GenericSearchBuilder:
         conditions = [col.ilike(search_pattern) for col in text_columns]
 
         return query.filter(or_(*conditions))
+
+    def _apply_tags_id(self, query: Query, tag_ids: List[int]) -> Query:
+        """Aplica filtro por IDs de tags (relación many-to-many)"""
+        if not tag_ids:
+            return query
+
+        # Asegurar que tag_ids sea una lista de enteros
+        if not isinstance(tag_ids, list):
+            tag_ids = [tag_ids]
+
+        tag_ids = [int(tid) for tid in tag_ids if tid]
+
+        if not tag_ids:
+            return query
+
+        # Importar Tag dentro del método para evitar imports circulares
+        from sqlalchemy import func
+
+        from core.database import db
+        from core.models import Tag
+
+        # Subconsulta que cuenta cuántos de los tags seleccionados tiene cada sitio
+        subquery = (
+            db.session.query(self.model_class.id)
+            .join(self.model_class.tags)
+            .filter(Tag.id.in_(tag_ids))
+            .group_by(self.model_class.id)
+            .having(func.count(Tag.id.distinct()) == len(tag_ids))
+            .subquery()
+        )
+
+        # Filtrar solo los sitios que aparecen en la subconsulta
+        return query.filter(self.model_class.id.in_(subquery))
 
     def _apply_date_from(self, query: Query, date_from: Union[str, datetime]) -> Query:
         """Aplica filtro de fecha desde"""
