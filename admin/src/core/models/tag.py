@@ -25,22 +25,36 @@ class Tag(db.Model):
 
     # Metodos
     def has_sites(self):
+        """Retorna verdadero si el tag está asociado a uno o más sitios históricos."""
+
         return len(self.sites) > 0
 
     def delete_tag(self):
+        """Elimina el tag setteando el campo "deleted_at" con la fecha actual."""
+
         self.deleted_at = datetime.now(timezone.utc)
 
     def restore_tag(self):
+        """Restaura el tag eliminiado."""
+
         self.deleted_at = None
 
     def is_deleted(self):
+        """Retorna verdadero si el tag está eliminado."""
+
         return self.deleted_at is not None
 
     def is_active(self):
+        """Retorna verdadero si el tag no está eliminado."""
+
         return self.deleted_at is None
 
     def can_be_deleted(self):
+        """Retorna verdadero si el tag no posee sitios históricos asociados."""
+
         return not self.has_sites()
 
     def __repr__(self):
+        """Retorna una representación del tag el cual posee su nombre."""
+
         return f"<Tag {self.name}>"
