@@ -171,7 +171,8 @@
         });
 
         document.getElementById("tag-input").className = "w-full"
-        
+        document.getElementById("dropdown").setAttribute('style', 'z-index:1200');
+
         lonInput = document.getElementById("longitude")
         latIpunt = document.getElementById("latitude")
         var map = L.map('map').setView(["{{lat_view}}", "{{lon_view}}"], 13);
