@@ -9,7 +9,6 @@ main_bp = Blueprint("main_bp", __name__)
 @login_required
 def home():
     """Página principal después de login"""
-    user = get_current_user()
     return render_template("home.html")
 
 
