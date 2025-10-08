@@ -15,7 +15,7 @@ class EditSiteForm(CreateSiteForm):
 
     is_visible = BooleanField(
         "Visibilizar",
-        render_kw={"disabled ": False},
+        render_kw={"disabled": False},
     )
 
     submit = SubmitField("Editar")

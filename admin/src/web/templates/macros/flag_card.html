@@ -30,7 +30,7 @@
                 {% if (name in ['admin_maintenance_mode', 'portal_maintenance_mode']) and not is_enable %}
                     {{ form.message(class="mr-4 w-64 rounded-lg border border-gray-300", placeholder="Mensaje de mantenimiento") }}
                     {% for error in form.message.errors %}
-                        <span class="text-red-500 text-sm ml-2" id="errorms"></span>
+                        <span class="text-red-500 text-sm ml-2">{{ error }}</span>
                     {% endfor %}
                 {% endif %}
 
