@@ -4,7 +4,7 @@
  <!-- Boton para volver a users -->
     <div class="flex justify-between items-center">
         <a href="/sites"
-            class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow">
+            class="text-white bg-proyecto-primary hover:bg-blue-800 focus:ring-4 focus:ring-proyecto-primary/20 font-semibold rounded-lg text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center inline-flex items-center ">
             ← Volver
         </a>
         {% if site %}
@@ -140,7 +140,7 @@
             </div>
 
             <div class="w-md ">
-                {{ form.submit(class="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 shadow" ) }}
+                {{ form.submit(class="w-full text-white bg-proyecto-primary hover:bg-blue-800 focus:ring-4 focus:ring-proyecto-primary/20 font-semibold rounded-lg text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center inline-flex items-center" ) }}
             </div>
         </form>
     </div>
@@ -148,7 +148,7 @@
 
 <div class="flex items-center justify-center flex-col mt-2 gap-2 " style=" height: 70vh; max-width: 900px; width: 70%;"> 
     <h3 class="block font-semibold text-gray-700 mb-1">Seleccione la ubicación en el mapa!</h3>
-     {% if form.longitude.errors or form.latitude.errors  %}
+    {% if form.longitude.errors or form.latitude.errors  %}
         <p class="text-red-500 text-sm mt-1">La ubicación es obligatoria</p>
     {% endif %}
     <div id="map">
