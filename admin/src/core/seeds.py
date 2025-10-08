@@ -107,6 +107,7 @@ def seed_permissions():
         + flag_permissions
         + proposal_permissions
         + review_permissions
+        + city_permissions
     )
 
     # Transformar la lista de tuplas en la lista de dicts que espera create_multiple_permissions
@@ -160,6 +161,8 @@ def seed_roles():
             "review_show",
             "review_approve",
             "review_reject",
+            # Ciudades
+            "city_index",
         ],
         "Administrador": [
             # Usuarios
@@ -196,9 +199,13 @@ def seed_roles():
             "review_show",
             "review_approve",
             "review_reject",
+            # Ciudades
+            "city_index",
         ],
         "Usuario público": [
+            # Reseñas
             "review_new",
+            # Sitios
             "proposal_new",
         ],
     }
