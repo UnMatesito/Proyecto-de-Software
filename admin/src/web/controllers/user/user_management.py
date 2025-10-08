@@ -84,6 +84,11 @@ def assign_role(user_id):
                 flash("Rol no válido", "error")
                 return redirect(url_for("user_management.manage_user", user_id=user_id))
 
+            current_user = get_current_user()
+            if current_user and current_user.id == user.id:
+                flash("No puede modificar su propio rol", "error")
+                return redirect(url_for("user_management.manage_user", user_id=user_id))
+
             # Asignar el rol
             user_service.assign_role(user_id, form.role_id.data)
             flash(f'Rol "{role.name}" asignado exitosamente a {user.email}', "success")
@@ -190,6 +195,13 @@ def toggle_system_admin(user_id):
 
     if form.validate_on_submit():
         current_user = get_current_user()
+
+        # Evitar que un usuario se quite su propio estado de System Admin
+        if current_user and current_user.id == user_id:
+            flash("No puede modificar su propio estado de Administrador del sistema", "error")
+            return redirect(url_for("user_management.manage_user", user_id=user_id))
+
+        # Solo un admin del sistema puede cambiar este valor
         if not current_user or not current_user.system_admin:
             flash("Solo un Administrador del sistema puede cambiar este valor", "error")
             return redirect(url_for("user_management.manage_user", user_id=user_id))
