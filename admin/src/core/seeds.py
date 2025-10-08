@@ -28,9 +28,9 @@ def run(env="production"):
     # Solo si estamos en development
     if env == "development":
         seed_editor()
+        seed_users()
         seed_historic_sites()
         seed_site_tags()
-        seed_users()
 
     print("Seed finalizado")
 
