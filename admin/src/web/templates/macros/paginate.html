@@ -3,7 +3,7 @@
     {% if pagination %}
     <nav aria-label="Page navigation">
         <ul class="inline-flex -space-x-px text-sm">
-            <!-- Botón Previous -->
+            {# Boton Anterior #}
             {% if pagination.has_prev %}
                 {% set page_args = current_args.copy() %}
                 {% set _ = page_args.update({'page': pagination.prev_num}) %}
@@ -21,7 +21,7 @@
                 </li>
             {% endif %}
 
-            <!-- Primera página y ellipsis si es necesario -->
+            {# Paginas #}
             {% if pagination.has_prev and 1 not in pagination.page_range %}
                 {% set page_args = current_args.copy() %}
                 {% set _ = page_args.update({'page': 1}) %}
@@ -38,7 +38,7 @@
                 </li>
             {% endif %}
 
-            <!-- Páginas del rango -->
+            {# Boton Siguiente #}
             {% for page in pagination.page_range %}
                 {% set page_args = current_args.copy() %}
                 {% set _ = page_args.update({'page': page}) %}
