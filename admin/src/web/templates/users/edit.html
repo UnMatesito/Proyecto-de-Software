@@ -9,51 +9,54 @@
 
 {% block content %}
 <!-- Contenedor boton volver -->
-<div class=" text-center mt-6">
-                {{ button('Volver', type='submit', link='/users') }}
- </div>
+<nav class=" text-center mt-6" aria-label="Navegacion de retorno">
+    {{ button('Volver', type='submit', link='/users') }}
+</nav>
  <!-- Contenedor general del form -->
 <div class="p-4 max-w-lg mx-auto">
     <!-- Contenedor del form  -->
     <form method="POST">
         {{ form.hidden_tag() }}
         <!-- Contenedor nombre  -->
-        <div class="mb-4">
+        <fieldset class="mb-4">
             {{ form.first_name.label(class="block font-semibold mb-1") }}
             {{ form.first_name(class="w-full border rounded p-2") }}
             {% for error in form.first_name.errors %}
                 <p class="text-red-600 text-sm">{{ error }}</p>
             {% endfor %}
-        </div>
+        </fieldset>
         <!-- Contenedor apellido -->
-        <div class="mb-4">
+        <fieldset class="mb-4">
             {{ form.last_name.label(class="block font-semibold mb-1") }}
             {{ form.last_name(class="w-full border rounded p-2") }}
             {% for error in form.last_name.errors %}
                 <p class="text-red-600 text-sm">{{ error }}</p>
             {% endfor %}
-        </div>
+        </fieldset>
         <!-- Contenedor correo -->
-        <div class="mb-4">
+        <fieldset class="mb-4">
             {{ form.email.label(class="block font-semibold mb-1") }}
             {{ form.email(class="w-full border rounded p-2") }}
             {% for error in form.email.errors %}
                 <p class="text-red-600 text-sm">{{ error }}</p>
             {% endfor %}
-        </div>
+        </fieldset>
         <!-- Contenedor cambiar contraseña -->
-        <div class="mb-4">
+        <nav aria-label="Navegacion a cambiar contraseña">
             <a href="{{ url_for('users.change_password_get', user_id=user.id) }}"
-               class="text-white bg-proyecto-primary hover:bg-blue-800 focus:ring-4 focus:ring-proyecto-primary/20 font-semibold rounded-lg text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center inline-flex items-center {{ class }}">Cambiar Contraseña</a>
-        </div>
-
+               class="text-white bg-proyecto-primary hover:bg-blue-800 focus:ring-4
+                focus:ring-proyecto-primary/20 font-semibold rounded-lg text-sm px-3
+                py-2 sm:px-5 sm:py-2.5 text-center inline-flex items-center {{ class }}">Cambiar Contraseña</a>
+        </nav>   
         <!-- Contenedor boton Editar-->
-        <div class="mt-6">
-            {{ form.submit(class="text-white bg-proyecto-primary hover:bg-blue-800 focus:ring-4 focus:ring-proyecto-primary/20 font-semibold rounded-lg text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center inline-flex items-center {{ class }}") }}
+        <section aria-label="Acciones de usuario">
+            {{ form.submit(class="text-white bg-proyecto-primary hover:bg-blue-800 focus:ring-4
+             focus:ring-proyecto-primary/20 font-semibold rounded-lg text-sm mt-4 px-3 py-2 sm:px-5
+              sm:py-2.5 text-center inline-flex items-center {{ class }}") }}
             <!-- Contenedor boton cancelar -->
             <a href="{{ url_for('users.index', user_id=user.id) }}" 
                class="ml-2 text-gray-600 hover:underline">Cancelar</a>
-        </div>
+        </section>
     </form>
 </div>
 {% endblock %}

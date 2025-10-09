@@ -357,7 +357,35 @@ def seed_tags():
     from core.models import Tag
 
     print("Creando tags...")
-    tags = ["Colonial", "Patrimonial", "tag 3", "tag 4"]
+    tags = [
+        "Colonial",
+        "Patrimonial",
+        "Arqueológico",
+        "Industrial",
+        "Religioso",
+        "Educativo",
+        "Cultural",
+        "Militar",
+        "Arquitectónico",
+        "Natural",
+        "Turístico",
+        "Histórico",
+        "Museístico",
+        "Monumental",
+        "Artístico",
+        "Político",
+        "Cívico",
+        "Comunitario",
+        "Inmueble protegido",
+        "Independencia",
+        "Precolombino",
+        "Jesuítico",
+        "Rural",
+        "Urbano",
+        "Emblemático",
+        "Contemporáneo",
+        "Tradicional",
+    ]
 
     for t in tags:
         tag = Tag(name=t, slug=slugify(t))
@@ -367,32 +395,49 @@ def seed_tags():
 
 
 def seed_provinces_and_cities():
-    """Crea provincias y sus ciudades asociadas"""
+    """Crea las 24 provincias de Argentina y sus ciudades usando relaciones"""
     from core.models import City, Province
 
-    print("Creando provincias y ciudades")
+    print("Creando provincias y ciudades de Argentina")
 
-    # Provincias
-    buenos_aires = Province(name="Buenos Aires")
-    cordoba = Province(name="Córdoba")
-    mendoza = Province(name="Mendoza")
-
-    db.session.add_all([buenos_aires, cordoba, mendoza])
-    db.session.commit()
-
-    # Ciudades
-    cities = [
-        City(name="La Plata", province_id=buenos_aires.id),
-        City(name="Mar del Plata", province_id=buenos_aires.id),
-        City(name="Córdoba Capital", province_id=cordoba.id),
-        City(name="Villa Carlos Paz", province_id=cordoba.id),
-        City(name="Mendoza Capital", province_id=mendoza.id),
-        City(name="San Rafael", province_id=mendoza.id),
+    provinces_data = [
+        ("Buenos Aires", ["La Plata", "Mar del Plata"]),
+        ("Catamarca", ["San Fernando del Valle de Catamarca", "Andalgalá"]),
+        ("Chaco", ["Resistencia", "Presidencia Roque Sáenz Peña"]),
+        ("Chubut", ["Rawson", "Comodoro Rivadavia"]),
+        ("Córdoba", ["Córdoba Capital", "Villa Carlos Paz"]),
+        ("Corrientes", ["Corrientes", "Goya"]),
+        ("Entre Ríos", ["Paraná", "Concordia"]),
+        ("Formosa", ["Formosa", "Clorinda"]),
+        ("Jujuy", ["San Salvador de Jujuy", "San Pedro de Jujuy"]),
+        ("La Pampa", ["Santa Rosa", "General Pico"]),
+        ("La Rioja", ["La Rioja", "Chilecito"]),
+        ("Mendoza", ["Mendoza", "San Rafael"]),
+        ("Misiones", ["Posadas", "Puerto Iguazú"]),
+        ("Neuquén", ["Neuquén", "San Martín de los Andes"]),
+        ("Río Negro", ["Viedma", "Bariloche"]),
+        ("Salta", ["Salta", "San Ramón de la Nueva Orán"]),
+        ("San Juan", ["San Juan", "Caucete"]),
+        ("San Luis", ["San Luis", "Villa Mercedes"]),
+        ("Santa Cruz", ["Río Gallegos", "Caleta Olivia"]),
+        ("Santa Fe", ["Santa Fe", "Rosario"]),
+        ("Santiago del Estero", ["Santiago del Estero", "La Banda"]),
+        ("Tierra del Fuego, Antártida e Islas del Atlántico Sur", ["Ushuaia", "Río Grande"]),
+        ("Tucumán", ["San Miguel de Tucumán", "Tafí Viejo"])
     ]
 
-    db.session.add_all(cities)
-    db.session.commit()
+    # Crear todo en una sola transacción
+    for province_name, city_names in provinces_data:
+        province = Province(name=province_name)
+        db.session.add(province)
+        db.session.flush()  # Para obtener el ID sin hacer commit
+        
+        for city_name in city_names:
+            city = City(name=city_name, province=province)
+            db.session.add(city)
 
+    db.session.commit()
+    
 
 def seed_consevation_states():
     """Crea los estados de conservación posibles para los sitios históricos"""
@@ -419,6 +464,22 @@ def seed_categories():
         Category(name="Arquitectura"),
         Category(name="Infraestructura"),
         Category(name="Sitio arqueológico"),
+        Category(name="Museo"),
+        Category(name="Monumento"),
+        Category(name="Iglesia"),
+        Category(name="Espacio público"),
+        Category(name="Edificio gubernamental"),
+        Category(name="Centro cultural"),
+        Category(name="Residencia histórica"),
+        Category(name="Parque"),
+        Category(name="Cementerio histórico"),
+        Category(name="Fortificación"),
+        Category(name="Estancia"),
+        Category(name="Escuela"),
+        Category(name="Puente"),
+        Category(name="Faro"),
+        Category(name="Estación ferroviaria"),
+        Category(name="Obra escultórica"),
     ]
 
     db.session.add_all(categories)
