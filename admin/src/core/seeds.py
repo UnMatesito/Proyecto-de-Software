@@ -357,7 +357,35 @@ def seed_tags():
     from core.models import Tag
 
     print("Creando tags...")
-    tags = ["Colonial", "Patrimonial", "tag 3", "tag 4"]
+    tags = [
+        "Colonial",
+        "Patrimonial",
+        "Arqueológico",
+        "Industrial",
+        "Religioso",
+        "Educativo",
+        "Cultural",
+        "Militar",
+        "Arquitectónico",
+        "Natural",
+        "Turístico",
+        "Histórico",
+        "Museístico",
+        "Monumental",
+        "Artístico",
+        "Político",
+        "Cívico",
+        "Comunitario",
+        "Inmueble protegido",
+        "Independencia",
+        "Precolombino",
+        "Jesuítico",
+        "Rural",
+        "Urbano",
+        "Emblemático",
+        "Contemporáneo",
+        "Tradicional",
+    ]
 
     for t in tags:
         tag = Tag(name=t, slug=slugify(t))
@@ -436,6 +464,22 @@ def seed_categories():
         Category(name="Arquitectura"),
         Category(name="Infraestructura"),
         Category(name="Sitio arqueológico"),
+        Category(name="Museo"),
+        Category(name="Monumento"),
+        Category(name="Iglesia"),
+        Category(name="Espacio público"),
+        Category(name="Edificio gubernamental"),
+        Category(name="Centro cultural"),
+        Category(name="Residencia histórica"),
+        Category(name="Parque"),
+        Category(name="Cementerio histórico"),
+        Category(name="Fortificación"),
+        Category(name="Estancia"),
+        Category(name="Escuela"),
+        Category(name="Puente"),
+        Category(name="Faro"),
+        Category(name="Estación ferroviaria"),
+        Category(name="Obra escultórica"),
     ]
 
     db.session.add_all(categories)
