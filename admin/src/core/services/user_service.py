@@ -41,13 +41,8 @@ def get_paginated_users(
     query = User.query
     if blocked:
         query = query.filter_by(blocked=True)
-    else:
-        query = query.filter_by(blocked=False)
     if delete:
         query = query.filter(User.deleted_at.isnot(None))
-    else:
-        query = query.filter(User.deleted_at.is_(None))
-
     if role_id:
         query = query.filter_by(role_id=int(role_id))
     if email:

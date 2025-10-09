@@ -14,7 +14,7 @@
 <!-- Contenedor general -->
 <div class="px-6 mx-auto space-y-6">
     <!-- Contenedor del buscador -->
-    <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2 flex-col">
+    <div class="bg-white shadow rounded p-4 flex items-center justify-center space-x-2 flex-col" aria-label="Buscador de usuario por correo">
         <h3 class="text-lg font-semibold mb-2">Buscar por correo electronico</h3>
         <form method="get" action="{{ url_for('users.search_by_email') }}" class="flex flex-col md:flex-row space-y-2 md:space-y-0 space-x-2 w-full max-w-md items-center">
             {{ email_input('email', 'email', 'Ingresar Correo', value=request.args.get('email', ''), required=True, class="w-full md:w-80") }}
@@ -23,9 +23,9 @@
     </div>
 
     <!-- Contenedor filtro y ordenamiento -->
-    <div class="bg-white shadow rounded p-4 flex flex-wrap flex-row items-end md:justify-center lg:justify-between gap-4">
+    <div class="bg-white shadow rounded p-4 flex flex-wrap flex-row items-end md:justify-center lg:justify-between gap-4" aria-label="filtros y ordenamientos">
         <!-- Contenedor ordenamiento -->
-        <div>
+         <section>
             <h3 class="text-lg font-semibold mb-2">Ordenar Usuarios</h3>
             <ul class="space-y-2">
                 <li>
@@ -51,31 +51,29 @@
                     </a>
                 </li>
             </ul>
-        </div>
+        </section>
 
        <!-- Contenedor filtros -->
-        <form method="get" action="/users" class="flex flex-wrap items-end gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Estado</label>
-               <select name="status" class="border px-3 py-2 rounded">
+        <form method="get" action="/users" class="flex flex-wrap items-end gap-4" aria-label="Filtros">
+            <fieldset>
+                <legend class="block text-sm font-medium text-gray-700">Estado</legend>
+                <select name="status" class="border px-3 py-2 rounded">
                     <option value="">Todos</option>
                     <option value="blocked">Bloqueado</option>
-                    <option value="active">No bloqueado</option>
-                    <option value="deleted">Eliminado</option>
-                    <option value="not_deleted">No eliminado</option>
+                    <option value="deleted">Eliminado</option> 
                 </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Rol</label>
+            </fieldset>
+            <fieldset>
+                <legend class="block text-sm font-medium text-gray-700">Rol</legend>
                 <select name="role_id" class="border px-3 py-2 rounded">
                     <option value="">Todos</option>
                     {% for role in roles %}
-                        <option value="{{ role.id }}" {% if request.args.get('role_id') == role.id|string %}selected{% endif %}>
-                            {{ role.name }}
-                        </option>
+                    <option value="{{ role.id }}" {% if request.args.get('role_id') == role.id|string %}selected{% endif %}>
+                        {{ role.name }}
+                    </option>
                     {% endfor %}
                 </select>
-            </div>
+            </fieldset>
             <div class="flex space-x-2">
                 {{ button('Aplicar filtros', type='submit', icon_left_svg='<i class="fa-solid fa-filter mr-1"></i>') }}
                 {{ button_blank('Quitar filtros', link=url_for('users.index'), icon_left_svg='<i class="fa-solid fa-rotate-left mr-1"></i>') }}
@@ -83,7 +81,9 @@
         </form>
 
         <!-- Contenedor boton crear usuario -->
-        {{ button('Crear Usuario', link=url_for('users.create_get'), icon_left_svg='<i class="fa-solid fa-user-plus mr-1"></i>') }}
+        <nav aria-label="Acciones de usuario">
+            {{ button('Crear Usuario', link=url_for('users.create_get'), icon_left_svg='<i class="fa-solid fa-user-plus mr-1"></i>') }}
+        </nav>
     </div>
 
    <!-- Contenedor tabla de usuarios -->
