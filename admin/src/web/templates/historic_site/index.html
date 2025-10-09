@@ -18,10 +18,12 @@
         <!-- Contenedor principal con diseño responsive -->
         <div class="flex flex-col 2xl:flex-row gap-4  w-full 2xl:px-4">
 
-            <!-- Panel de ordenación -->
+            {# Panel de Ordenación #}
             <div class="w-full lg:w-auto px-3 py-2 border-2 border-gray-300 rounded shadow-lg flex-none">
                 <h3 class="text-lg font-semibold mb-2">Ordenar Sitios</h3>
-
+                {# Consigo los argumentos de la request #}
+                {% set current_args = request.args.to_dict() %}
+                {% set _ = current_args.update({'sorted_by': 'asc', 'order_by': 'name'}) %}
 
                 <div class="flex flex-row flex-wrap justify-center 2xl:flex-col overflow-x-auto 2xl:overflow-x-visible gap-2 2xl:gap-0 2xl:space-y-2 pb-2 2xl:pb-0">
                     <div class="flex-shrink-0 2xl:flex-shrink">
