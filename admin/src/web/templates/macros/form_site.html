@@ -61,8 +61,8 @@
                                 <option value="{{ value }}">{{ label }}</option>
                             {% endfor %}
                         </select>
-                        {% for error in form.province.errors %}
-                                <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% for error in form.conservation_state.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
 
@@ -90,8 +90,8 @@
                                 <option value="{{ value }}">{{ label }}</option>
                             {% endfor %}
                         </select>
-                        {% for error in form.province.errors %}
-                                <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% for error in form.category.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
                     
@@ -173,17 +173,21 @@
 
         lonInput = document.getElementById("longitude")
         latIpunt = document.getElementById("latitude")
+
         var map = L.map('map').setView(["{{lat_view}}", "{{lon_view}}"], 13);
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         }).addTo(map);
         var mark            
+        var formName = document.getElementById("name").value
+        var formLon = document.getElementById("longitude").value
+        var formLat = document.getElementById("latitude").value
 
-        if ("{{lat}}" != "None" && typeof "{{lon}}" != "None" && "{{site_name}}") {
-            mark = L.marker(["{{lat}}", "{{lon}}"]).addTo(map)
-                .bindPopup(`{{site_name}}  <br> Latitud: ${parseFloat("{{lat}}").toFixed(4)} <br> Longitud: ${parseFloat("{{lon}}").toFixed(4)}`)
+        if (formLon &&  formLat  && formName) {
+            mark = L.marker([parseFloat(formLat), parseFloat(formLon)]).addTo(map)
+                .bindPopup(`${formName}  <br> Latitud: ${parseFloat(formLat).toFixed(4)} <br> Longitud: ${parseFloat(formLon).toFixed(4)}`)
                 .openPopup();
-        }
+        } 
 
         var lat_lng_popup = L.popup();
 

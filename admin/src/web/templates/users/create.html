@@ -11,60 +11,61 @@
 <div class="max-w-2xl mx-auto mt-2 space-y-6">
 
     <!-- Boton para volver a users -->
-    {{ button(text="Volver", link=url_for('users.index'), type="button", icon_left_svg='<i class="fa-solid fa-arrow-left mr-1"></i>') }}
-
+    <nav aria-label="Navegacion de retorno">
+        {{ button(text="Volver", link=url_for('users.index'), type="button", icon_left_svg='<i class="fa-solid fa-arrow-left mr-1"></i>') }}
+    </nav>
     <!-- Card del formulario -->
-    <div class="p-6 bg-white shadow-lg rounded-lg border border-gray-200">
+    <section class="p-6 bg-white shadow-lg rounded-lg border border-gray-200" aria-label="Seccion del formulario">
         <form method="POST" class="space-y-5">
             {{ form.hidden_tag() }}
 
             <!-- Ingresar el nombre -->
-            <div>
+            <fieldset>
                 {{ form.first_name.label(class="block font-medium text-gray-700 mb-1") }}
-                {{ form.first_name(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                {{ form.first_name(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200", placeholder="Ingrese Nombre") }}
                 {% for error in form.first_name.errors %}
                     <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                 {% endfor %}
-            </div>
+            </fieldset>
 
             <!-- Ingresar el apellido -->
-            <div>
+            <fieldset>
                 {{ form.last_name.label(class="block font-medium text-gray-700 mb-1") }}
-                {{ form.last_name(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                {{ form.last_name(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200", placeholder="Ingrese Apellido") }}
                 {% for error in form.last_name.errors %}
                     <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                 {% endfor %}
-            </div>
+            </fieldset>
 
             <!-- Ingresar el correo -->
-            <div>
+            <fieldset>
                 {{ form.email.label(class="block font-medium text-gray-700 mb-1") }}
-                {{ form.email(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                {{ form.email(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200", placeholder="Ingrese Correo") }}
                 {% for error in form.email.errors %}
                     <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                 {% endfor %}
-            </div>
+            </fieldset>
 
             <!--  Ingresar Contraseña -->
-            <div>
+            <fieldset>
                 {{ form.password.label(class="block font-medium text-gray-700 mb-1") }}
-                {{ form.password(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                {{ form.password(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200", placeholder="Ingrese Contraseña") }}
                 {% for error in form.password.errors %}
                     <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                 {% endfor %}
-            </div>
+            </fieldset>
 
             <!-- Confirmar la contraseña -->
-            <div>
+            <fieldset>
                 {{ form.confirm_password.label(class="block font-medium text-gray-700 mb-1") }}
-                {{ form.confirm_password(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
+                {{ form.confirm_password(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200", placeholder="Confirme Contraseña") }}
                 {% for error in form.confirm_password.errors %}
                     <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                 {% endfor %}
-            </div>
+            </fieldset>
 
             <!-- Rol -->
-            <div>
+            <fieldset>
                         {{ form.role_id.label(class="block font-medium text-gray-700 mb-1") }}
                         <select id="{{ form.role_id.id }}" name="{{ form.role_id.name }}" required
                                 class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
@@ -76,23 +77,23 @@
                         {% for error in form.role_id.errors %}
                                 <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
-            </div>  
+            </fieldset>  
             <!-- Admin  -->
             {% if is_system_admin %}
-                <div class="flex items-center" id="system_admin_div">
+                <fieldset class="flex items-center" id="system_admin_div" > 
                     {{ form.system_admin(class="mr-2", id="system_admin") }}
                     {{ form.system_admin.label(class="text-gray-700") }}
-                </div>
+                </fieldset>
                 {% for error in form.system_admin.errors %}
                 <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                 {% endfor %}
             {% endif %}
             <!-- Contenedor del boton para cargar usuario  -->
-            <div>
+            <section aria-label="Acciones de usuario">
                 {{ form.submit(class="text-white bg-proyecto-primary hover:bg-blue-800 focus:ring-4 focus:ring-proyecto-primary/20 font-semibold rounded-lg text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center inline-flex items-center {{ class }}") }}
-            </div>
+            </section>
         </form>
-    </div>
+     </section>
 </div>
 <script>
 document.addEventListener("DOMContentLoaded", function() {

@@ -35,15 +35,14 @@ def index():
         page = request.args.get("page", 1)
         blocked_param=None
         deleted_param=None
+        active_param=None
         status = request.args.get("status", None)
         if status == "blocked":
             blocked_param = True
-        elif status == "active":
-            blocked_param = False
         elif status == "deleted":
             deleted_param = True
-        elif status == "not_deleted":
-            deleted_param = False
+        elif status == "active":
+            active_param = True
         role_id = request.args.get("role_id", None)
         email = request.args.get("email", None)
         columns = [
@@ -64,6 +63,7 @@ def index():
             sorted_by=sorted_by,
             blocked=blocked_param,
             delete=deleted_param,
+            active=active_param,
             role_id=role_id,
             email=email,
         )
@@ -75,6 +75,7 @@ def index():
             roles=roles,
             blocked=blocked_param,
             delete=deleted_param,
+            active=active_param,
             role_id=role_id,
             sorted_by=sorted_by,
             order_by=order_by,

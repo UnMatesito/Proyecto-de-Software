@@ -31,6 +31,7 @@ def get_paginated_users(
     delete=None,
     role_id=None,
     email=None,
+    active=None
 ):
     """Paginacion de usuarios ordenado por creacion
     -sorted_by ordenado asc o des
@@ -41,17 +42,15 @@ def get_paginated_users(
     query = User.query
     if blocked:
         query = query.filter_by(blocked=True)
-    else:
-        query = query.filter_by(blocked=False)
     if delete:
         query = query.filter(User.deleted_at.isnot(None))
-    else:
-        query = query.filter(User.deleted_at.is_(None))
-
     if role_id:
         query = query.filter_by(role_id=int(role_id))
     if email:
         query = query.filter_by(email=email)
+    if active:
+        query = query.filter_by(blocked=False)
+        query = query.filter(User.deleted_at.is_(None))
     if order_by == "created_at":
         if sorted_by == "asc":
             query = query.order_by(User.created_at)
