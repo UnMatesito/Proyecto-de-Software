@@ -54,11 +54,31 @@ services:
     tty: true
     stdin_open: true
 
+  vite:
+    build:
+      context: ../../portal
+      dockerfile: docker/Dockerfile
+    container_name: proyecto_vite
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:5000/api
+    volumes:
+      - ../../portal:/portal:delegated
+      - vite_node_modules:/portal/node_modules
+    networks:
+      - app-network
+    restart: "no"
+    tty: true
+    stdin_open: true
 
 volumes:
   postgres_data:
     driver: local
   pgadmin_data:
+    driver: local
+  vite_node_modules:
     driver: local
 
 networks:

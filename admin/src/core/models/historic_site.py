@@ -85,6 +85,8 @@ class HistoricSite(db.Model):
         "SiteHistory", back_populates="historic_site", cascade="all, delete-orphan"
     )
 
+    images = db.relationship("SiteImage", back_populates="historic_site", cascade="all, delete-orphan")
+
     # Metodos
     def is_deleted(self):
         """Chequea si el sitio historico ha sido eliminado."""

@@ -1,0 +1,7 @@
+@import 'flowbite';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Acá abajo irían los estilos custom */

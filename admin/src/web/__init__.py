@@ -3,7 +3,9 @@ from flask import Flask
 from core.database import db
 from core.utils.bcrypt import bcrypt
 from flask_session import Session
+from flask_cors import CORS
 
+from .api import api_bp
 from .config import get_current_config
 from .controllers import (
     auth_bp,
@@ -42,13 +44,13 @@ def create_app(env="development", static_folder="../../static"):
     bcrypt.init_app(app)
     db.init_app(app)
     session.init_app(app)
-
+    CORS(app)
     import core.audit
 
     # Hooks
     app.before_request(hook_admin_maintenance)
 
-    # Blueprints
+    # Blueprints portal administrativo
     app.register_blueprint(main_bp)
     app.register_blueprint(user_management_bp)
     app.register_blueprint(user_bp)
@@ -58,6 +60,9 @@ def create_app(env="development", static_folder="../../static"):
     app.register_blueprint(site_bp)
     app.register_blueprint(city_bp)
     app.register_blueprint(site_history_bp)
+
+    # Blueprints API
+    app.register_blueprint(api_bp)
 
     # Commands
     @app.cli.command("reset-db")
