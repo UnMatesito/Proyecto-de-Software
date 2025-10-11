@@ -200,6 +200,19 @@ class HistoricSite(db.Model):
 
         return pending_validation == self.pending_validation
 
+    def get_cover_image(self):
+        """Retorna la imagen de portada del sitio histórico si existe, de lo contrario retorna None"""
+
+        for image in self.images:
+            if image.is_cover:
+                return image
+        return None
+
+    def get_image_urls(self):
+        """Retorna una lista de URLs de las imágenes asociadas al sitio histórico."""
+
+        return [image.public_url for image in self.images]
+
     def __repr__(self):
         """Retorna una representación de sitio histórico la cual posee su nombre"""
 
