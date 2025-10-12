@@ -21,6 +21,21 @@ historic_site_tag = db.Table(
     ),
 )
 
+user_favorite_site = db.Table(
+    "user_favorite_site",
+    db.Column(
+        "user_id",
+        db.Integer,
+        db.ForeignKey("user.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    db.Column(
+        "historic_site_id",
+        db.Integer,
+        db.ForeignKey("historic_site.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
 
 class HistoricSite(db.Model):
     __tablename__ = "historic_site"
@@ -86,6 +101,12 @@ class HistoricSite(db.Model):
     )
 
     images = db.relationship("SiteImage", back_populates="historic_site", cascade="all, delete-orphan")
+
+    favorited_by = db.relationship(
+        "User",
+        secondary="user_favorite_site",
+        back_populates="favorite_sites",
+    )
 
     # Metodos
     def is_deleted(self):
