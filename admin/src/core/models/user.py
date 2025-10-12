@@ -38,6 +38,12 @@ class User(db.Model):
     )
     role = db.relationship("Role", back_populates="users")
 
+    favorite_sites = db.relationship(
+        "HistoricSite",
+        secondary="user_favorite_site",
+        back_populates="favorited_by",
+    )
+
     # Setters y Getters
     @property
     def password(self):
@@ -102,9 +108,6 @@ class User(db.Model):
         self.deleted_at = None
         self.blocked = False
 
-    def __repr__(self):
-        return f"<User {self.email}>"
-
     def has_role(self, role_name: str):
         """Funcion para comprobrar si el usuario tiene un rol en particular por nombre"""
         return self.role and self.role.name == role_name
@@ -118,3 +121,20 @@ class User(db.Model):
         return any(
             p.name == permission_name for p in self.role.permissions
         )  # Recorro los permisos del rol
+
+    def add_favorite(self, site):
+        """Agrega un sitio a favoritos si no está ya marcado."""
+        if site not in self.favorite_sites:
+            self.favorite_sites.append(site)
+
+    def remove_favorite(self, site):
+        """Quita un sitio de favoritos si está marcado."""
+        if site in self.favorite_sites:
+            self.favorite_sites.remove(site)
+
+    def is_favorite(self, site):
+        """Verifica si el sitio está en sus favoritos."""
+        return site in self.favorite_sites
+
+    def __repr__(self):
+        return f"<User {self.email}>"

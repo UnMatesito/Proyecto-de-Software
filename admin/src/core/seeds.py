@@ -34,6 +34,7 @@ def run(env="production"):
         seed_historic_sites()
         seed_aditional_historic_sites()
         seed_site_tags()
+        seed_favorites()
 
     print("Seed finalizado")
 
@@ -108,6 +109,12 @@ def seed_permissions():
         ("review_destroy", "Eliminar reseña"),
     ]
 
+    favorite_permissions = [
+        ("favorite_index", "Listar sitios favoritos"),
+        ("favorite_new", "Agregar sitio a favoritos"),
+        ("favorite_destroy", "Eliminar sitio de favoritos"),
+    ]
+
     all_permissions = (
         user_permissions
         + site_permissions
@@ -116,6 +123,7 @@ def seed_permissions():
         + proposal_permissions
         + review_permissions
         + city_permissions
+        + favorite_permissions
     )
 
     # Transformar la lista de tuplas en la lista de dicts que espera create_multiple_permissions
@@ -226,6 +234,10 @@ def seed_roles():
             "review_destroy",
             # Sitios
             "proposal_new",
+            # Favoritos
+            "favorite_index",
+            "favorite_new",
+            "favorite_destroy",
         ],
     }
 
@@ -924,4 +936,40 @@ def seed_aditional_historic_sites():
 
     db.session.add_all(sitios)
     db.session.commit()
+    enable_audit_listeners()
+
+def seed_favorites():
+    """Asocia aleatoriamente sitios históricos a usuarios públicos como favoritos."""
+    from random import sample, randint
+    from core.models import User, HistoricSite
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+
+    print("Agregando favoritos de usuarios...")
+
+    # Deshabilitar registros de auditoría temporalmente
+    disable_audit_listeners()
+
+    # Solo usuarios públicos
+    public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
+    sites = HistoricSite.query.all()
+
+    if not public_users or not sites:
+        print("No hay usuarios o sitios para generar favoritos.")
+        return
+
+    count = 0
+    for user in public_users:
+        # Cada usuario marcará entre 2 y 5 sitios como favoritos
+        num_favorites = randint(2, 5)
+        chosen_sites = sample(sites, min(num_favorites, len(sites)))
+
+        for site in chosen_sites:
+            if site not in user.favorite_sites:
+                user.favorite_sites.append(site)
+                count += 1
+
+    from core.database import db
+    db.session.commit()
+
+    # Rehabilitar listeners de auditoría
     enable_audit_listeners()
