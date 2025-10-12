@@ -85,6 +85,8 @@ class HistoricSite(db.Model):
         "SiteHistory", back_populates="historic_site", cascade="all, delete-orphan"
     )
 
+    images = db.relationship("SiteImage", back_populates="historic_site", cascade="all, delete-orphan")
+
     # Metodos
     def is_deleted(self):
         """Chequea si el sitio historico ha sido eliminado."""
@@ -197,6 +199,19 @@ class HistoricSite(db.Model):
         """Retorna verdadero o falso si el sitio histórico posee el mismo estado de validación pendiente"""
 
         return pending_validation == self.pending_validation
+
+    def get_cover_image(self):
+        """Retorna la imagen de portada del sitio histórico si existe, de lo contrario retorna None"""
+
+        for image in self.images:
+            if image.is_cover:
+                return image
+        return None
+
+    def get_image_urls(self):
+        """Retorna una lista de URLs de las imágenes asociadas al sitio histórico."""
+
+        return [image.public_url for image in self.images]
 
     def __repr__(self):
         """Retorna una representación de sitio histórico la cual posee su nombre"""
