@@ -1,5 +1,6 @@
 from flask import Flask
 
+from core.storage import storage
 from core.database import db
 from core.utils.bcrypt import bcrypt
 from flask_session import Session
@@ -44,6 +45,7 @@ def create_app(env="development", static_folder="../../static"):
     bcrypt.init_app(app)
     db.init_app(app)
     session.init_app(app)
+    storage.init_app(app)
     CORS(app)
     import core.audit
 

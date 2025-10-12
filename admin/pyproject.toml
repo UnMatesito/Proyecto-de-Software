@@ -45,6 +45,7 @@ dependencies = [
 
     # Para permitir acceso desde el portal público
     "flask-cors (>=6.0.1,<7.0.0)",
+    "minio (>=7.2.18,<8.0.0)",
 ]
 
 [tool.poetry]

@@ -73,12 +73,32 @@ services:
     tty: true
     stdin_open: true
 
+  minio:
+    image: minio/minio
+    container_name: proyecto_minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # consola web
+    volumes:
+      - minio_data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
+
+
 volumes:
   postgres_data:
     driver: local
   pgadmin_data:
     driver: local
   vite_node_modules:
+    driver: local
+  minio_data:
     driver: local
 
 networks:
