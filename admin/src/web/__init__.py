@@ -25,7 +25,7 @@ from .utils.auth import (
     has_permission,
     is_authenticated,
     is_system_admin,
-    is_validated_site,
+    is_validated_site, get_current_user,
 )
 from .utils.hooks import hook_admin_maintenance
 
@@ -83,12 +83,6 @@ def create_app(env="development", static_folder="../../static"):
 
         seed_db(env)
 
-    @app.context_processor
-    def get_user():
-        from web.utils.auth import get_current_user
-
-        return dict(user=get_current_user())
-
     # Inicialización automática para producción
     with app.app_context():
         if env == "production":
@@ -107,6 +101,7 @@ def create_app(env="development", static_folder="../../static"):
     app.jinja_env.globals.update(is_system_admin=is_system_admin)
     app.jinja_env.globals.update(get_user_role_name=get_user_role_name)
     app.jinja_env.globals.update(is_validated_site=is_validated_site)
+    app.jinja_env.globals.update(get_current_user=get_current_user)
 
     # Error handlers
     app.register_error_handler(404, error.not_found)
