@@ -168,7 +168,9 @@
         }
         });
 
-        document.getElementById("tag-input").className = "w-full"
+        let inputTag = document.getElementById("tag-input")
+        inputTag.className = "w-full"
+        inputTag.setAttribute("readonly", "")
         document.getElementById("dropdown").setAttribute('style', 'z-index:1200');
 
         lonInput = document.getElementById("longitude")
@@ -178,6 +180,7 @@
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         }).addTo(map);
+
         var mark            
         var formName = document.getElementById("name").value
         var formLon = document.getElementById("longitude").value
