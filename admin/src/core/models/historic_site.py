@@ -21,6 +21,21 @@ historic_site_tag = db.Table(
     ),
 )
 
+user_favorite_site = db.Table(
+    "user_favorite_site",
+    db.Column(
+        "user_id",
+        db.Integer,
+        db.ForeignKey("user.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    db.Column(
+        "historic_site_id",
+        db.Integer,
+        db.ForeignKey("historic_site.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
 
 class HistoricSite(db.Model):
     __tablename__ = "historic_site"
@@ -83,6 +98,14 @@ class HistoricSite(db.Model):
 
     site_histories = db.relationship(
         "SiteHistory", back_populates="historic_site", cascade="all, delete-orphan"
+    )
+
+    images = db.relationship("SiteImage", back_populates="historic_site", cascade="all, delete-orphan")
+
+    favorited_by = db.relationship(
+        "User",
+        secondary="user_favorite_site",
+        back_populates="favorite_sites",
     )
 
     # Metodos
@@ -197,6 +220,19 @@ class HistoricSite(db.Model):
         """Retorna verdadero o falso si el sitio histórico posee el mismo estado de validación pendiente"""
 
         return pending_validation == self.pending_validation
+
+    def get_cover_image(self):
+        """Retorna la imagen de portada del sitio histórico si existe, de lo contrario retorna None"""
+
+        for image in self.images:
+            if image.is_cover:
+                return image
+        return None
+
+    def get_image_urls(self):
+        """Retorna una lista de URLs de las imágenes asociadas al sitio histórico."""
+
+        return [image.public_url for image in self.images]
 
     def __repr__(self):
         """Retorna una representación de sitio histórico la cual posee su nombre"""

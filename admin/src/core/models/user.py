@@ -38,6 +38,12 @@ class User(db.Model):
     )
     role = db.relationship("Role", back_populates="users")
 
+    favorite_sites = db.relationship(
+        "HistoricSite",
+        secondary="user_favorite_site",
+        back_populates="favorited_by",
+    )
+
     # Setters y Getters
     @property
     def password(self):
@@ -66,8 +72,11 @@ class User(db.Model):
         return self.system_admin
 
     def is_active(self):
-        """Devuelve si esta bloqueado"""
-        return self.blocked is False
+        """
+        Devuelve True si la cuenta está activa
+        Para que una cuenta esté activa no debe estar bloqueada ni debe estar eliminada
+        """
+        return self.blocked is False and self.deleted_at is None
 
     def block_user(self):
         """Bloquea al usuario, excepto si es administrador."""
@@ -83,16 +92,21 @@ class User(db.Model):
         """Funcion que devuelve el nombre completo"""
         return f"{self.first_name} {self.last_name}"
 
-    def delete_user(self):
-        """Funcion que setea la fecha de borrado"""
+    def soft_delete_user(self):
+        """Elimina lógicamente al usuario (soft delete) y lo bloquea."""
+        if self.is_admin():
+            raise ValueError("No se puede eliminar un Administrador del sistema")
+        if self.deleted_at is not None:
+            raise ValueError(f"El usuario {self.get_full_name()} ya está eliminado")
         self.deleted_at = datetime.now(timezone.utc)
+        self.blocked = True
 
     def restore_user(self):
-        """Funcion que recupera el usuaio (setea la fecha de borrado en None)"""
+        """Restaura un usuario eliminado y lo desbloquea."""
+        if self.deleted_at is None:
+            raise ValueError(f"El usuario {self.get_full_name()} no está eliminado")
         self.deleted_at = None
-
-    def __repr__(self):
-        return f"<User {self.email}>"
+        self.blocked = False
 
     def has_role(self, role_name: str):
         """Funcion para comprobrar si el usuario tiene un rol en particular por nombre"""
@@ -107,3 +121,20 @@ class User(db.Model):
         return any(
             p.name == permission_name for p in self.role.permissions
         )  # Recorro los permisos del rol
+
+    def add_favorite(self, site):
+        """Agrega un sitio a favoritos si no está ya marcado."""
+        if site not in self.favorite_sites:
+            self.favorite_sites.append(site)
+
+    def remove_favorite(self, site):
+        """Quita un sitio de favoritos si está marcado."""
+        if site in self.favorite_sites:
+            self.favorite_sites.remove(site)
+
+    def is_favorite(self, site):
+        """Verifica si el sitio está en sus favoritos."""
+        return site in self.favorite_sites
+
+    def __repr__(self):
+        return f"<User {self.email}>"

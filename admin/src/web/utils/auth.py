@@ -38,6 +38,11 @@ def login_required(f):
             flash("Usuario no encontrado. Por favor, inicie sesión nuevamente", "error")
             return redirect(url_for("auth.login"))
 
+        if user.deleted_at is not None:
+            session.clear()
+            flash("Su cuenta ha sido eliminada", "error")
+            return redirect(url_for("auth.login"))
+
         if not user.is_active():
             session.clear()
             flash("Su cuenta ha sido deshabilitada", "error")
