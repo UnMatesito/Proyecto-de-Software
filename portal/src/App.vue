@@ -1,40 +1,48 @@
 <template>
-  <main class="min-h-screen flex flex-col items-center justify-center p-6">
-    <h1 class="text-4xl font-bold text-proyecto-primary mb-4">
-      Portal Público
-    </h1>
-    <p class="text-lg text-gray-700 mb-6 text-center">
-      Bienvenido al portal público del Proyecto de Software.
-    </p>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header/Navbar -->
+    <header class="bg-white shadow-sm">
+      <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+          <div class="flex items-center">
+            <h1 class="text-2xl font-bold text-proyecto-primary">
+              Portal Público
+            </h1>
+          </div>
+          <div class="flex space-x-4">
+            <RouterLink
+              to="/"
+              class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition"
+            >
+              Inicio
+            </RouterLink>
+            <RouterLink
+              to="/about"
+              class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition"
+            >
+              Acerca de
+            </RouterLink>
+          </div>
+        </div>
+      </nav>
+    </header>
 
-    <button
-      @click="fetchExample"
-      class="bg-proyecto-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-proyecto-accent transition"
-    >
-      Probar conexión con API Flask
-    </button>
+    <!-- Contenido principal -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <RouterView />
+    </main>
 
-    <p v-if="apiMessage" class="mt-4 text-proyecto-accent font-medium">
-      {{ apiMessage }}
-    </p>
-  </main>
+    <!-- Footer opcional -->
+    <footer class="bg-white border-t mt-auto">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <p class="text-center text-gray-500 text-sm">
+          Proyecto de Software © {{ new Date().getFullYear() }}
+        </p>
+      </div>
+    </footer>
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import axios from 'axios'
-
-const apiMessage = ref('')
-
-const fetchExample = async () => {
-  try {
-    const { data } = await axios.get(
-      `${import.meta.env.VITE_API_URL}/ping`
-    )
-    apiMessage.value = data.message || JSON.stringify(data)
-  } catch (error) {
-    apiMessage.value = '❌ No se pudo conectar con la API'
-    console.error(error)
-  }
-}
+import { RouterLink, RouterView } from 'vue-router'
 </script>
