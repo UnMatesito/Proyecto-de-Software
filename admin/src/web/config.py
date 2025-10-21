@@ -23,6 +23,8 @@ class Config:
     MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
     MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
     MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "supersecretjwtkey")
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
 
 
 class ProductionConfig(Config):

@@ -5,6 +5,7 @@ from core.database import db
 from core.utils.bcrypt import bcrypt
 from flask_session import Session
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 
 from web.controllers.api import api_bp
 from .config import get_current_config
@@ -31,6 +32,7 @@ from .utils.hooks import hook_admin_maintenance
 
 session = Session()
 
+jwt = JWTManager()
 
 def create_app(env="development", static_folder="../../static"):
     app = Flask(__name__, static_folder=static_folder)
@@ -47,6 +49,7 @@ def create_app(env="development", static_folder="../../static"):
     session.init_app(app)
     storage.init_app(app)
     CORS(app)
+    jwt.init_app(app)
 
     # Hooks
     app.before_request(hook_admin_maintenance)
