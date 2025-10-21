@@ -64,6 +64,7 @@ isort = "^5.13.2"
 flask-shell-ipython = "^0.5.3"
 flask-debugtoolbar = "^0.15.1"
 faker = "^33.1.0"
+autopep8 = "^2.3.2"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

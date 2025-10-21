@@ -47,7 +47,6 @@ def create_app(env="development", static_folder="../../static"):
     session.init_app(app)
     storage.init_app(app)
     CORS(app)
-    import core.audit
 
     # Hooks
     app.before_request(hook_admin_maintenance)
