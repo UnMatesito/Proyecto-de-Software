@@ -1,15 +1,8 @@
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from core.models.historic_site import HistoricSite
-from core.models.city import City
-from core.models.province import Province
-from core.models.tag import Tag
-from core.models.category import Category
-from core.models.conservation_state import ConservationState
-from core.models.user import User
+from core.services import historic_site_service, conservation_state_service
 from core.database import db
-from sqlalchemy import func, or_, text
-from geoalchemy2.functions import ST_SetSRID, ST_MakePoint, ST_DWithin, ST_X, ST_Y
+from geoalchemy2.functions import ST_X, ST_Y
 from . import api_bp
 
 
@@ -17,7 +10,7 @@ from . import api_bp
 def list_sites():
     """
     GET /sites
-    Lista sitios históricos con filtros combinables según la especificación de la API.
+    Lista sitios históricos con filtros combinables según el PDF de la API.
 
     Parámetros:
       - name, description: búsqueda parcial (case-insensitive)
@@ -26,13 +19,9 @@ def list_sites():
       - order_by: latest | oldest | rating-5-1 | rating-1-5
       - lat, long, radius: búsqueda geoespacial
       - page, per_page: paginación
-
-    Respuesta según según la especificación de la API:
-      - "data": lista de sitios
-      - "meta": {page, per_page, total}
     """
     try:
-        # Parámetros de búsqueda
+        # Obtener parámetros
         name = request.args.get("name")
         description = request.args.get("description")
         city_name = request.args.get("city")
@@ -40,7 +29,7 @@ def list_sites():
         tags_str = request.args.get("tags")
         order_by = request.args.get("order_by", "latest")
 
-        # Parámetros geoespaciales
+        # Parámetros geoespaciales (por ahora no soportados, se pueden agregar después)
         lat = request.args.get("lat", type=float)
         lon = request.args.get("long", type=float)
         radius = request.args.get("radius", type=float)
@@ -49,7 +38,7 @@ def list_sites():
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 20, type=int)
 
-        # Validaciones
+        # Validaciones de paginación
         if page < 1:
             return jsonify({
                 "error": {
@@ -101,124 +90,131 @@ def list_sites():
                     }
                 }), 400
 
-        # Construir query base (solo sitios visibles y validados)
-        query = HistoricSite.query.filter(
-            HistoricSite.is_visible.is_(True),
-            HistoricSite.pending_validation.is_(False)
-        )
+        # Construir filtros para el servicio
+        filters = {}
 
-        # Filtro por nombre (búsqueda parcial, case-insensitive)
+        # Filtros de texto: usar search_text del servicio
+        search_terms = []
         if name:
-            query = query.filter(HistoricSite.name.ilike(f"%{name}%"))
-
-        # Filtro por descripción (búsqueda parcial, case-insensitive)
+            search_terms.append(name)
         if description:
-            query = query.filter(
-                or_(
-                    HistoricSite.brief_description.ilike(f"%{description}%"),
-                    HistoricSite.full_description.ilike(f"%{description}%")
-                )
-            )
+            search_terms.append(description)
 
-        # Filtro por ciudad (búsqueda exacta, case-insensitive)
+        if search_terms:
+            # El servicio busca en todas las columnas de texto
+            filters["search_text"] = " ".join(search_terms)
+
+        # Filtros exactos
         if city_name:
-            query = query.join(City).filter(func.lower(City.name) == city_name.lower())
+            # Necesitamos buscar el city_id primero
+            from core.models import City
+            city = City.query.filter(
+                db.func.lower(City.name) == city_name.lower()
+            ).first()
+            if city:
+                filters["city_id"] = city.id
 
-        # Filtro por provincia (búsqueda exacta, case-insensitive)
         if province_name:
-            if not city_name:  # Si no se filtró por ciudad, hacer el join
-                query = query.join(City)
-            query = query.join(Province).filter(func.lower(Province.name) == province_name.lower())
+            # Necesitamos buscar el province_id primero
+            from core.models import Province
+            province = Province.query.filter(
+                db.func.lower(Province.name) == province_name.lower()
+            ).first()
+            if province:
+                filters["province_id"] = province.id
 
-        # Filtro por tags (búsqueda por múltiples tags)
+        # Filtro por tags
         if tags_str:
             tag_list = [t.strip() for t in tags_str.split(",") if t.strip()]
             if tag_list:
-                # Buscar sitios que tengan al menos uno de los tags
-                # Usar el slug del tag para la búsqueda
-                query = query.join(HistoricSite.tags).filter(Tag.slug.in_(tag_list))
+                # Convertir slugs a IDs
+                from core.models import Tag
+                tag_ids = []
+                for slug in tag_list:
+                    tag = Tag.query.filter_by(slug=slug).first()
+                    if tag:
+                        tag_ids.append(tag.id)
 
-        # Filtro geoespacial (si se pasan lat, long y radius)
-        if lat is not None and lon is not None and radius is not None:
-            # Crear punto geográfico con ST_MakePoint(longitud, latitud)
-            point = ST_SetSRID(ST_MakePoint(lon, lat), 4326)
-            # Filtrar por distancia (radius en km, convertir a metros)
-            query = query.filter(
-                ST_DWithin(HistoricSite.location, point, radius * 1000)
-            )
+                if tag_ids:
+                    filters["tags_id"] = tag_ids
 
-        # Ordenamiento
+        # Filtros de visibilidad: solo sitios publicados (visible, validado, no eliminado)
+        filters["is_visible"] = True
+        filters["pending_validation"] = False
+        # deleted_at debe ser NULL, pero el servicio no lo filtra automáticamente
+        # Lo haremos después en el query
+
+        # Mapear order_by del PDF al formato del servicio
+        service_order_by = "created_at"  # Por defecto
+        service_sorted_by = "desc"  # Por defecto latest
+
         if order_by == "latest":
-            query = query.order_by(HistoricSite.created_at.desc())
+            service_order_by = "created_at"
+            service_sorted_by = "desc"
         elif order_by == "oldest":
-            query = query.order_by(HistoricSite.created_at.asc())
+            service_order_by = "created_at"
+            service_sorted_by = "asc"
         elif order_by in ["rating-5-1", "rating-1-5"]:
-            # Calcular rating promedio mediante subquery
-            from core.models.review import Review
+            # TODO: Implementar cuando se agregue rating promedio
+            # Por ahora mantener el orden por fecha
+            pass
 
-            # Subquery para calcular el promedio de ratings
-            avg_rating = db.session.query(
-                Review.historic_site_id,
-                func.avg(Review.rating).label('avg_rating')
-            ).filter(
-                Review.status == 'approved'  # Solo contar reviews aprobadas
-            ).group_by(Review.historic_site_id).subquery()
+        # Usar el servicio para obtener sitios filtrados
+        result = historic_site_service.get_sites_filtered(
+            filters=filters,
+            order_by=service_order_by,
+            sorted_by=service_sorted_by,
+            paginate=True,
+            page=page,
+            per_page=per_page
+        )
 
-            # Join con la subquery
-            query = query.outerjoin(
-                avg_rating,
-                HistoricSite.id == avg_rating.c.historic_site_id
-            )
-
-            if order_by == "rating-5-1":
-                # Ordenar de mayor a menor (5 a 1)
-                query = query.order_by(avg_rating.c.avg_rating.desc().nullslast())
-            else:  # rating-1-5
-                # Ordenar de menor a mayor (1 a 5)
-                query = query.order_by(avg_rating.c.avg_rating.asc().nullslast())
-
-        # Ejecutar paginación
-        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-        sites = pagination.items
-
-        # Formatear respuesta según la especificación de la API
+        # Formatear respuesta según el PDF
         data = []
-        for s in sites:
+        for site in result["items"]:
+            # Verificar que no esté eliminado
+            if site.deleted_at is not None:
+                continue
+
             # Extraer coordenadas del campo geometry
-            lat_value = db.session.scalar(ST_Y(s.location))
-            long_value = db.session.scalar(ST_X(s.location))
+            lat_value = db.session.scalar(ST_Y(site.location))
+            long_value = db.session.scalar(ST_X(site.location))
 
             site_dict = {
-                "id": s.id,
-                "name": s.name,
-                "short_description": s.brief_description,
-                "description": s.full_description,
-                "city": s.city.name if s.city else None,
-                "province": s.city.province.name if s.city and s.city.province else None,
-                "country": "AR",  # Según la especificación de la API, siempre es "AR"
+                "id": site.id,
+                "name": site.name,
+                "short_description": site.brief_description,
+                "description": site.full_description,
+                "city": site.city.name if site.city else None,
+                "province": site.city.province.name if site.city and site.city.province else None,
+                "country": "AR",
                 "lat": float(lat_value) if lat_value else None,
                 "long": float(long_value) if long_value else None,
-                "tags": [t.slug for t in s.tags],  # Usar slug según el esquema
+                "tags": [t.slug for t in site.tags],
                 "state_of_conservation": (
-                    s.conservation_state.state if s.conservation_state else None
+                    site.conservation_state.state if site.conservation_state else None
                 ),
-                "inserted_at": s.created_at.isoformat() + "Z" if s.created_at else None,
-                "updated_at": s.updated_at.isoformat() + "Z" if s.updated_at else None
+                "inauguration_year": site.inauguration_year,
+                "category": site.category.name if site.category else None,
+                "inserted_at": site.created_at.isoformat() + "Z" if site.created_at else None,
+                "updated_at": site.updated_at.isoformat() + "Z" if site.updated_at else None
             }
             data.append(site_dict)
 
-        # Respuesta según formato de la especificación de la API
+        # Respuesta según formato del PDF
         return jsonify({
             "data": data,
             "meta": {
-                "page": pagination.page,
-                "per_page": per_page,
-                "total": pagination.total
+                "page": result["current_page"],
+                "per_page": result["per_page"],
+                "total": result["total"]
             }
         }), 200
 
     except Exception as e:
-        print(f"Error in list_sites: {str(e)}")  # Para debugging
+        print(f"Error in list_sites: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             "error": {
                 "code": "server_error",
@@ -232,12 +228,14 @@ def get_site(site_id):
     """
     GET /sites/{site_id}
     Devuelve el detalle completo de un sitio histórico.
-    No requiere autenticación según la especificación de la API.
+    No requiere autenticación según el PDF.
     """
     try:
-        site = HistoricSite.query.get(site_id)
+        # Usar el servicio para obtener el sitio
+        site = historic_site_service.get_historic_site_by_id(site_id)
 
-        if not site:
+        # Verificar que esté publicado (visible, validado, no eliminado)
+        if not site.is_visible or site.pending_validation or site.deleted_at:
             return jsonify({
                 "error": {
                     "code": "not_found",
@@ -249,7 +247,7 @@ def get_site(site_id):
         lat_value = db.session.scalar(ST_Y(site.location))
         long_value = db.session.scalar(ST_X(site.location))
 
-        # Formatear respuesta según la especificación de la API
+        # Formatear respuesta según el PDF
         data = {
             "id": site.id,
             "name": site.name,
@@ -264,14 +262,26 @@ def get_site(site_id):
             "state_of_conservation": (
                 site.conservation_state.state if site.conservation_state else None
             ),
+            "inauguration_year": site.inauguration_year,
+            "category": site.category.name if site.category else None,
             "inserted_at": site.created_at.isoformat() + "Z" if site.created_at else None,
             "updated_at": site.updated_at.isoformat() + "Z" if site.updated_at else None
         }
 
         return jsonify(data), 200
 
+    except ValueError as e:
+        # El servicio lanza ValueError cuando no encuentra el sitio
+        return jsonify({
+            "error": {
+                "code": "not_found",
+                "message": "Site not found"
+            }
+        }), 404
     except Exception as e:
-        print(f"Error in get_site: {str(e)}")  # Para debugging
+        print(f"Error in get_site: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             "error": {
                 "code": "server_error",
@@ -286,16 +296,16 @@ def create_site():
     """
     POST /sites
     Crea un nuevo sitio histórico (usuario autenticado).
-    Requiere autenticación según la especificación de la API.
+    Requiere autenticación según el PDF.
     """
     try:
         data = request.get_json() or {}
         user_id = get_jwt_identity()
 
-        # Validar campos requeridos según la especificación de la API
+        # Validar campos requeridos según el PDF
         required_fields = [
             "name", "short_description", "description", "city",
-            "province", "country", "lat", "long", "tags", "state_of_conservation"
+            "province", "country", "lat", "long", "tags", "state_of_conservation", "category", "inauguration_year"
         ]
 
         missing = [field for field in required_fields if field not in data]
@@ -309,20 +319,31 @@ def create_site():
                 }
             }), 400
 
-        # Validar state_of_conservation
-        valid_states = ["excelente", "bueno", "regular", "malo"]
-        if data.get("state_of_conservation") not in valid_states:
+        # Validar state_of_conservation usando el servicio
+        try:
+            valid_states = conservation_state_service.get_all_conservation_state()
+            valid_state_names = [state.state for state in valid_states]
+
+            if data.get("state_of_conservation") not in valid_state_names:
+                return jsonify({
+                    "error": {
+                        "code": "invalid_data",
+                        "message": "Invalid input data",
+                        "details": {
+                            "state_of_conservation": [
+                                f"Must be one of: {', '.join(valid_state_names)}"
+                            ]
+                        }
+                    }
+                }), 400
+
+        except Exception as e:
             return jsonify({
                 "error": {
-                    "code": "invalid_data",
-                    "message": "Invalid input data",
-                    "details": {
-                        "state_of_conservation": [
-                            f"Must be one of: {', '.join(valid_states)}"
-                        ]
-                    }
+                    "code": "server_error",
+                    "message": "Error validating conservation state"
                 }
-            }), 400
+            }), 500
 
         # Validar coordenadas
         if not isinstance(data.get("lat"), (int, float)) or not (-90 <= data["lat"] <= 90):
@@ -353,9 +374,31 @@ def create_site():
                 }
             }), 400
 
-        # Buscar o crear provincia
+        # Validar inauguration_year
+        inauguration_year = data.get("inauguration_year")
+        if inauguration_year is None:
+            return jsonify({
+                "error": {
+                    "code": "invalid_data",
+                    "message": "Invalid input data",
+                    "details": {"inauguration_year": ["This field is required"]}
+                }
+            }), 400
+
+        if not isinstance(inauguration_year, int) or not (1500 <= inauguration_year <= 2030):
+            return jsonify({
+                "error": {
+                    "code": "invalid_data",
+                    "message": "Invalid input data",
+                    "details": {"inauguration_year": ["Must be an integer between 1500 and 2030"]}
+                }
+            }), 400
+
+        # Buscar o crear provincia y ciudad
+        from core.models import Province, City
+
         province = Province.query.filter(
-            func.lower(Province.name) == data["province"].lower()
+            db.func.lower(Province.name) == data["province"].lower()
         ).first()
 
         if not province:
@@ -363,9 +406,8 @@ def create_site():
             db.session.add(province)
             db.session.flush()
 
-        # Buscar o crear ciudad
         city = City.query.filter(
-            func.lower(City.name) == data["city"].lower(),
+            db.func.lower(City.name) == data["city"].lower(),
             City.province_id == province.id
         ).first()
 
@@ -374,7 +416,9 @@ def create_site():
             db.session.add(city)
             db.session.flush()
 
-        # Buscar conservation_state
+        # Buscar conservation_state, category (si existe)
+        from core.models import ConservationState, Category
+
         conservation_state = ConservationState.query.filter_by(
             state=data["state_of_conservation"]
         ).first()
@@ -388,42 +432,52 @@ def create_site():
                 }
             }), 400
 
-        # Crear el punto geográfico usando PostGIS
-        # ST_MakePoint(longitud, latitud)
-        location_wkt = f"SRID=4326;POINT({data['long']} {data['lat']})"
+        # Obtener usuario
+        from core.models import User
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({
+                "error": {
+                    "code": "unauthorized",
+                    "message": "User not found"
+                }
+            }), 401
 
-        # Crear el sitio histórico
-        site = HistoricSite(
+        # Buscar tags por slug y convertir a objetos Tag
+        from core.models import Tag
+        tag_objects = []
+        for tag_slug in data["tags"]:
+            tag = Tag.query.filter_by(slug=tag_slug).first()
+            if tag:
+                tag_objects.append(tag)
+
+        # Crear el sitio usando el servicio
+        site = historic_site_service.create_historic_site(
             name=data["name"],
             brief_description=data["short_description"],
             full_description=data["description"],
-            inauguration_year=data.get("inauguration_year", 2000),  # Valor por defecto si no se proporciona
-            is_visible=True,  # Por defecto visible
-            pending_validation=True,  # Por defecto pendiente de validación
-            city_id=city.id,
-            conservation_state_id=conservation_state.id,
-            proposed_by=user_id,
-            location=location_wkt
+            latitude=data["lat"],
+            longitude=data["long"],
+            inauguration_year=data.get("inauguration_year", 2000)
         )
 
-        db.session.add(site)
-        db.session.flush()  # Para obtener el ID
+        # Asignar relaciones usando el servicio
+        # Nota: category puede ser None si no es requerido
+        category = Category.query.first()  # Obtener una categoría por defecto o None
 
-        # Agregar tags
-        if data["tags"]:
-            for tag_slug in data["tags"]:
-                # Buscar tag por slug
-                tag = Tag.query.filter_by(slug=tag_slug).first()
-                if tag:
-                    site.tags.append(tag)
-
-        db.session.commit()
+        historic_site_service.assign_relations_to_historic_site(
+            site,
+            conservation_state=conservation_state,
+            category=category,
+            user=user,
+            city=city,
+            tags=tag_objects if tag_objects else None
+        )
 
         # Extraer coordenadas para la respuesta
         lat_value = db.session.scalar(ST_Y(site.location))
         long_value = db.session.scalar(ST_X(site.location))
 
-        # Respuesta según la especificación de la API
         response_data = {
             "id": site.id,
             "name": site.name,
@@ -436,6 +490,8 @@ def create_site():
             "long": float(long_value) if long_value else data["long"],
             "tags": data["tags"],
             "state_of_conservation": data["state_of_conservation"],
+            "inauguration_year": site.inauguration_year,
+            "category": category.name if site.category else None,
             "inserted_at": site.created_at.isoformat() + "Z" if site.created_at else None,
             "updated_at": site.updated_at.isoformat() + "Z" if site.updated_at else None,
             "user_id": user_id
@@ -445,7 +501,9 @@ def create_site():
 
     except Exception as e:
         db.session.rollback()
-        print(f"Error in create_site: {str(e)}")  # Para debugging
+        print(f"Error in create_site: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             "error": {
                 "code": "server_error",
