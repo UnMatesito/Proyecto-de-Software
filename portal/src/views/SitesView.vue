@@ -1,7 +1,7 @@
 <template>
     <h2>Listado de sitios históricos</h2>
     <aside>
-      <Filter></Filter>
+      <Filter :page="pagination.page"></Filter>
     </aside>
     <section class="grid md:grid-cols-4 gap-3 p-3">  
       <Card
@@ -26,29 +26,29 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted} from 'vue'
-import { useRoute } from 'vue-router'
-import api from '@/api/axios'
-import Card from '@/components/Card.vue'
-import Pagination from '@/components/Pagination.vue'
-import Filter from '@/components/Filter.vue'
-const apiMessage = ref('')
-const sites = ref({})
-const pagination = ref({})
-const root = useRoute()
+  import { ref, watch, onMounted} from 'vue'
+  import { useRoute } from 'vue-router'
+  import api from '@/api/axios'
+  import Card from '@/components/Card.vue'
+  import Pagination from '@/components/Pagination.vue'
+  import Filter from '@/components/Filter.vue'
+  const apiMessage = ref('')
+  const sites = ref({})
+  const pagination = ref({})
+  const root = useRoute()
 
-const fetchSites = async (url) => {
-  try {
-    const { data } = await api.get("/sites")
-    const response = data
-    sites.value = response.data
-    pagination.value = response.meta
-  } catch (error) {
-    apiMessage.value = '❌ No se pudo conectar con la API'
-    console.error(error)
+  const fetchSites = async (url) => {
+    try {
+      const { data } = await api.get("/sites")
+      const response = data
+      sites.value = response.data
+      pagination.value = response.meta
+    } catch (error) {
+      apiMessage.value = '❌ No se pudo conectar con la API'
+      console.error(error)
+    }
   }
-}
-onMounted(
-    () => fetchSites()
-)
+  onMounted(
+      () => fetchSites()
+  )
 </script>

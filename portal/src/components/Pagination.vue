@@ -3,9 +3,12 @@
 import router from '@/router';
 import IconArrowLeft from './icons/IconArrowLeft.vue';
     import IconArrowRight from './icons/IconArrowRight.vue';
-    import { ref, watchEffect} from 'vue'
+    import { ref, watch} from 'vue'
+    import { useRoute } from 'vue-router'
+    const route = useRoute()
     const props = defineProps(["page", "per_page", "total", "pages" , "fetchSites"])
     const pageToShow = props.pages <= 4 ? props.pages : [1, 2, 3, 4, "...", props.pages]
+    const query = ref({})
     const classContentHover =  [
                 'hover:bg-proyecto-primary',
                 'hover:text-white', 
@@ -20,7 +23,14 @@ import IconArrowLeft from './icons/IconArrowLeft.vue';
                 'text-white', 
                 'cursor-pointer'
     ]
+    watch(
+        () => route.query,
+        (newValue, oldValue) => {
+            query.value = newValue
+                        console.log(query.value)
 
+        }
+    )
 </script>
 
 <template>
@@ -29,7 +39,7 @@ import IconArrowLeft from './icons/IconArrowLeft.vue';
             <IconArrowLeft></IconArrowLeft>
         </div>
         <router-link v-for="value in pageToShow" 
-            :to="{query: { page: `${value}` }}"
+            :to="{query: { ...query, page:value }}"
             v-on="value != '...' ? {click: fetchSites} : {}"
             class="
             w-10 h-10 
