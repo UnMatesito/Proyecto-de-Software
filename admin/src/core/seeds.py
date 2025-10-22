@@ -446,6 +446,7 @@ def seed_consevation_states():
 
     print("Creando estados de conservacion...")
     states = [
+        ConservationState(state="Excelente"),
         ConservationState(state="Bueno"),
         ConservationState(state="Regular"),
         ConservationState(state="Malo"),
