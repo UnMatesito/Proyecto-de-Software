@@ -22,6 +22,12 @@
             >
               Acerca de
             </RouterLink>
+                        <RouterLink
+              to="/sites"
+              class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition"
+            >
+              Sitios históricos
+            </RouterLink>
           </div>
         </div>
       </nav>
