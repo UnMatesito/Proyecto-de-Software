@@ -2,6 +2,7 @@
     import IconFavorite from './icons/IconFavorite.vue'
     import IconLocation from './icons/IconLocation.vue'
     import IconBuild from './icons/IconBuild.vue'
+    import Stars from './Stars.vue'
     const props = defineProps(["name", "province", "city", "tags", "state_of_conservation", "inauguration_year", "category", "imagen"])
     const tags_to_show = props.tags.slice(0, 5)
     const tags_left = props.tags.length > 5 ? props.tags.length - 5 : 0
@@ -13,8 +14,9 @@
     <div class=" rounded-lg relative flex flex-col gap-1 overflow-hidden md:max-w-64 cursor-pointer shadow-lg">
         <span class="absolute left-1 top-1 bg-slate-200 p-1.5 border-0 rounded-full w-9 fill-gray-500 text-center hover:opacity-75 hover:fill-red-700 transition-all duration-400 ease-in-out"> 
             <IconFavorite class=""></IconFavorite>
-        </span>
-        <img class="object-cover" :src="urlImg" :alt ="alt">
+        </span>                   
+         <img class="object-cover " :src="urlImg" :alt ="alt">
+        <Stars rating="1"></Stars>
         <div class="p-2 flex flex-col gap-1">
             <div class="flex gap-1 items-center">
                 <IconBuild class="fill-yellow-500 w-4"></IconBuild>
