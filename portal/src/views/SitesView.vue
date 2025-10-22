@@ -1,5 +1,8 @@
 <template>
     <h2>Listado de sitios históricos</h2>
+    <aside>
+      <Filter></Filter>
+    </aside>
     <section class="grid md:grid-cols-4 gap-3 p-3">  
       <Card
       v-for="site in sites"
@@ -28,6 +31,7 @@ import { useRoute } from 'vue-router'
 import api from '@/api/axios'
 import Card from '@/components/Card.vue'
 import Pagination from '@/components/Pagination.vue'
+import Filter from '@/components/Filter.vue'
 const apiMessage = ref('')
 const sites = ref({})
 const pagination = ref({})
@@ -35,7 +39,7 @@ const root = useRoute()
 
 const fetchSites = async (url) => {
   try {
-    const { data } = await api.get(url)
+    const { data } = await api.get("/sites")
     const response = data
     sites.value = response.data
     pagination.value = response.meta
@@ -47,8 +51,4 @@ const fetchSites = async (url) => {
 onMounted(
     () => fetchSites()
 )
-watch(root, 
-  () => {
-  fetchSites(query)
-})
 </script>
