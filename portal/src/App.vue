@@ -22,7 +22,7 @@
             >
               Acerca de
             </RouterLink>
-                        <RouterLink
+            <RouterLink
               to="/sites"
               class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition"
             >
@@ -34,7 +34,7 @@
     </header>
 
     <!-- Contenido principal -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center gap-2">
       <RouterView />
     </main>
 

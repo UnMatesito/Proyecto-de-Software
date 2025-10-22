@@ -11,7 +11,7 @@
 
 <template>
     <div class=" rounded-lg relative flex flex-col gap-1 overflow-hidden md:max-w-64 cursor-pointer shadow-lg">
-        <span class="absolute left-1 top-1 bg-slate-200 p-1.5 border-0 rounded-full w-9 fill-gray-500 text-center hover:opacity-75 hover:fill-red-700 transition-opacity duration-400 ease-in-out"> 
+        <span class="absolute left-1 top-1 bg-slate-200 p-1.5 border-0 rounded-full w-9 fill-gray-500 text-center hover:opacity-75 hover:fill-red-700 transition-all duration-400 ease-in-out"> 
             <IconFavorite class=""></IconFavorite>
         </span>
         <img class="object-cover" :src="urlImg" :alt ="alt">

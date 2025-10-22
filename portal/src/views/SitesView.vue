@@ -14,27 +14,41 @@
       :imagen="site.imagen"
       ></Card>
     </section>
+    <Pagination 
+    :page="pagination.page"
+    :per_page="pagination.per_page"
+    :total="pagination.total"
+    pages=6
+    ></Pagination>
 </template>
 
 <script setup>
-import { ref, watchEffect} from 'vue'
+import { ref, watch, onMounted} from 'vue'
+import { useRoute } from 'vue-router'
 import api from '@/api/axios'
 import Card from '@/components/Card.vue'
-
+import Pagination from '@/components/Pagination.vue'
 const apiMessage = ref('')
-const sites = ref()
+const sites = ref({})
+const pagination = ref({})
+const root = useRoute()
 
-const fetchSites = async () => {
+const fetchSites = async (url) => {
   try {
-    const { data } = await api.get('/sites')
+    const { data } = await api.get(url)
     const response = data
     sites.value = response.data
+    pagination.value = response.meta
   } catch (error) {
     apiMessage.value = '❌ No se pudo conectar con la API'
     console.error(error)
   }
 }
-watchEffect(
+onMounted(
     () => fetchSites()
 )
+watch(root, 
+  () => {
+  fetchSites(query)
+})
 </script>
