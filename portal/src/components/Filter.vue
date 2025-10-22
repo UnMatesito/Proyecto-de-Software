@@ -67,9 +67,7 @@
 </template>
 
 <script setup>
-    import { ref, watch, onMounted} from 'vue'
-    import { useRoute } from 'vue-router'
-    const root = useRoute()
+    import { ref, onMounted} from 'vue'
     const provinceValue = ref("")
     const cityValue = ref("")
     const nameValue = ref("")
