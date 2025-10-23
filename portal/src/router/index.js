@@ -27,6 +27,11 @@ const router = createRouter({
       name: 'sitesQuery',
       component: () => import('../views/SitesView.vue'),
     },
+    {
+      path: '/sites/:id',
+      name: 'siteDetail',
+      component: () => import('../views/DetailView.vue')
+    }
   ],
 })
 
