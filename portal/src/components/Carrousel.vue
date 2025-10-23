@@ -107,3 +107,7 @@
     -->
   </div>
 </template>
+
+<script setup>
+// No se necesita lógica JS, Flowbite maneja el carrusel automáticamente
+</script>

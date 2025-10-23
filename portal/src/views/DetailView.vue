@@ -1,39 +1,41 @@
 <template>
-    <Carrousel></Carrousel>
-    <aside class="flex gap-5 flex-col">
-        <h2 class="text-2xl font-bold">
-            {{ detalle.name }}
-        </h2>
-        <div class="flex gap-1 items-center">
-            <Stars :rating="detalle.rating"></Stars>
-            <span class="text-lg font-semibold text-yellow-500">
-                ({{ detalle.count_rating }})
-            </span>
-        </div>
-        <div class="flex gap-1">
-            <IconLocation class="fill-red-700 w-3"></IconLocation>
-            <span>
-                {{ detalle.province }},
-            </span>
-            <span>
-                {{ detalle.city }}
-            </span>
-        </div>
-            <div>
-                <p class="font-semibold">Estado de conservación</p>
-                <span>
-                    {{ detalle.state }}
+    <section class="flex items-center">
+        <Carrousel></Carrousel>
+        <aside class="flex gap-5 flex-col">
+            <h2 class="text-2xl font-bold">
+                {{ detalle.name }}
+            </h2>
+            <div class="flex gap-1 items-center">
+                <Stars :rating="detalle.rating"></Stars>
+                <span class="text-lg font-semibold text-yellow-500">
+                    ({{ detalle.count_rating }})
                 </span>
             </div>
-            <div>
-                <p class="font-semibold">Categoria</p>
+            <div class="flex gap-1">
+                <IconLocation class="fill-red-700 w-3"></IconLocation>
                 <span>
-                    {{ detalle.category }}
+                    {{ detalle.province }},
+                </span>
+                <span>
+                    {{ detalle.city }}
                 </span>
             </div>
-        <Acordion></Acordion>
-        <Tag :tags="detalle.tags"></Tag>
-    </aside>
+                <div>
+                    <p class="font-semibold">Estado de conservación</p>
+                    <span>
+                        {{ detalle.state }}
+                    </span>
+                </div>
+                <div>
+                    <p class="font-semibold">Categoria</p>
+                    <span>
+                        {{ detalle.category }}
+                    </span>
+                </div>
+            <Acordion></Acordion>
+            <Tag :tags="detalle.tags"></Tag>
+        </aside>
+    </section>
 </template>
 
 <script setup>
