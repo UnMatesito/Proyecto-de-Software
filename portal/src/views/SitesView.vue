@@ -15,6 +15,7 @@
       :inauguration_year="site.inauguration_year"
       :category="site.category"
       :imagen="site.imagen"
+      :id="site.id"
       ></Card>
     </section>
     <Pagination 
