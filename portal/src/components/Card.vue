@@ -46,7 +46,7 @@
                     <p class="text-gray-700 text-sm font-semibold">{{ props.category }}</p>
                 </div>
             </div>
-            <div class="flex gap-2 text-blue-700 flex-wrap border-t-2 pt-1">
+            <div class="flex gap-2 text-blue-700 flex-wrap border-t-2 pt-1 pb-2">
                 <span v-for="tag in tags_to_show" class="inline-flex items-center bg-blue-50 text-blue-500 text-xs font-semibold px-2.5 py-0.5 border-2 rounded-full border-blue-500">{{ tag }}</span>
                 <span v-if="tags_left > 0" class="inline-flex items-center bg-blue-100 text-blue-500 text-xs font-bold px-2.5 py-0.5 border-2 rounded-full border-blue-500">{{ `+${tags_left}` }}</span>
             </div>

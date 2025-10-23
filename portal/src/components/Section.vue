@@ -15,7 +15,8 @@ const props = defineProps({
         <h2 class="text-4xl text-proyecto-primary font-semibold">{{ title }}</h2>
         <a href="#" class="font-semibold hover:bg-proyecto-primary hover:text-white rounded-full px-4 py-2 transition-colors duration-400">Ver Todos <i class="fa-solid fa-chevron-right ml-1"></i></a>
     </div>
-    <ul class="grid grid-cols-4 gap-4 mt-4 justify-items-center">
+    <!-- Cambiar la condición v-if por la lógica correspondiente para mostrar los sitios -->
+    <ul v-if="true" class="grid grid-cols-4 gap-4 mt-4 justify-items-center">
       <li v-for="site in [1,2,3,4] " :key="site">
         <Card
           name="Obelisco"
@@ -29,5 +30,8 @@ const props = defineProps({
         ></Card>
       </li>
     </ul>
+    <div v-else class="h-[200px] flex justify-center items-center">
+      <p class="px-5 py-2 text-white bg-proyecto-primary/80 text-center rounded-full inline-flex font-semibold shadow-md select-none"> No hay Contenido</p>
+    </div>
   </div>
 </template>
