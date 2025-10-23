@@ -8,5 +8,4 @@
     import IconStar from './icons/IconStar.vue';
     const props = defineProps(["rating"])
     const stars = 5
-    
 </script>
