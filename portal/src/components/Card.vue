@@ -22,37 +22,39 @@
             <IconFavorite class=""></IconFavorite>
         </span>                   
          <img class="object-cover " :src="urlImg" :alt ="alt">
-        <Stars rating="1"></Stars>
+        <div class="w-full pt-2 flex justify-center">
+          <Stars rating="1" class=""></Stars>
+        </div>
         <div class="p-2 flex flex-col gap-1">
             <div class="flex gap-1 items-center">
-                <IconBuild class="fill-yellow-500 w-4"></IconBuild>
+                <IconBuild class="fill-slate-400 w-4 h-4"></IconBuild>
                 <h3 class="font-semibold">
                     {{ props.name }}
                 </h3>
             </div>
-            <div>
-                <span class=" font-sans flex items-center gap-1 ">
-                    <IconLocation class="fill-red-700 w-3"></IconLocation>
-                    <p>{{ `${props.province}, ${props.city}` }}</p>
+            <div class="flex flex-row gap-1 items-center">
+                <span class="font-sans flex items-center justify-between gap-1">
+                    <IconLocation class="fill-slate-400 w-4 h-4"></IconLocation>
                 </span>
+                <p class="text-sm">{{ `${props.province}, ${props.city}` }}</p>
             </div>
             <div class="flex gap-1 justify-between">
                 <div>
-                    <span class="text-gray-500 text-sm font-semibold">Estado</span>
+                    <span class="text-proyecto-primary/80 text-sm font-semibold">Estado</span>
                     <p  class="text-gray-700 text-sm font-semibold">{{ props.state_of_conservation }}</p>
                 </div>
                 <div>
-                    <span class="text-gray-500 text-sm font-semibold">Año</span>
+                    <span class="text-proyecto-primary/80 text-sm font-semibold">Año</span>
                     <p  class="text-gray-700 text-sm font-semibold">{{ props.inauguration_year }}</p>
                 </div>
                 <div>
-                    <span class="text-gray-500 text-sm font-semibold">Categoria</span>
+                    <span class="text-proyecto-primary/80 text-sm font-semibold">Categoria</span>
                     <p class="text-gray-700 text-sm font-semibold">{{ props.category }}</p>
                 </div>
             </div>
-            <div class="flex gap-2 text-blue-700 flex-wrap border-t-2 pt-1">
-                <span v-for="tag in tags_to_show" class="inline-flex items-center bg-blue-300 text-sky-950 text-xs font-bold px-2.5 py-0.5 border-2 rounded-full ">{{ tag }}</span>
-                <span v-if="tags_left > 0" class="inline-flex items-center bg-blue-300 text-sky-950 text-xs font-bold px-2.5 py-0.5 border-2 rounded-full ">{{ `+${tags_left}` }}</span>
+            <div class="flex gap-2 text-blue-700 flex-wrap border-t-2 pt-1 pb-2">
+                <span v-for="tag in tags_to_show" class="inline-flex items-center bg-blue-50 text-blue-500 text-xs font-semibold px-2.5 py-0.5 border-2 rounded-full border-blue-500">{{ tag }}</span>
+                <span v-if="tags_left > 0" class="inline-flex items-center bg-blue-100 text-blue-500 text-xs font-bold px-2.5 py-0.5 border-2 rounded-full border-blue-500">{{ `+${tags_left}` }}</span>
             </div>
         </div>
     </router-link>
