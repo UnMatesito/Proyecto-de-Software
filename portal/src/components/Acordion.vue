@@ -1,54 +1,29 @@
-<script setup lang="ts">
+<script setup>
 
-import { computed, ref } from 'vue'
+import { computed, ref, watchEffect} from 'vue'
 
-interface FAQ {
-  id: number
-  header: string
-  text: string
-}
+const props = defineProps(["content"])
 
-const header = `Descripción `
-const text = `It takes 2-3 weeks to get your first blog post ready. That includes the in-depth research & creation of your monthly content marketing strategy that we do before writing your first blog post, Ipsum available .`
+const faqs = ref([])
 
-const faqs = ref<FAQ[]>([
-  {
-    id: 1,
-    header,
-    text
-  },
-  {
-    id: 2,
-    header,
-    text
-  },
-  {
-    id: 3,
-    header,
-    text
-  },
+watchEffect(() => faqs.value = props.content)
 
-])
-
-const activeFaq = ref<number | null>(null)
-
-const oddFaqs = computed(() => faqs.value.filter((faq) => faq.id % 2 !== 0))
-const evenFaqs = computed(() => faqs.value.filter((faq) => faq.id % 2 === 0))
-
-const handleToggle = (faqId: number) => {
+const activeFaq = ref(null)
+const handleToggle = (faqId) => {
   activeFaq.value = activeFaq.value === faqId ? null : faqId
 }
+
 </script>
 
 <template>
   <section
     class="relative z-20 overflow-hidden bg-white dark:bg-dark "
   >
-    <div class=" ">
+    <div class=" w-full">
 
       <div class="-mx-4 flex flex-wrap">
-        <div class="w-full px-4 lg:w-1/2">
-          <template :key="faq.id" v-for="faq in oddFaqs">
+        <div class="w-full px-4 ">
+          <template :key="faq.id" v-for="faq in faqs">
             <div
               class="mb-3 w-full rounded-lg bg-white  shadow-[0px_20px_95px_0px_rgba(201,203,204,0.30)] dark:bg-dark-2 dark:shadow-[0px_20px_95px_0px_rgba(0,0,0,0.30)]"
             >
@@ -80,7 +55,7 @@ const handleToggle = (faqId: number) => {
               </button>
 
               <div v-show="activeFaq === faq.id" class="pl-[62px]">
-                <p class="py-3 text-base leading-relaxed text-body-color dark:text-dark-6 ">
+                <p class="py-3 text-base leading-relaxed text-body-color dark:text-dark-6 break-words hyphens-auto">
                   {{ faq.text }}
                 </p>
               </div>
