@@ -1,9 +1,11 @@
 <template>
-    <h2>Listado de sitios históricos</h2>
+    <h2 class="font-semibold text-3xl">Listado de sitios históricos</h2>
+    <p>Aqui puedes buscar el sitio que justo necesitas.</p>
     <aside>
       <Filter :page="pagination.page"></Filter>
     </aside>
-    <section class="grid md:grid-cols-4 gap-3 p-3">  
+
+    <section class="grid md:grid-cols-4 gap-3 p-3">
       <Card
       v-for="site in sites"
       :key="`${site.id}-${site.name}`"
@@ -17,11 +19,12 @@
       :imagen="site.imagen"
       ></Card>
     </section>
-    <Pagination 
-    :page="pagination.page"
-    :per_page="pagination.per_page"
-    :total="pagination.total"
-    pages=6
+
+    <Pagination
+      :page="pagination.page"
+      :per_page="pagination.per_page"
+      :total="pagination.total"
+      pages=6
     ></Pagination>
 </template>
 
