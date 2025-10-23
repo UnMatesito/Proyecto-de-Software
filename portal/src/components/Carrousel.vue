@@ -109,5 +109,10 @@
 </template>
 
 <script setup>
-// No se necesita lógica JS, Flowbite maneja el carrusel automáticamente
+  import { onMounted } from 'vue'
+  import { initFlowbite } from 'flowbite'
+
+  onMounted(() => {
+    initFlowbite()
+  })
 </script>
