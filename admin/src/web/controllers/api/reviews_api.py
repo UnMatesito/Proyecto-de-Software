@@ -1,10 +1,17 @@
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import ValidationError
+
 from core.database import db
 from core.models import Review
 from core.services import review_service, historic_site_service
 from core.utils.search import search_with_pagination
+from web.schemas import (
+    ReviewCreateSchema,
+    ReviewQuerySchema,
+    ReviewResponseSchema,
+)
+from web.utils.format_marshmallow_validation_errors import format_validation_errors
 from . import api_bp
 
 
@@ -17,53 +24,32 @@ def list_reviews(site_id):
     Usa los métodos genéricos de búsqueda y paginación.
     """
     try:
-        # Validar que el sitio exista
         historic_site_service.get_published_site_by_id(site_id)
     except ValueError:
         return jsonify({
             "error": {"code": "not_found", "message": "Site not found"}
         }), 404
 
-    # Obtener parámetros de paginación
+    # Validar parámetros de query
+    schema = ReviewQuerySchema()
     try:
-        page = int(request.args.get("page", 1))
-        per_page = int(request.args.get("per_page", 10))
-        order_by = request.args.get("order_by", "created_at")
-        order_dir = request.args.get("sorted_by", "desc")
-    except ValueError:
-        return jsonify({
-            "error": {
-                "code": "invalid_query",
-                "message": "Invalid pagination parameters"
-            }
-        }), 400
-
-    filters = {"historic_site_id": site_id}
+        params = schema.load(request.args)
+    except ValidationError as err:
+        return jsonify(format_validation_errors(err)), 400
 
     try:
-        # Usa search_with_pagination del core
+        # Buscar reseñas con paginación y filtros
         pagination = search_with_pagination(
             Review,
-            filters=filters,
-            page=page,
-            per_page=per_page,
-            order_by=order_by,
-            order_dir=order_dir,
+            filters={"historic_site_id": site_id},
+            page=params["page"],
+            per_page=params["per_page"],
+            order_by=params["order_by"],
+            order_dir=params["sorted_by"],
             text_search_columns=["content"]
         )
 
-        data = [
-            {
-                "id": r.id,
-                "site_id": r.historic_site_id,
-                "rating": r.rating,
-                "comment": r.content,
-                "inserted_at": r.created_at.isoformat() + "Z",
-                "updated_at": r.updated_at.isoformat() + "Z"
-            }
-            for r in pagination["items"]
-        ]
-
+        data = ReviewResponseSchema(many=True).dump(pagination["items"])
         meta = {
             "page": pagination["current_page"],
             "per_page": pagination["per_page"],
@@ -83,42 +69,23 @@ def list_reviews(site_id):
 def create_review(site_id):
     """
     POST /sites/{site_id}/reviews
-    Crea una nueva reseña para un sitio histórico específico.
+    Crea una nueva reseña para un sitio histórico.
     """
     user_id = get_jwt_identity()
-    data = request.get_json() or {}
-
-    # Validar campos requeridos
-    rating = data.get("rating")
-    comment = data.get("comment")
-
-    if rating is None or comment is None:
-        return jsonify({
-            "error": {
-                "code": "invalid_data",
-                "message": "Invalid input data",
-                "details": {
-                    "rating": ["This field is required"],
-                    "comment": ["This field is required"]
-                }
-            }
-        }), 400
+    schema = ReviewCreateSchema()
+    try:
+        data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return jsonify(format_validation_errors(err)), 400
 
     try:
         review = review_service.create_review(
             user_id=user_id,
             site_id=site_id,
-            rating=int(rating),
-            content=comment.strip(),
+            rating=data["rating"],
+            content=data["comment"],
         )
-        return jsonify({
-            "id": review.id,
-            "site_id": site_id,
-            "rating": review.rating,
-            "comment": review.content,
-            "inserted_at": review.created_at.isoformat() + "Z",
-            "updated_at": review.updated_at.isoformat() + "Z"
-        }), 201
+        return jsonify(ReviewResponseSchema().dump(review)), 201
 
     except ValueError as e:
         msg = str(e).lower()
@@ -157,8 +124,7 @@ def get_review(site_id, review_id):
     """
     try:
         review = Review.query.filter_by(
-            id=review_id,
-            historic_site_id=site_id
+            id=review_id, historic_site_id=site_id
         ).first()
 
         if not review:
@@ -166,14 +132,7 @@ def get_review(site_id, review_id):
                 "error": {"code": "not_found", "message": "Review not found"}
             }), 404
 
-        return jsonify({
-            "id": review.id,
-            "site_id": review.historic_site_id,
-            "rating": review.rating,
-            "comment": review.content,
-            "inserted_at": review.created_at.isoformat() + "Z",
-            "updated_at": review.updated_at.isoformat() + "Z"
-        }), 200
+        return jsonify(ReviewResponseSchema().dump(review)), 200
 
     except Exception:
         return jsonify({
@@ -189,12 +148,14 @@ def delete_review(site_id, review_id):
     Elimina una reseña del usuario autenticado.
     """
     user_id = get_jwt_identity()
+
     try:
         review = Review.query.get(review_id)
         if not review or review.historic_site_id != site_id:
             return jsonify({
                 "error": {"code": "not_found", "message": "Review not found"}
             }), 404
+
         if review.user_id != user_id:
             return jsonify({
                 "error": {

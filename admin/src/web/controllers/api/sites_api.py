@@ -5,7 +5,8 @@ from core.services import historic_site_service
 from core.database import db
 from geoalchemy2.functions import ST_X, ST_Y
 from . import api_bp
-from web.schemas import SiteQuerySchema, SiteCreateSchema, format_validation_errors
+from web.schemas import SiteQuerySchema, SiteCreateSchema
+from web.utils.format_marshmallow_validation_errors import format_validation_errors
 
 
 @api_bp.get("/sites")
