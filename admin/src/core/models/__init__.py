@@ -3,7 +3,7 @@ from .city import City
 from .conservation_state import ConservationState
 from .event_type import EventType
 from .feature_flag import FeatureFlag
-from .historic_site import HistoricSite, historic_site_tag
+from .historic_site import HistoricSite, historic_site_tag, user_favorite_site
 from .permission import Permission
 from .province import Province
 from .role import Role, role_permission
@@ -17,6 +17,7 @@ __all__ = [
     "User",
     "HistoricSite",
     "historic_site_tag",
+    "user_favorite_site",
     "City",
     "Province",
     "Tag",

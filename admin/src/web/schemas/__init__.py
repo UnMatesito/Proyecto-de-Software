@@ -9,10 +9,14 @@ from .sites_schemas import (
     format_validation_errors
 )
 
+from .favorites_schemas import (
+    FavoriteQuerySchema,
+)
 __all__ = [
     'SiteQuerySchema',
     'SiteCreateSchema',
     'SiteResponseSchema',
     'SiteListResponseSchema',
-    'format_validation_errors'
+    'format_validation_errors',
+    'FavoriteQuerySchema',
 ]

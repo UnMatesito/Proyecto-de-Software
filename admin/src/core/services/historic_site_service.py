@@ -384,3 +384,279 @@ def get_sites_filtered(
             query, page=page, per_page=per_page, order_by=order_by, sorted_by=sorted_by
         )
     return query.all()
+
+
+def get_published_site_by_id(site_id: int):
+    """
+    Obtiene un sitio histórico publicado por su ID.
+    Lanza ValueError si no existe o no está publicado.
+    """
+    site = get_historic_site_by_id(site_id)
+
+    # Verificar que esté publicado (visible, validado, no eliminado)
+    if not site.is_visible or site.pending_validation or site.deleted_at:
+        raise ValueError(f"Site {site_id} not found or not published")
+
+    return site
+
+
+def list_published_sites(
+        name=None,
+        description=None,
+        city_name=None,
+        province_name=None,
+        tags_str=None,
+        order_by="latest",
+        lat=None,
+        lon=None,
+        radius=None,
+        page=1,
+        per_page=20
+):
+    """
+    Lista sitios históricos publicados con filtros.
+
+    Args:
+        name: Búsqueda parcial por nombre
+        description: Búsqueda parcial por descripción
+        city_name: Nombre exacto de ciudad
+        province_name: Nombre exacto de provincia
+        tags_str: Tags separados por coma
+        order_by: latest | oldest | rating-5-1 | rating-1-5
+        lat, lon, radius: Para búsqueda geoespacial
+        page: Número de página
+        per_page: Items por página
+
+    Returns:
+        Dict con paginación: {"items": [], "current_page": 1, "per_page": 20, "total": 100}
+    """
+    from core.models import City, Province, Tag
+
+    filters = {}
+
+    # Filtros de texto - usar search_text que aprovecha GenericSearchBuilder
+    search_terms = []
+    if name:
+        search_terms.append(name)
+    if description:
+        search_terms.append(description)
+
+    if search_terms:
+        filters["search_text"] = " ".join(search_terms)
+
+    # Filtro por ciudad - buscar city_id
+    if city_name:
+        city = City.query.filter(
+            db.func.lower(City.name) == city_name.lower()
+        ).first()
+        if city:
+            filters["city_id"] = city.id
+
+    # Filtro por provincia - buscar province_id
+    if province_name:
+        province = Province.query.filter(
+            db.func.lower(Province.name) == province_name.lower()
+        ).first()
+        if province:
+            filters["province_id"] = province.id
+
+    # Filtro por tags - usar tags_id que aprovecha el filtro especial
+    if tags_str:
+        tag_list = [t.strip() for t in tags_str.split(",") if t.strip()]
+        if tag_list:
+            tag_ids = []
+            for slug in tag_list:
+                tag = Tag.query.filter_by(slug=slug).first()
+                if tag:
+                    tag_ids.append(tag.id)
+
+            if tag_ids:
+                filters["tags_id"] = tag_ids
+
+    # Filtros de visibilidad: solo sitios publicados
+    filters["is_visible"] = True
+    filters["pending_validation"] = False
+
+    # Mapear order_by del API al formato interno
+    service_order_by = "created_at"
+    service_sorted_by = "desc"
+
+    if order_by == "latest":
+        service_order_by = "created_at"
+        service_sorted_by = "desc"
+    elif order_by == "oldest":
+        service_order_by = "created_at"
+        service_sorted_by = "asc"
+    elif order_by in ["rating-5-1", "rating-1-5"]:
+        # TODO: Implementar cuando se agregue rating promedio
+        pass
+
+    # TODO: Implementar búsqueda geoespacial con lat, lon, radius
+    # if lat and lon and radius:
+    #     filters["geo_search"] = {"lat": lat, "lon": lon, "radius": radius}
+
+    # Usar get_sites_filtered que ya usa los utils
+    result = get_sites_filtered(
+        filters=filters,
+        order_by=service_order_by,
+        sorted_by=service_sorted_by,
+        paginate=True,
+        page=page,
+        per_page=per_page
+    )
+
+    # Filtrar sitios eliminados (doble verificación)
+    result["items"] = [site for site in result["items"] if site.deleted_at is None]
+
+    return result
+
+
+def get_city_and_province(city_name, province_name):
+    """
+    Busca una ciudad y su provincia. No crea ninguna si no existe.
+
+    Args:
+        city_name: Nombre de la ciudad
+        province_name: Nombre de la provincia
+
+    Returns:
+        Tupla (city, province)
+
+    Raises:
+        ValueError: Si la provincia o ciudad no existen
+    """
+    from core.models import Province, City
+
+    # Buscar provincia
+    province = Province.query.filter(
+        db.func.lower(Province.name) == province_name.lower()
+    ).first()
+
+    if not province:
+        raise ValueError(f"Province '{province_name}' does not exist")
+
+    # Buscar ciudad en esa provincia
+    city = City.query.filter(
+        db.func.lower(City.name) == city_name.lower(),
+        City.province_id == province.id
+    ).first()
+
+    if not city:
+        raise ValueError(f"City '{city_name}' does not exist in province '{province_name}'")
+
+    return city, province
+
+
+def get_tags_by_slugs(tag_slugs):
+    """
+    Obtiene objetos Tag a partir de una lista de slugs.
+
+    Args:
+        tag_slugs: Lista de slugs de tags
+
+    Returns:
+        Lista de objetos Tag encontrados
+    """
+    from core.models import Tag
+
+    if not tag_slugs:
+        return []
+
+    tag_objects = []
+    for slug in tag_slugs:
+        tag = Tag.query.filter_by(slug=slug).first()
+        if tag:
+            tag_objects.append(tag)
+
+    return tag_objects
+
+
+def create_site_from_api(
+        user_id,
+        name,
+        short_description,
+        description,
+        city_name,
+        province_name,
+        country,
+        lat,
+        lon,
+        tags,
+        state_of_conservation,
+        inauguration_year,
+        category_name=None
+):
+    """
+    Crea un sitio histórico desde la API con todos los datos necesarios.
+    Maneja la creación/búsqueda de relaciones automáticamente.
+
+    Args:
+        user_id: ID del usuario creador
+        name: Nombre del sitio
+        short_description: Descripción breve
+        description: Descripción completa
+        city_name: Nombre de la ciudad
+        province_name: Nombre de la provincia
+        country: Código del país (2 letras)
+        lat: Latitud
+        lon: Longitud
+        tags: Lista de slugs de tags
+        state_of_conservation: Nombre del estado de conservación
+        inauguration_year: Año de inauguración
+        category_name: Nombre de la categoría (opcional)
+
+    Returns:
+        HistoricSite creado
+
+    Raises:
+        ValueError: Si hay datos inválidos
+    """
+    from core.models import ConservationState, Category, User
+
+    # Validar que el usuario exista
+    user = User.query.get(user_id)
+    if not user:
+        raise ValueError("User not found")
+
+    # Buscar ciudad y provincia (lanza ValueError si no existen)
+    city, province = get_city_and_province(city_name, province_name)
+
+    # Buscar estado de conservación
+    conservation_state = ConservationState.query.filter_by(
+        state=state_of_conservation
+    ).first()
+
+    if not conservation_state:
+        raise ValueError(f"Invalid conservation state: {state_of_conservation}")
+
+    # Buscar tags por slug
+    tag_objects = get_tags_by_slugs(tags)
+
+    # Buscar categoría si se proporciona
+    category = None
+    if category_name:
+        category = Category.query.filter_by(name=category_name).first()
+        if not category:
+            raise ValueError(f"Invalid category: {category_name}")
+
+    # Crear el sitio
+    site = create_historic_site(
+        name=name,
+        brief_description=short_description,
+        full_description=description,
+        latitude=lat,
+        longitude=lon,
+        inauguration_year=inauguration_year
+    )
+
+    # Asignar relaciones
+    assign_relations_to_historic_site(
+        site,
+        conservation_state=conservation_state,
+        category=category,
+        user=user,
+        city=city,
+        tags=tag_objects if tag_objects else None
+    )
+
+    return site
