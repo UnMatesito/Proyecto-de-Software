@@ -50,7 +50,6 @@ class HistoricSite(db.Model):
     pending_validation = db.Column(db.Boolean, default=True, nullable=False)
     location = db.Column(Geometry(geometry_type="POINT", srid=4326), nullable=False)
     # TODO: VER QUÉ HACER CON EL PAIS
-    # TODO: VER QUÉ HACER CON EL CREATED BY
 
     # Latitud
     @property

@@ -12,7 +12,7 @@ from .favorites_schemas import (
     FavoriteQuerySchema
 )
 
-from reviews_schemas import (
+from .reviews_schemas import (
     ReviewQuerySchema,
     ReviewResponseSchema,
     ReviewCreateSchema
