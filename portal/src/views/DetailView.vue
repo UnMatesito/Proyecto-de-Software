@@ -1,8 +1,8 @@
 <template>
-    <button  type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none gap-2 focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+    <router-link to="/sites"  type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none gap-2 focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
          <IconArrowLeft class="w-3.5 h-3.5 ms-2 fill-white"> </IconArrowLeft>
         Volver
-    </button>
+    </router-link >
     <section class="w-full">
         <div class="flex items-start gap-4 w-full justify-center border-b-2 pt-1 pb-3">
             <aside class="flex gap-4 flex-col">
@@ -65,6 +65,7 @@
     import IconArrowLeft from '@/components/icons/IconArrowLeft.vue'
     import Map from '@/components/Map.vue'
     import api from '@/api/axios'
+import router from '@/router'
     const detalle = ref({})
     detalle.value = {
         "name": "Sitio histórico Corrientes",
