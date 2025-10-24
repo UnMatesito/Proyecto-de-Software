@@ -17,6 +17,16 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
     },
+    {
+      path: '/sites',
+      name: 'sites',
+      component: () => import('../views/SitesView.vue'),
+    },
+    {
+      path: '/sites/:name/:description/:city/:province/:tags/:order_by/:lat/:long/:radius/:page/:per_page',
+      name: 'sitesQuery',
+      component: () => import('../views/SitesView.vue'),
+    },
   ],
 })
 
