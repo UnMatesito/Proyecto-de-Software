@@ -5,17 +5,17 @@
 </template>
 
 <script setup>
-        import { onMounted } from 'vue'
-        const props = defineProps(["lon", "lat", "name"])
+        import { onMounted, watch } from 'vue'
+        const props = defineProps(["long", "lat", "name"])
         
-        onMounted(() => {
-            var map = L.map('map').setView([props.lat, props.lon], 13);
+        watch(props, () => {
+            var map = L.map('map').setView([props.lat, props.long], 13);
 
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             }).addTo(map);
             
-            L.marker([parseFloat(props.lat), parseFloat(props.lon)]).addTo(map)
-                    .bindPopup(`${props.name}  <br> Latitud: ${parseFloat(props.lat).toFixed(4)} <br> Longitud: ${parseFloat(props.lon).toFixed(4)}`)
+            L.marker([parseFloat(props.lat), parseFloat(props.long)]).addTo(map)
+                    .bindPopup(`${props.name}  <br> Latitud: ${parseFloat(props.lat).toFixed(4)} <br> Longitud: ${parseFloat(props.long).toFixed(4)}`)
                     .openPopup();
         })
 

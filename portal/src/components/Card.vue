@@ -10,14 +10,10 @@
     const tags_left = props.tags.length > 5 ? props.tags.length - 5 : 0
     const urlImg = props.imagen  || "https://www.infobae.com/resizer/v2/https%3A%2F%2Fs3.amazonaws.com%2Farc-wordpress-client-uploads%2Finfobae-wp%2Fwp-content%2Fuploads%2F2019%2F02%2F13105727%2FMarcha-Movimientos-sociales-Obelisco-3.jpeg?auth=98ea526ca284a14796ed1e27f354b65dc880d7115c2a54ed2e28ebf23b40563f&smart=true&width=1200&height=675&quality=85"
     const alt = props.imagen || props.name 
-    
-    const fetchDetalleSitio = async () => {
-        const { data } = api.get(`/sites/${props.id}`)
-    }
 </script>
 
 <template>
-    <router-link class=" rounded-lg relative flex flex-col gap-1 overflow-hidden md:max-w-64 cursor-pointer shadow-lg" @click="fetchDetalleSitio" :to="{name:'siteDetail', params:{site_id: id}}">
+    <router-link class=" rounded-lg relative flex flex-col gap-1 overflow-hidden md:max-w-64 cursor-pointer shadow-lg"  :to="{name:'siteDetail', params:{site_id: id}}">
         <span class="absolute left-1 top-1 bg-slate-200 p-1.5 border-0 rounded-full w-9 fill-gray-500 text-center hover:opacity-75 hover:fill-red-700 transition-all duration-400 ease-in-out"> 
             <IconFavorite class=""></IconFavorite>
         </span>                   

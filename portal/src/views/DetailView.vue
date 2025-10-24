@@ -29,11 +29,11 @@
                     <div>
                         <p class="font-semibold">Estado de conservación</p>
                         <span>
-                            {{ detalle.state }}
+                            {{ detalle.state_of_conservation }}
                         </span>
                         <p class="font-semibold">Año de inagaruación</p>
                         <span class="">
-                            {{ detalle.year }}
+                            {{ detalle.inauguration_year }}
                         </span>
                     </div>
                     <div>
@@ -44,19 +44,18 @@
 
                     </div>
                 </div>
-                <Tag :tags="detalle.tags"></Tag>
             </aside>
         </div>      
         <Acordion 
                 :content="content">
         </Acordion>
     </section>
-    <Map :lon="detalle.lon" :lat="detalle.lat" :name="detalle.name"></Map>
+    <Map :long="detalle.long" :lat="detalle.lat" :name="detalle.name"></Map>
     <h3 class="text-2xl">Reseñas</h3>
 </template>
 
 <script setup>
-    import { ref } from 'vue'
+    import { ref, onMounted } from 'vue'
     import Stars from '@/components/Stars.vue'
     import IconLocation from '@/components/icons/IconLocation.vue'
     import Acordion from '@/components/Acordion.vue'
@@ -65,27 +64,31 @@
     import IconArrowLeft from '@/components/icons/IconArrowLeft.vue'
     import Map from '@/components/Map.vue'
     import api from '@/api/axios'
-import router from '@/router'
+    import { useRoute } from 'vue-router';
+    const route  = useRoute()
     const detalle = ref({})
-    detalle.value = {
-        "name": "Sitio histórico Corrientes",
-        "province": "Santiago del Estero",
-        "city": "La Banda",
-        "state": "Malo",
-        "category": "Fortificación",
-        "year": 1960,
-        "rating": 4,
-        "count_rating": 30,
-        "tags": [
-            "tag1",
-            "tag2",   
-            "tag3"
-        ],
-        "full_desc": "holaholaholaasdoasdasdasdadasdsadadasdasasdasdsadasdasdasdasdadadasdasdasdasdasdasdadasdasdad",
-        "brief_desc": "asdasdasdasadasdsadasdasdasdasdaddasdasdadasdadas",
-        "lat": 37.4124,
-        "lon": 52.124
+    const content = ref([])
+    const reviews = ref({})
+    const fetchDetalleSitio = async () => {
+        try {
+            const { data } = await api.get(`${route.path}`)
+            detalle.value = data
+            content.value = [{id:1, header:'Descripción detallada', text:detalle.value.description},{id:2, header:'Descripción breve', text:detalle.value.short_description}]
+        } catch (error) {
+            console.log(error)
+        }
     }
-    const content = [{id:1, header:'Descripción detallada', text:detalle.value.full_desc},{id:2, header:'Descripción breve', text:detalle.value.brief_desc}]
+    const fetchReviews = async () => {
+        try {
+            const { data } = await api.get(`${route.path}/reviews`)
+            reviews.value = data
+            console.log(data)
+        } catch {
 
-</script>       
+        }
+    }
+    onMounted(()=> {
+        fetchDetalleSitio()
+        fetchReviews()
+    } )
+</script>    
