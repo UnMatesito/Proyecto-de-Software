@@ -3,8 +3,6 @@
     import IconLocation from './icons/IconLocation.vue'
     import IconBuild from './icons/IconBuild.vue'
     import Stars from './Stars.vue'
-    import router from '@/router'
-    import api from '@/api/axios'
     const props = defineProps(["name", "province", "city", "tags", "state_of_conservation", "inauguration_year", "category", "imagen", "id"])
     const tags_to_show = props.tags.slice(0, 5)
     const tags_left = props.tags.length > 5 ? props.tags.length - 5 : 0
@@ -23,14 +21,14 @@
         </div>
         <div class="p-2 flex flex-col gap-1">
             <div class="flex gap-1 items-center">
-                <IconBuild class="fill-slate-400 w-4 h-4"></IconBuild>
+                <IconBuild class="fill-yellow-500 w-4 h-4"></IconBuild>
                 <h3 class="font-semibold">
                     {{ props.name }}
                 </h3>
             </div>
             <div class="flex flex-row gap-1 items-center">
-                <span class="font-sans flex items-center justify-between gap-1">
-                    <IconLocation class="fill-slate-400 w-4 h-4"></IconLocation>
+                <span class="font-sans flex items-center5 justify-between gap-1">
+                    <IconLocation class="fill-red-700 w-4 h-4"></IconLocation>
                 </span>
                 <p class="text-sm">{{ `${props.province}, ${props.city}` }}</p>
             </div>
