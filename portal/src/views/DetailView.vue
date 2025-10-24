@@ -51,7 +51,13 @@
         </Acordion>
     </section>
     <Map :long="detalle.long" :lat="detalle.lat" :name="detalle.name"></Map>
-    <h3 class="text-2xl">Reseñas</h3>
+    <section class="w-4/6 max-w-full flex flex-col gap-3" >
+        <h3 class="text-2xl">Reseñas</h3>
+        <div>
+            <Review v-for="avatar in reviews" :name="avatar.name" :email="avatar.email" :text="avatar.text" :created_at="avatar.created_at"></Review>
+        </div>
+        <p v-if="detalle.page > 1" @click="fetchReviews()" class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out">Ver más reseñas...</p>
+    </section>
 </template>
 
 <script setup>
@@ -64,11 +70,18 @@
     import IconArrowLeft from '@/components/icons/IconArrowLeft.vue'
     import Map from '@/components/Map.vue'
     import api from '@/api/axios'
+    import Review from '@/components/Review.vue'
     import { useRoute } from 'vue-router';
     const route  = useRoute()
     const detalle = ref({})
     const content = ref([])
-    const reviews = ref({})
+    const reviews = ref([])
+    const page = ref(1)
+
+    reviews.value = [ { name: "Tobias", 
+    email: "palumbotobias@gmail.com", 
+    text: "LoremLorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing ",
+    created_at: "2025-10-22T00:38:28.842385Z" } ] 
     const fetchDetalleSitio = async () => {
         try {
             const { data } = await api.get(`${route.path}`)
@@ -78,11 +91,12 @@
             console.log(error)
         }
     }
+
     const fetchReviews = async () => {
         try {
-            const { data } = await api.get(`${route.path}/reviews`)
+            const { data } = await api.get(`${route.path}/reviews/${page}`)
             reviews.value = data
-            console.log(data)
+            page.value++
         } catch {
 
         }
