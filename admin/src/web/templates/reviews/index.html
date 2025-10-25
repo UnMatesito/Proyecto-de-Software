@@ -16,11 +16,11 @@
             data=pagination,
             columns=columns,
             edit_route=None,
-            delete_route=None,
+            delete_route="reviews.delete",
+            approve_route="reviews.approve",
             detail_route=None,
             restore_route=None,
-            validate_route=None,
-            id_param=1,
+            id_param="review_id",
             empty_message="No hay reviews cargadas"
         ) }}
 
@@ -28,11 +28,11 @@
             data=pagination,
             columns=columns,
             edit_route=None,
-            delete_route=None,
+            delete_route="reviews.delete",
+            approve_route="reviews.approve",
             detail_route=None,
             restore_route=None,
-            validate_route=None,
-            id_param=1,
+            id_param="review_id",
             empty_message="No hay reviews cargadas"
         ) }}
     </div>
