@@ -70,7 +70,7 @@ def delete_review(review_id: int) -> bool:
     db.session.commit()
     return True
 
-def get_paginated_reviews(filters=None, page=1, per_page=25, order_by="created_at", order_dir="desc"):
+def get_paginated_reviews(filters=None, page=1, per_page=25, order_by="created_at", order_dir="asc"):
     """
     Obtiene reseñas con filtros combinables y paginación.
     Filtros soportados:

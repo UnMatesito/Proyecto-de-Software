@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% from "macros/paginate.html" import paginate %}
+{% from "macros/table.html" import table, card_table %}
+
+{% block header %}
+    <h1 class="text-2xl font-bold p-4 text-center">Reviews</h1>
+    <p>Aqui puedes ver toda la información sobre las reviews</p>
+{% endblock %}
+
+{% block content %}
+<!-- Contenedor general -->
+<div class="px-6 mx-auto space-y-6">
+   <!-- Contenedor tabla de usuarios -->
+    <div class="bg-white shadow rounded overflow-x-auto">
+        {{ table(
+            data=pagination,
+            columns=columns,
+            edit_route=None,
+            delete_route=None,
+            detail_route=None,
+            restore_route=None,
+            validate_route=None,
+            id_param=1,
+            empty_message="No hay reviews cargadas"
+        ) }}
+
+        {{ card_table(
+            data=pagination,
+            columns=columns,
+            edit_route=None,
+            delete_route=None,
+            detail_route=None,
+            restore_route=None,
+            validate_route=None,
+            id_param=1,
+            empty_message="No hay reviews cargadas"
+        ) }}
+    </div>
+
+    <!-- Contenedor paginacion -->
+    <div class="flex justify-center mt-4">
+        {{ paginate(pagination,"reviews.index") }}
+    </div>
+</div>
+
+
+{% endblock %}

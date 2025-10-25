@@ -43,6 +43,10 @@
                     {{ item.created_at.strftime('%d/%m/%Y') if item.created_at else 'N/A' }}
                   {% elif col.render == 'visibility' %}
                     {{ visibility_status(item|attr(col.key)) }}
+                  {% elif col.render == 'site_name'%}
+                    {{item.historic_site.name}}
+                  {% elif col.render == 'review_user_name' %}
+                    {{item.user.first_name}}
                   {% else %}
                     {{ col.render(item) }}
                   {% endif %}
@@ -156,6 +160,10 @@
                                         {{ item.created_at.strftime('%d/%m/%Y') if item.created_at else 'N/A' }}
                                     {% elif col.render == 'visibility' %}
                                         {{ "Visible" if item.is_visible else "Oculto" }}
+                                    {% elif col.render == 'site_name'%}
+                                        {{item.historic_site.name}}
+                                    {% elif col.render == 'review_user_name' %}
+                                        {{item.user.first_name}}
                                     {% else %}
                                         {{ col.render(item) }}
                                     {% endif %}
