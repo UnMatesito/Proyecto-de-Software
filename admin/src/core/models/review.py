@@ -63,13 +63,13 @@ class Review(db.Model):
         self.rejected_reason = reason[:200] if reason else None
 
     def is_pending(self):
-        return self.status == "Pendiente"
+        return self.status.value == "Pendiente"
 
     def is_approved(self):
-        return self.status == "Aprobada"
+        return self.status.value == "Aprobada"
 
     def is_rejected(self):
-        return self.status == "Rechazada"
+        return self.status.value == "Rechazada"
 
     def __repr__(self):
         return f"<Review {self.id} - {self.status}>"
