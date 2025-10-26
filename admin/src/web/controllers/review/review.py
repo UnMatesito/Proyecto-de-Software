@@ -8,6 +8,7 @@ from core.services.review_service import (
     
 
 )
+from core.services.historic_site_service import get_all_historic_site
 
 
 
@@ -17,7 +18,62 @@ review_bp = Blueprint("reviews", __name__, url_prefix="/reviews")
 
 @review_bp.get("/")
 def index():
-    page = request.args.get("page", 1)
+    # Parámetros de paginación y orden
+    order_by = request.args.get("order_by", "created_at")
+    sorted_by = request.args.get("sorted_by", "asc")
+    page = request.args.get("page", 1, type=int)
+
+    # Filtro de estado
+    status_param = None
+    status = request.args.get("status", None)
+    if status == "pending":
+        status_param = "Pendiente"
+    elif status == "approved":
+        status_param = "Aprobada"
+    elif status == "rejected":
+        status_param = "Rechazada"
+
+    # Filtro de historic_site
+    site_id = request.args.get("site_id", None)
+    if site_id:
+        try:
+            site_id = int(site_id)
+        except ValueError:
+            site_id = None
+
+    # Filtro de calificación
+    rating_min = request.args.get("rating_min", type=int)
+    rating_max = request.args.get("rating_max", type=int)
+
+    # Filtro de fecha
+    date_from = request.args.get("date_from")
+    date_to = request.args.get("date_to")
+
+    # Filtro de búsqueda por correo
+    email_param=None
+    search_email = request.args.get("search_email")
+
+    # Construir diccionario de filtros
+    filters = {}
+    if status_param:
+        filters["status"] = status_param
+    if site_id is not None:
+        filters["historic_site_id"] = site_id
+    if rating_min:
+        filters["rating_min"] = rating_min
+    if rating_max:
+        filters["rating_max"] = rating_max
+    if date_from:
+        filters["date_from"] = date_from
+    if date_to:
+        filters["date_to"] = date_to
+    if search_email:
+        filters["search_text"] = search_email
+
+    # Obtener sitios para el select
+    sites = get_all_historic_site()
+
+    # Columnas de la tabla
     columns = [
         {"key": "id", "label": "ID"},
         {"key": "site_name", "label": "Sitio", "render": "site_name"},
@@ -27,9 +83,24 @@ def index():
         {"key": "created_at", "label": "Creado", "render": "date"},
         {"key": "content", "label": "Contenido", "render": "content"}
     ]
-    reviews_page= get_paginated_reviews(page=page)
 
-    return render_template("reviews/index.html", pagination= reviews_page, columns=columns)
+    # Obtener reseñas paginadas
+    reviews_page = get_paginated_reviews(
+        page=page,
+        order_by=order_by,
+        order_dir=sorted_by,
+        filters=filters
+    )
+
+    return render_template(
+        "reviews/index.html",
+        pagination=reviews_page,
+        columns=columns,
+        sites=sites,
+        order_by=order_by,
+        sorted_by=sorted_by
+    )
+
 
 
 @review_bp.post("/<int:review_id>/approve")

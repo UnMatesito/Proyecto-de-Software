@@ -4,6 +4,7 @@ from core.database import db
 from core.models.review import Review, ReviewStatus
 from core.utils.pagination import paginate_query
 from core.utils.search import build_search_query, apply_ordering
+from core.services.user_service import get_user_by_email
 
 
 def create_review(user_id: int, site_id: int, rating: int, content: str) -> Review:
@@ -81,14 +82,25 @@ def get_paginated_reviews(filters=None, page=1, per_page=25, order_by="created_a
       - date_from / date_to (YYYY-MM-DD)
       - search_text: busca en el contenido
     """
+    query= Review.query
     filters = filters or {}
 
     # Normalizar enum si llega como texto
     if "status" in filters and filters["status"]:
         try:
-            filters["status"] = ReviewStatus(filters["status"].capitalize())
+            filters["status"] = ReviewStatus(filters["status"].capitalize()).value
         except ValueError:
             filters.pop("status", None)
+
+    if "search_text" in filters and filters["search_text"]:
+        text = filters["search_text"].strip()
+
+    # Si parece un mail busco por usuario
+        if "@" in text and "." in text:
+            user = get_user_by_email(text)
+            if user:
+                filters["user_id"] = user.id
+            filters.pop("search_text", None)
 
     # Construir query de búsqueda flexible
     query = build_search_query(Review, filters, text_search_columns=["content"])
