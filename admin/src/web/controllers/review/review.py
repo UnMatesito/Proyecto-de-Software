@@ -3,7 +3,7 @@ from core.services.review_service import (
     approve_review,
     get_paginated_reviews,
     delete_review,
-    reject_review
+    reject_review as reject_review_serv
 
 )
 
@@ -45,6 +45,6 @@ def reject_review(review_id):
     if not reason:
         flash("Debe ingresar un motivo para el rechazo.", "error")
         return redirect(url_for("reviews.index"))
-    reject_review(review_id=review_id, reason=reason)
+    reject_review_serv(review_id=review_id, reason=reason)
     flash("La reseña fue rechazada correctamente.", "success")
     return redirect(url_for("reviews.index"))
