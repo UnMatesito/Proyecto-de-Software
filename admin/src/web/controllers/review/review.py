@@ -21,7 +21,7 @@ def index():
     columns = [
         {"key": "id", "label": "ID"},
         {"key": "site_name", "label": "Sitio", "render": "site_name"},
-        {"key": "rating", "label": "Calificacion"},
+        {"key": "rating", "label": "Calificacion", "render": "rating"},
         {"key": "status", "label": "Estado", "render": "status"},
         {"key": "user_name", "label": "Usuario", "render": "review_user_name"},
         {"key": "created_at", "label": "Creado", "render": "date"},
@@ -43,7 +43,7 @@ def delete(review_id):
     return None
 
 @review_bp.post("/<int:review_id>/reject")
-def reject_review(review_id):
+def reject(review_id):
     reason = request.form.get("reason", "").strip()
     if not reason:
         flash("Debe ingresar un motivo para el rechazo.", "error")
