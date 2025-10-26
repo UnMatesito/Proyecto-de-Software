@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+{% from "macros/button.html" import button %}
+
+{% block title %}Detalle de reseña{% endblock %}
+
+{% block header %}
+<h1 class="text-2xl font-bold text-center mt-6">Detalle de reseña</h1>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-6 space-y-6">
+
+    <!-- Boton volver -->
+    <nav>
+            {{ button("Volver",  link=url_for('reviews.index') ,icon_left_svg='<i class="fa-solid fa-arrow-left mr-1"></i>') }}
+    </nav>
+
+    <!-- Card con los detalless -->
+    <section class="bg-white shadow rounded-lg p-6 border border-gray-200" aria-label="Card de detalles de usuario">
+        <dl class="divide-y divide-gray-200">
+            <div class="py-3 grid grid-cols-3 gap-4">
+                <dt class="font-semibold text-gray-700">ID:</dt>
+                <dd class="col-span-2 text-gray-900">{{ review.id }}</dd>
+            </div>
+            <!-- Contenedor nombre completo del usuario -->
+            <div class="py-3 grid grid-cols-3 gap-4">
+                <dt class="font-semibold text-gray-700">Usuario:</dt>
+                <dd class="col-span-2 text-gray-900">{{ review.user.first_name }} {{ review.user.last_name }}</dd>
+            </div>
+
+
+            <div class="py-3 grid grid-cols-3 gap-4">
+                <dt class="font-semibold text-gray-700">Contenido de la reseña:</dt>
+                <dd class="col-span-2 text-gray-900">{{ review.content }}</dd>
+            </div>
+
+
+            <!-- Contenedor estado -->
+            <div class="py-3 grid grid-cols-3 gap-4">
+                <dt class="font-semibold text-gray-700">Estado:</dt>
+                <dd class="col-span-2">
+                    {% if review.is_pending() %}
+                        <span class="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            <span class="w-2 h-2 me-1 bg-orange-500 rounded-full"></span>
+                            Pendiente
+                        </span>
+                    {% elif review.is_rejected() %}
+                        <span class="inline-flex items-center bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            <span class="w-2 h-2 me-1 bg-red-500 rounded-full"></span>
+                            Rechazado
+                        </span>
+                    {% else %}
+                       <span class="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            <span class="w-2 h-2 me-1 bg-green-500 rounded-full"></span>
+                            Aprobada
+                        </span>
+                    {% endif %}
+                </dd>
+            </div>
+            <!-- Contenedor fecha creacion -->
+            <div class="py-3 grid grid-cols-3 gap-4">
+                <dt class="font-semibold text-gray-700">Creado:</dt>
+                <dd class="col-span-2 text-gray-900">{{ review.created_at.strftime('%d/%m/%Y') }}</dd>
+            </div>
+    </section>
+</div>
+{% endblock %}

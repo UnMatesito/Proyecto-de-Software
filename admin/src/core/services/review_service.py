@@ -104,3 +104,8 @@ def get_paginated_reviews(filters=None, page=1, per_page=25, order_by="created_a
 
     # Retornar resultados paginados
     return paginate_query(query, page, per_page, order_by=order_by, sorted_by=order_dir)
+
+
+def get_review_by_id(review_id):
+    """Obtiene una review por su id."""
+    return Review.query.get(review_id)

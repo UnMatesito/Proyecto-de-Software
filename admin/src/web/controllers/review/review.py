@@ -3,7 +3,9 @@ from core.services.review_service import (
     approve_review,
     get_paginated_reviews,
     delete_review,
-    reject_review as reject_review_serv
+    reject_review as reject_review_serv,
+    get_review_by_id
+    
 
 )
 
@@ -23,6 +25,7 @@ def index():
         {"key": "status", "label": "Estado", "render": "status"},
         {"key": "user_name", "label": "Usuario", "render": "review_user_name"},
         {"key": "created_at", "label": "Creado", "render": "date"},
+        {"key": "content", "label": "Contenido", "render": "content"}
     ]
     reviews_page= get_paginated_reviews(page=page)
 
@@ -48,3 +51,17 @@ def reject_review(review_id):
     reject_review_serv(review_id=review_id, reason=reason)
     flash("La reseña fue rechazada correctamente.", "success")
     return redirect(url_for("reviews.index"))
+
+
+@review_bp.get("/<int:review_id>")
+def detail(review_id):
+    """Informacion de un usuario"""
+    try:
+        review = get_review_by_id(review_id)
+        if not review:
+            flash("Review no encontrada", "error")
+            return redirect(url_for("reviews.index"))
+        return render_template("reviews/detail.html", review=review)
+    except Exception as e:
+        flash(f"Error al cargar la review: {str(e)}", "error")
+        return redirect(url_for("reviews.index"))
