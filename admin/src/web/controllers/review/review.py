@@ -5,18 +5,15 @@ from core.services.review_service import (
     delete_review,
     reject_review as reject_review_serv,
     get_review_by_id
-    
-
 )
 from core.services.historic_site_service import get_all_historic_site
-
-
-
-
+from web.utils.auth import login_required, permission_required
 
 review_bp = Blueprint("reviews", __name__, url_prefix="/reviews")
 
 @review_bp.get("/")
+@login_required
+@permission_required("review_index")
 def index():
     # Parámetros de paginación y orden
     order_by = request.args.get("order_by", "created_at")
@@ -104,16 +101,22 @@ def index():
 
 
 @review_bp.post("/<int:review_id>/approve")
+@login_required
+@permission_required("review_approve")
 def approve(review_id):
     approve_review(review_id)
     return None
 
 @review_bp.post("/<int:review_id>/delete")
+@login_required
+@permission_required("review_destroy")
 def delete(review_id):
     delete_review(review_id)
     return None
 
 @review_bp.post("/<int:review_id>/reject")
+@login_required
+@permission_required("review_reject")
 def reject(review_id):
     reason = request.form.get("reason", "").strip()
     if not reason:
@@ -125,6 +128,8 @@ def reject(review_id):
 
 
 @review_bp.get("/<int:review_id>")
+@login_required
+@permission_required("review_show")
 def detail(review_id):
     """Informacion de un usuario"""
     try:
