@@ -1,7 +1,9 @@
 {% from 'macros/button.html' import button, button_error, button_warning, button_validate, button_blank%}
-{% from 'macros/status.html' import active_status, blocked_status, eliminated_status, inactive_status, visibility_status%}
+{% from 'macros/status.html' import active_status, blocked_status, eliminated_status, inactive_status, visibility_status, pending_status, rejected_status, approved_status%}
+{% from 'macros/get_icon.html' import get_icon %}
+{% from 'macros/rating.html' import rating %}
 
-{% macro table(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
+{% macro table(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None,approve_route=None, reject_route=None,empty_message="No hay datos para mostrar.", title="", id_param="id") %}
 <div class="hidden lg:block relative w-full">
   {% if title %}
     <h2 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">{{ title }}</h2>
@@ -43,6 +45,14 @@
                     {{ item.created_at.strftime('%d/%m/%Y') if item.created_at else 'N/A' }}
                   {% elif col.render == 'visibility' %}
                     {{ visibility_status(item|attr(col.key)) }}
+                  {% elif col.render == 'site_name'%}
+                    {{item.historic_site.name}}
+                  {% elif col.render == 'review_user_name' %}
+                    {{item.user.email}}
+                  {% elif col.render == 'content' %}
+                    {{ item.content[:10] ~ ('...' if item.content|length > 10 else '') }}
+                  {% elif col.render == 'rating' %}
+                    {{rating(item)}}
                   {% else %}
                     {{ col.render(item) }}
                   {% endif %}
@@ -53,9 +63,9 @@
               </td>
             {% endfor %}
 
-            {% if edit_route or delete_route or detail_route or validate_route or restore_route %}
+            {% if edit_route or delete_route or detail_route or validate_route or restore_route or approve_route or reject_route %}
               <td class="px-6 py-4 text-center">
-                {{ render_action_buttons(item, detail_route , edit_route, delete_route, restore_route, validate_route, id_param) }}
+                {{ render_action_buttons(item, detail_route , edit_route, delete_route, restore_route, validate_route, approve_route, reject_route, id_param) }}
               </td>
             {% endif %}
           </tr>
@@ -71,12 +81,47 @@
 </div>
 {% endmacro %}
 
-{% macro render_action_buttons(item, detail_route=None, edit_route=None, delete_route=None, restore_route=None, validate_route=None, id_param="id", mobile=False) %}
+{% macro render_action_buttons(item, detail_route=None, edit_route=None, delete_route=None, restore_route=None, validate_route=None, approve_route=None, reject_route=None, id_param="id", mobile=False) %}
   <div class="flex flex-row justify-center space-x-2 scale-[0.95]">
     {% if detail_route %}
       {% set detail_params = {id_param: item.id} %}
       {{ button("Detalles", link=url_for(detail_route, **detail_params), icon_left_svg=get_icon("view"), mobile=mobile) }}
     {% endif %}
+
+    {% if approve_route  and item.is_pending() %}
+      {% set approve_params = {id_param: item.id} %}
+      <form action="{{ url_for(approve_route, **approve_params) }}" method="post" class="inline" onsubmit="return confirm('¿Está seguro de aprobar esta reseña ? ')">
+            {{ button_validate("Aprobar", type="submit", icon_left_svg=get_icon("validate"), mobile=mobile) }}
+      </form>
+    {% endif %}
+    {% if reject_route and item.is_pending() %}
+      {% set reject_params = {id_param: item.id}  %}
+          
+          <form action="{{ url_for(reject_route, **reject_params) }}" method="post" class="inline" onsubmit="return handleReject(this)">
+            <input type="hidden" name="reason" value="">
+            {{ button_error("Rechazar", type="submit", mobile=mobile) }}
+          </form>
+          <script>
+            function handleReject(form) {
+              const reason = prompt("Ingrese el motivo del rechazo:");
+              if (!reason || !reason.trim()) {
+                alert("Debe ingresar un motivo para rechazar la reseña.");
+                return false;
+              }
+               if (reason.trim().length  <  10) {
+                alert("El motivo tiene un minimo de 10 caracteres");
+                return false;
+              }
+                if (reason.trim().length > 200) {
+                alert("El motivo no puede superar los 200 caracteres.");
+                return false;
+              }
+              form.querySelector('input[name="reason"]').value = reason.trim();
+              return true;
+            }
+          </script>
+    {% endif %}
+  
 
     {% if edit_route and not item.deleted_at %}
       {% set edit_params = {id_param: item.id} %}
@@ -110,27 +155,19 @@
     {{ eliminated_status() }}
   {% elif item.blocked %}
     {{ blocked_status() }}
+  {% elif item.is_pending is defined and item.is_pending() %}
+    {{ pending_status() }}
+  {% elif item.is_rejected is defined and item.is_rejected() %}
+    {{ rejected_status() }}
+  {% elif item.is_approved is defined and item.is_approved() %}
+    {{ approved_status() }}
   {% else %}
     {{ active_status() }}
   {% endif %}
 {% endmacro %}
 
-{# Macro para iconos de botones #}
-{% macro get_icon(icon_name) %}
-  {% if icon_name == 'edit' %}
-    <i class="fa-solid fa-pen-to-square lg:mr-1"></i>
-  {% elif icon_name == 'delete' %}
-    <i class="fa-solid fa-trash lg:mr-1"></i>
-  {% elif icon_name == 'view' %}
-    <i class="fa-solid fa-eye lg:mr-1"></i>
-  {% elif icon_name == 'restore' %}
-    <i class="fa-solid fa-arrow-rotate-right lg:mr-1"></i>
-  {% elif icon_name == 'validate' %}
-    <i class="fa-solid fa-check lg:mr-1"></i>
-  {% endif %}
-{% endmacro %}
 
-{% macro card_table(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
+{% macro card_table(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None, approve_route=None, reject_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
     <div class="lg:hidden grid grid-cols-1 gap-4 break-words">
         {% if data is mapping %}
             {% set items = data.get("items", []) %}
@@ -156,6 +193,14 @@
                                         {{ item.created_at.strftime('%d/%m/%Y') if item.created_at else 'N/A' }}
                                     {% elif col.render == 'visibility' %}
                                         {{ "Visible" if item.is_visible else "Oculto" }}
+                                    {% elif col.render == 'site_name'%}
+                                        {{item.historic_site.name}}
+                                    {% elif col.render == 'review_user_name' %}
+                                        {{item.user.first_name}}
+                                    {% elif col.render == 'content' %}
+                                        {{ item.content[:10] ~ ('...' if item.content|length > 10 else '') }}
+                                    {% elif col.render == 'rating' %}
+                                      {{rating(item)}}
                                     {% else %}
                                         {{ col.render(item) }}
                                     {% endif %}
@@ -168,9 +213,9 @@
                         </div>
                     {% endfor %}
 
-                    {% if edit_route or delete_route or detail_route or validate_route or restore_route %}
+                    {% if edit_route or delete_route or detail_route or validate_route or restore_route or approve_route or reject_route %}
                         <div class="mt-4">
-                            {{ render_action_buttons(item, detail_route , edit_route, delete_route, restore_route, validate_route, id_param, mobile=True) }}
+                            {{ render_action_buttons(item, detail_route , edit_route, delete_route, restore_route, validate_route, approve_route, reject_route, id_param, mobile=True) }}
                         </div>
                     {% endif %}
                 </div>

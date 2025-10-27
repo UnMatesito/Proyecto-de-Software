@@ -18,7 +18,7 @@ dependencies = [
     "geoalchemy2>=0.15.0,<1.0.0", # Compatibilidad para datos geoespaciales
 
     # Para los schemas (etapa 2)
-    # "marshmallow>=4.0.1,<5.0.0",
+    "marshmallow>=4.0.1,<5.0.0",
 
     # Seguridad y validación
     "bcrypt>=4.2.1,<5.0.0", # Hasheo de contraseñas
@@ -42,6 +42,11 @@ dependencies = [
 
     # Necesitemos esta librería para que geoalchemy funcione mejor y es requerida para la segunda etapa
     "shapely (>=2.1.2,<3.0.0)",
+
+    # Para permitir acceso desde el portal público
+    "flask-cors (>=6.0.1,<7.0.0)",
+    "minio (>=7.2.18,<8.0.0)",
+    "flask-jwt-extended (>=4.7.1,<5.0.0)",
 ]
 
 [tool.poetry]
