@@ -17,7 +17,7 @@ const handleToggle = (faqId) => {
 
 <template>
   <section
-    class="relative z-20 overflow-hidden bg-white dark:bg-dark "
+    class="relative z-20 overflow-hidden max-w-3xl bg-white dark:bg-dark "
   >
     <div class=" w-full">
 
@@ -29,7 +29,7 @@ const handleToggle = (faqId) => {
             >
               <button class="faq-btn flex w-full text-left" @click="handleToggle(faq.id)">
                 <div
-                  class="mr-5 flex h-10 w-full max-w-[40px] items-center justify-center rounded-lg bg-primary/5 text-primary dark:bg-white/5"
+                  class="mr-2 flex h-10 w-full max-w-[40px] items-center justify-center rounded-lg bg-primary/5 text-primary dark:bg-white/5"
                 >
                   <svg
                     class="fill-primary stroke-primary duration-200 ease-in-out"

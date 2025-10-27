@@ -3,8 +3,9 @@
          <IconArrowLeft class="w-3.5 h-3.5 ms-2 fill-white"> </IconArrowLeft>
         Volver
     </router-link >
-    <section class="w-full">
-        <div class="flex items-start gap-4 w-full justify-center border-b-2 pt-1 pb-3">
+    <section class="w-full p-3 max-w-screen-xl">
+        <div class="flex items-start gap-4 w-full justify-center border-b-2 pt-1 pb-3 flex-wrap">
+            <Carrousel></Carrousel>
             <aside class="flex gap-4 flex-col">
                 <h2 class="text-2xl font-bold">
                     {{ detalle.name }}
@@ -12,7 +13,7 @@
                 <div class="flex gap-1 items-center  border-b-2 pb-2">
                     <Stars :rating="detalle.rating"></Stars>
                     <span class="text-lg font-semibold text-yellow-500">
-                        ({{ detalle.count_rating }})
+                        ({{ detalle.count_rating || 0}})
                     </span>
                 </div>
 
@@ -50,9 +51,12 @@
                 :content="content">
         </Acordion>
     </section>
-    <Map :long="detalle.long" :lat="detalle.lat" :name="detalle.name"></Map>
-    <section class="w-4/6 max-w-full flex flex-col gap-3" >
-        <h3 class="text-2xl">Reseñas</h3>
+    <div class="w-4/6 max-w-full flex flex-col gap-3 mt-3">
+        <h3 class="text-2xl bg-proyecto-accent p-3 text-white">Locación</h3>
+        <Map :long="detalle.long" :lat="detalle.lat" :name="detalle.name"></Map>
+    </div>
+    <section class="w-4/6 max-w-full flex flex-col gap-3 mt-3" >
+        <h3 class="text-2xl bg-proyecto-accent p-3 text-white">Reseñas</h3>
         <div>
             <Review v-for="avatar in reviews" :name="avatar.name" :email="avatar.email" :text="avatar.text" :created_at="avatar.created_at"></Review>
         </div>
@@ -86,6 +90,7 @@
         try {
             const { data } = await api.get(`${route.path}`)
             detalle.value = data
+            console.log(data)
             content.value = [{id:1, header:'Descripción detallada', text:detalle.value.description},{id:2, header:'Descripción breve', text:detalle.value.short_description}]
         } catch (error) {
             console.log(error)

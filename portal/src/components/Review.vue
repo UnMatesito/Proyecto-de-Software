@@ -1,6 +1,6 @@
 <template>
-    <div class="flex flex-col gap-2">
-        <div class="flex justify-between">
+    <div class="flex flex-col gap-2 border-b-2 border-b-gray-300 pb-2">
+        <div class="flex justify-between flex-wrap">
             <Avatar :name="name" :email="email"></Avatar>
             <div class="flex items-center gap-3 flex-col">
                 <span class="text-sm  gap-3 text-gray-500 dark:text-gray-400">
