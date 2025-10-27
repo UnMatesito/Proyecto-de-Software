@@ -857,32 +857,29 @@ def seed_aditional_admins():
 def seed_aditional_moderators():
     """Crea usuarios moderadores adicionales"""
     from faker import Faker
-    from core.services import role_service as RoleService
     from core.models import User
+    from core.services import role_service as RoleService
+    import uuid
 
     print("Creando usuarios moderadores adicionales...")
     fake = Faker("es_AR")
 
     role_moderator = RoleService.get_role_by_name("Moderador")
 
-    for _ in range(50):
-        email = fake.unique.email()
-        if not User.query.filter_by(email=email).first():
-            user = User(
-                email=email,
-                first_name=fake.first_name(),
-                last_name=fake.last_name(),
-                password="moderador123",
-                role_id=role_moderator.id,
-                system_admin=False,
-            )
-            db.session.add(user)
-            try:
-                db.session.commit()
-            except IntegrityError:
-                db.session.rollback()
-                print(f"⚠️ Email duplicado: {email}, omitido.")
-    print("✅ Moderadores adicionales creados.")
+    usuarios = [
+        User(
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            password="moderador123",
+            role_id=role_moderator.id,
+            system_admin=False,
+        )
+        for _ in range(50)
+    ]
+
+    db.session.add_all(usuarios)
+    db.session.commit()
 
 def seed_aditional_historic_sites():
     """
