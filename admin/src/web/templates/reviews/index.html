@@ -9,9 +9,7 @@
 
 {% block content %}
 
-
-
-   <!-- Buscador por correo -->
+<!-- Buscador por correo -->
 <form method="get" action="/reviews" class="mb-4 flex justify-center">
     <input 
         type="text" 
@@ -85,15 +83,12 @@
 
         <!-- Calificación -->
         <fieldset>
-            <legend class="block text-sm font-medium text-gray-700">Calificación</legend>
-            <div class="flex gap-2">
-                <input type="number" name="rating_min" min="1" max="5" placeholder="Mín" 
-                       value="{{ request.args.get('rating_min', '') }}"
-                       class="border px-2 py-1 rounded w-16">
-                <input type="number" name="rating_max" min="1" max="5" placeholder="Máx"
-                       value="{{ request.args.get('rating_max', '') }}"
-                       class="border px-2 py-1 rounded w-16">
-            </div>
+            <input type="number" name="rating_min" min="1" max="5" placeholder="Mín"
+                    oninput="if (parseInt(this.value) > parseInt(this.form.rating_max.value)) this.form.rating_max.value = this.value;"
+                    class="border px-2 py-1 rounded w-16">
+            <input type="number" name="rating_max" min="1" max="5" placeholder="Máx"
+                    oninput="if (parseInt(this.value) < parseInt(this.form.rating_min.value)) this.form.rating_min.value = this.value;"
+                    class="border px-2 py-1 rounded w-16">
         </fieldset>
 
         <!-- Fecha -->
@@ -120,12 +115,6 @@
         </div>
     </form>
 </div>
-
-
-
-
-
-
 
 <!-- Contenedor general -->
 <div class="px-6 mx-auto space-y-6">
@@ -163,17 +152,22 @@
         {{ paginate(pagination,"reviews.index") }}
     </div>
 </div>
+<!-- Scrips -->
 <script>
-  const dateFrom = document.getElementById("date_from");
-  const dateTo = document.getElementById("date_to");
+document.addEventListener("DOMContentLoaded", function() {
+    // --- Validación de fechas ---
+    const dateFrom = document.getElementById("date_from");
+    const dateTo = document.getElementById("date_to");
 
-  // Actualiza el mínimo permitido para "date_to" cuando cambia "date_from"
-  dateFrom.addEventListener("change", () => {
-    dateTo.min = dateFrom.value;
-    if (dateTo.value && dateTo.value < dateFrom.value) {
-      dateTo.value = dateFrom.value; // corrige si se pasa
+    if (dateFrom && dateTo) {
+        dateFrom.addEventListener("change", () => {
+            dateTo.min = dateFrom.value;
+            if (dateTo.value && dateTo.value < dateFrom.value) {
+                dateTo.value = dateFrom.value;
+            }
+        });
     }
-  });
+});
 </script>
 
 {% endblock %}

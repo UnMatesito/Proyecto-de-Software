@@ -1,5 +1,7 @@
 {% from 'macros/button.html' import button, button_error, button_warning, button_validate, button_blank%}
 {% from 'macros/status.html' import active_status, blocked_status, eliminated_status, inactive_status, visibility_status, pending_status, rejected_status, approved_status%}
+{% from 'macros/get_icon.html' import get_icon %}
+{% from 'macros/rating.html' import rating %}
 
 {% macro table(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None,approve_route=None, reject_route=None,empty_message="No hay datos para mostrar.", title="", id_param="id") %}
 <div class="hidden lg:block relative w-full">
@@ -50,26 +52,7 @@
                   {% elif col.render == 'content' %}
                     {{ item.content[:10] ~ ('...' if item.content|length > 10 else '') }}
                   {% elif col.render == 'rating' %}
-                    <div class="py-3 grid grid-cols-3 gap-4">
-                      <dd class="col-span-2 text-yellow-500 flex items-center">
-                          {% set full_stars = item.rating | int %}
-                          {% set half_star = 1 if item.rating - full_stars >= 0.5 else 0 %}
-                          {% set empty_stars = 5 - full_stars - half_star %}
-                          {# ⭐ Estrellas llenas #}
-                          {% for i in range(full_stars) %}
-                          <i class="fa-solid fa-star"></i>
-                          {% endfor %}
-                          {# 🌗 Media estrella (si aplica) #}
-                          {% if half_star %}
-                              <i class="fa-solid fa-star-half-stroke"></i>
-                          {% endif %}
-                          {# ☆ Estrellas vacías #}
-                          {% for i in range(empty_stars) %}
-                              <i class="fa-regular fa-star"></i>
-                          {% endfor %}
-                          <span class="ml-2 text-gray-700 text-sm">({{ item.rating }})</span>
-                      </dd>
-                    </div>
+                    {{rating(item)}}
                   {% else %}
                     {{ col.render(item) }}
                   {% endif %}
@@ -109,14 +92,14 @@
       {% set approve_params = {id_param: item.id} %}
       <form action="{{ url_for(approve_route, **approve_params) }}" method="post" class="inline" onsubmit="return confirm('¿Está seguro de aprobar esta reseña ? ')">
             {{ button_validate("Aprobar", type="submit", icon_left_svg=get_icon("validate"), mobile=mobile) }}
-          </form>
+      </form>
     {% endif %}
     {% if reject_route and item.is_pending() %}
       {% set reject_params = {id_param: item.id}  %}
           
           <form action="{{ url_for(reject_route, **reject_params) }}" method="post" class="inline" onsubmit="return handleReject(this)">
             <input type="hidden" name="reason" value="">
-            {{ button_error("Rechazar", type="submit", icon_left_svg=get_icon("delete"), mobile=mobile) }}
+            {{ button_error("Rechazar", type="submit", mobile=mobile) }}
           </form>
           <script>
             function handleReject(form) {
@@ -183,20 +166,6 @@
   {% endif %}
 {% endmacro %}
 
-{# Macro para iconos de botones #}
-{% macro get_icon(icon_name) %}
-  {% if icon_name == 'edit' %}
-    <i class="fa-solid fa-pen-to-square lg:mr-1"></i>
-  {% elif icon_name == 'delete' %}
-    <i class="fa-solid fa-trash lg:mr-1"></i>
-  {% elif icon_name == 'view' %}
-    <i class="fa-solid fa-eye lg:mr-1"></i>
-  {% elif icon_name == 'restore' %}
-    <i class="fa-solid fa-arrow-rotate-right lg:mr-1"></i>
-  {% elif icon_name == 'validate' %}
-    <i class="fa-solid fa-check lg:mr-1"></i>
-  {% endif %}
-{% endmacro %}
 
 {% macro card_table(data, columns, edit_route=None, delete_route=None, detail_route=None, restore_route=None, validate_route=None, approve_route=None, reject_route=None, empty_message="No hay datos para mostrar.", title="", id_param="id") %}
     <div class="lg:hidden grid grid-cols-1 gap-4 break-words">
@@ -231,26 +200,7 @@
                                     {% elif col.render == 'content' %}
                                         {{ item.content[:10] ~ ('...' if item.content|length > 10 else '') }}
                                     {% elif col.render == 'rating' %}
-                                      <div class="py-3 grid grid-cols-3 gap-4">
-                                        <dd class="col-span-2 text-yellow-500 flex items-center">
-                                            {% set full_stars = item.rating | int %}
-                                            {% set half_star = 1 if item.rating - full_stars >= 0.5 else 0 %}
-                                            {% set empty_stars = 5 - full_stars - half_star %}
-                                            {# ⭐ Estrellas llenas #}
-                                            {% for i in range(full_stars) %}
-                                            <i class="fa-solid fa-star"></i>
-                                           {% endfor %}
-                                           {# 🌗 Media estrella (si aplica) #}
-                                           {% if half_star %}
-                                               <i class="fa-solid fa-star-half-stroke"></i>
-                                           {% endif %}
-                                           {# ☆ Estrellas vacías #}
-                                           {% for i in range(empty_stars) %}
-                                               <i class="fa-regular fa-star"></i>
-                                           {% endfor %}
-                                           <span class="ml-2 text-gray-700 text-sm">({{ item.rating }})</span>
-                                        </dd>
-                                      </div>
+                                      {{rating(item)}}
                                     {% else %}
                                         {{ col.render(item) }}
                                     {% endif %}
