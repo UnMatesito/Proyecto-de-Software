@@ -1,21 +1,23 @@
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+
+from core.services.historic_site_service import get_all_historic_site
 from core.services.review_service import (
     approve_review,
-    get_paginated_reviews,
     delete_review,
-    reject_review as reject_review_serv,
-    get_review_by_id
+    get_paginated_reviews,
+    get_review_by_id,
 )
-from core.services.historic_site_service import get_all_historic_site
+from core.services.review_service import reject_review as reject_review_serv
 from web.utils.auth import login_required, permission_required
 
 review_bp = Blueprint("reviews", __name__, url_prefix="/reviews")
+
 
 @review_bp.get("/")
 @login_required
 @permission_required("review_index")
 def index():
-    """ Lista las reseñas y opciones """
+    """Lista las reseñas y opciones"""
     try:
         # Parámetros de paginación y orden
         order_by = request.args.get("order_by", "created_at")
@@ -79,15 +81,12 @@ def index():
             {"key": "status", "label": "Estado", "render": "status"},
             {"key": "user_name", "label": "Usuario", "render": "review_user_name"},
             {"key": "created_at", "label": "Creado", "render": "date"},
-            {"key": "content", "label": "Contenido", "render": "content"}
+            {"key": "content", "label": "Contenido", "render": "content"},
         ]
 
         # Obtener reseñas paginadas
         reviews_page = get_paginated_reviews(
-            page=page,
-            order_by=order_by,
-            order_dir=sorted_by,
-            filters=filters
+            page=page, order_by=order_by, order_dir=sorted_by, filters=filters
         )
 
         return render_template(
@@ -96,13 +95,12 @@ def index():
             columns=columns,
             sites=sites,
             order_by=order_by,
-            sorted_by=sorted_by
+            sorted_by=sorted_by,
         )
     except Exception as e:
-        flash(
-            f"Error al cargar reseñas: {str(e)}", "error"
-        )  
-        return redirect(url_for("main_bp.home")) 
+        flash(f"Error al cargar reseñas: {str(e)}", "error")
+        return redirect(url_for("main_bp.home"))
+
 
 @review_bp.get("/<int:review_id>")
 @login_required
@@ -118,7 +116,6 @@ def detail(review_id):
     except Exception as e:
         flash(f"Error al cargar la reseña: {str(e)}", "error")
         return redirect(url_for("reviews.index"))
-
 
 
 @review_bp.post("/<int:review_id>/approve")
@@ -137,6 +134,7 @@ def approve(review_id):
         flash(f"Error inesperado: {str(e)}", "error")
     return redirect(url_for("reviews.index"))
 
+
 @review_bp.post("/<int:review_id>/delete")
 @login_required
 @permission_required("review_destroy")
@@ -152,6 +150,7 @@ def delete(review_id):
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
     return redirect(url_for("reviews.index"))
+
 
 @review_bp.post("/<int:review_id>/reject")
 @login_required

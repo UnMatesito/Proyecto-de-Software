@@ -2,9 +2,9 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from core.database import db
 from core.models.review import Review, ReviewStatus
-from core.utils.pagination import paginate_query
-from core.utils.search import build_search_query, apply_ordering
 from core.services.user_service import get_user_by_email
+from core.utils.pagination import paginate_query
+from core.utils.search import apply_ordering, build_search_query
 
 
 def create_review(user_id: int, site_id: int, rating: int, content: str) -> Review:
@@ -37,7 +37,9 @@ def create_review(user_id: int, site_id: int, rating: int, content: str) -> Revi
         elif "check_rating_range" in msg:
             raise ValueError("La calificación debe estar entre 1 y 5.")
         else:
-            raise ValueError("No se pudo crear la reseña. Verifique los datos ingresados.")
+            raise ValueError(
+                "No se pudo crear la reseña. Verifique los datos ingresados."
+            )
 
     return review
 
@@ -87,7 +89,10 @@ def delete_review(review_id: int):
         raise RuntimeError(f"Error al eliminar la reseña: {e}")
     return True
 
-def get_paginated_reviews(filters=None, page=1, per_page=25, order_by="created_at", order_dir="asc"):
+
+def get_paginated_reviews(
+    filters=None, page=1, per_page=25, order_by="created_at", order_dir="asc"
+):
     """
     Obtiene reseñas con filtros combinables y paginación.
     Filtros soportados:
@@ -98,7 +103,7 @@ def get_paginated_reviews(filters=None, page=1, per_page=25, order_by="created_a
       - date_from / date_to (YYYY-MM-DD)
       - search_text: busca en el contenido
     """
-    query= Review.query
+    query = Review.query
     filters = filters or {}
 
     # Normalizar enum si llega como texto
@@ -111,7 +116,7 @@ def get_paginated_reviews(filters=None, page=1, per_page=25, order_by="created_a
     if "search_text" in filters and filters["search_text"]:
         text = filters["search_text"].strip()
 
-    # Si parece un mail busco por usuario
+        # Si parece un mail busco por usuario
         if "@" in text and "." in text:
             user = get_user_by_email(text)
             if user:
