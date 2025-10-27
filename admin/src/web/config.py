@@ -25,6 +25,11 @@ class Config:
     MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "supersecretjwtkey")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    CORS_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://grupo09.proyecto2025.linti.unlp.edu.ar",
+    ]
 
 
 class ProductionConfig(Config):

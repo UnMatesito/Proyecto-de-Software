@@ -49,6 +49,9 @@ class HistoricSite(db.Model):
     is_visible = db.Column(db.Boolean, default=False, nullable=False)
     pending_validation = db.Column(db.Boolean, default=True, nullable=False)
     location = db.Column(Geometry(geometry_type="POINT", srid=4326), nullable=False)
+    average_rating = db.Column(db.Float, default=0.0, nullable=False)
+    rating_count = db.Column(db.Integer, default=0, nullable=False)
+    # TODO: VER QUÉ HACER CON EL PAIS
 
     # Latitud
     @property
@@ -107,6 +110,8 @@ class HistoricSite(db.Model):
         secondary="user_favorite_site",
         back_populates="favorite_sites",
     )
+
+    reviews = db.relationship("Review", back_populates="site", cascade="all, delete-orphan")
 
     # Metodos
     def is_deleted(self):
@@ -233,6 +238,31 @@ class HistoricSite(db.Model):
         """Retorna una lista de URLs de las imágenes asociadas al sitio histórico."""
 
         return [image.public_url for image in self.images]
+
+    def add_rating(self, rating: int):
+        """Actualiza el promedio de rating al agregar una nueva reseña aprobada."""
+        n = self.rating_count
+        self.average_rating = self.average_rating + (rating - self.average_rating) / (n + 1)
+        self.rating_count = n + 1
+
+    def remove_rating(self, rating: int):
+        """Actualiza el promedio de rating al eliminar una reseña aprobada."""
+        n = self.rating_count
+        if n <= 1:
+            self.average_rating = 0.0
+            self.rating_count = 0
+        else:
+            self.average_rating = ((self.average_rating * n) - rating) / (n - 1)
+            self.rating_count = n - 1
+
+    def update_rating(self, old_rating: int, new_rating: int):
+        """Actualiza el promedio de rating al modificar una reseña aprobada."""
+        n = self.rating_count
+        if n == 0:
+            return
+        total = self.average_rating * n
+        total = total - old_rating + new_rating
+        self.average_rating = total / n
 
     def __repr__(self):
         """Retorna una representación de sitio histórico la cual posee su nombre"""
