@@ -1,4 +1,4 @@
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from core.database import db
 from core.models.review import Review, ReviewStatus
@@ -46,9 +46,13 @@ def approve_review(review_id: int) -> bool:
     """Aprueba una reseña."""
     review = Review.query.get(review_id)
     if not review:
-        return False
-    review.approve()
-    db.session.commit()
+        raise ValueError(f"No existe review con id {review_id}")
+    try:
+        review.approve()
+        db.session.commit()
+    except (ValueError, SQLAlchemyError) as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al aprobar la reseña {e}")
     return True
 
 
@@ -56,19 +60,31 @@ def reject_review(review_id: int, reason: str) -> bool:
     """Rechaza una reseña con motivo."""
     review = Review.query.get(review_id)
     if not review:
-        return False
-    review.reject(reason)
-    db.session.commit()
+        raise ValueError(f"No existe review con id {review_id}")
+    if not reason or len(reason.strip()) < 5:
+        raise ValueError("El motivo de rechazo debe tener al menos 5 caracteres.")
+    if len(reason) > 255:
+        raise ValueError("El motivo de rechazo no puede superar los 255 caracteres.")
+    try:
+        review.reject(reason)
+        db.session.commit()
+    except (ValueError, SQLAlchemyError) as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al aprobar la reseña {e}")
     return True
 
 
-def delete_review(review_id: int) -> bool:
+def delete_review(review_id: int):
     """Elimina definitivamente una reseña."""
     review = Review.query.get(review_id)
     if not review:
-        return False
-    db.session.delete(review)
-    db.session.commit()
+        raise ValueError(f"No existe review con id {review_id}")
+    try:
+        db.session.delete(review)
+        db.session.commit()
+    except (ValueError, SQLAlchemyError) as e:
+        db.session.rollback()
+        raise RuntimeError(f"Error al eliminar la reseña: {e}")
     return True
 
 def get_paginated_reviews(filters=None, page=1, per_page=25, order_by="created_at", order_dir="asc"):
