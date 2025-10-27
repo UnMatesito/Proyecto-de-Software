@@ -145,35 +145,31 @@ def update_user_with_action(user_id, action_func):
 
 
 def delete_user(user_id):
-    """Marca un usuario como eliminado (soft delete) y lo bloquea."""
-    user = User.query.get(user_id)
-    if not user:
-        raise ValueError(f"No existe el usuario con id {user_id}")
+    """Marca un usuario como eliminado (soft delete)"""
 
-    try:
-        user.soft_delete_user()
-        db.session.commit()
-    except (ValueError, SQLAlchemyError) as e:
-        db.session.rollback()
-        raise RuntimeError(f"Error al eliminar el usuario: {e}")
+    def check_delete(user):
+        if user.deleted_at is not None:
+            return f"El usuario {user.first_name} ya está eliminado"
+        # Si es system admin
+        if user.is_admin():
+            return f"El usuario {user.first_name} es Administrador del sistema y no puede ser eliminado"
+        return None
 
-    return True
+    return update_user_attribute(
+        user_id, "deleted_at", datetime.now(timezone.utc), check_delete
+    )
 
 
 def restore_user(user_id):
-    """Restaura un usuario eliminado y lo desbloquea."""
-    user = User.query.get(user_id)
-    if not user:
-        raise ValueError(f"No existe el usuario con id {user_id}")
+    """Desmarca un usuario como eliminado"""
 
-    try:
-        user.restore_user()
-        db.session.commit()
-    except (ValueError, SQLAlchemyError) as e:
-        db.session.rollback()
-        raise RuntimeError(f"Error al restaurar el usuario: {e}")
+    def check_delete(user):
+        if user.deleted_at is None:
+            return f"El usuario {user.first_name} no esta eliminado"
+        return None
 
-    return True
+    return update_user_attribute(user_id, "deleted_at", None, check_delete)
+
 
 def block_user(user_id):
     """Bloquea un usuario"""

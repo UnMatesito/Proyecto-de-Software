@@ -16,7 +16,7 @@
 
         {# Account button with dropdown #}
         {% if is_authenticated() %}
-            {% set current_user = get_current_user() %}
+            {% set current_user = user %}
             {% if current_user %}
             <div class="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
                 <div id="user-menu-button" aria-expanded="false" data-dropdown-toggle="user-dropdown" data-dropdown-placement="bottom" class="mx-2 ml-2">

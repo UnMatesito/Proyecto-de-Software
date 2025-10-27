@@ -47,19 +47,8 @@ def authenticate():
     email = form.email.data
     user = user_service.get_user_by_email(email)
 
-    # Verificar que el usuario existe y la contraseña sea correcta
     if user is None or not user.check_password(form.password.data):
         flash("Email y/o contraseña incorrectos", "error")
-        return render_template("auth/login.html", form=form)
-
-    # Verificar si está eliminado
-    if user.deleted_at is not None:
-        flash("Esta cuenta ha sido eliminada. Contacte a un administrador.", "error")
-        return render_template("auth/login.html", form=form)
-
-    # Verificar si está bloqueado
-    if user.blocked:
-        flash("Esta cuenta ha sido bloqueada. Contacte a un administrador.", "error")
         return render_template("auth/login.html", form=form)
 
     session["user_id"] = user.id

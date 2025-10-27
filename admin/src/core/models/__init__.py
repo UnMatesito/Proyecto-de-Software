@@ -10,8 +10,6 @@ from .role import Role, role_permission
 from .site_history import SiteHistory
 from .tag import Tag
 from .user import User
-from .site_image import SiteImage
-from .review import Review
 
 __all__ = [
     "User",
@@ -28,6 +26,4 @@ __all__ = [
     "Permission",
     "Role",
     "role_permission",
-    "SiteImage",
-    "Review"
 ]
