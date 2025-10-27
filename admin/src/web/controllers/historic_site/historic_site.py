@@ -27,7 +27,7 @@ from core.services import (
     get_user_by_id,
     restore_historic_site,
     update_historic_site,
-    validate_historic_site,
+    validate_historic_site, create_multiple_images, get_site_images,
 )
 from core.utils.export import export_sites_to_csv, get_csv_filename
 from web.forms.historic_site import CreateSiteForm, EditSiteForm
@@ -214,11 +214,10 @@ def get_create():
 @login_required
 @permission_required("site_new")
 def post_create():
-    """Recibe y verifica los datos enviados por el formulario de creacion.
-    Si los datos enviados son válidos hace el alta del sitio histórico.
-    """
+    """Recibe y verifica los datos enviados por el formulario de creacion."""
     current_user = get_user_by_id(session["user_id"])
     form = CreateSiteForm()
+
     if form.validate_on_submit():
         try:
             site = {
@@ -229,6 +228,7 @@ def post_create():
                 "latitude": form.latitude.data,
                 "longitude": form.longitude.data,
             }
+
             city = get_city_by_id(form.city.data)
             category = get_category_by_id(form.category.data)
             conservation_state = get_conservation_state_by_id(
@@ -237,6 +237,8 @@ def post_create():
             tags = []
             for tag_id in form.tags.data:
                 tags.append(get_tag_by_id(tag_id))
+
+            # Crear el sitio
             site = create_historic_site(**site)
             assign_relations_to_historic_site(
                 historic_site=site,
@@ -246,8 +248,23 @@ def post_create():
                 user=current_user,
                 tags=tags,
             )
-            flash("Se creo correctamente el sitio", "success")
+
+            # Subir imágenes si existen
+            images = request.files.getlist('images')
+            if images and images[0].filename:  # Verificar que hay imágenes
+                try:
+                    create_multiple_images(
+                        historic_site_id=site.id,
+                        files=images,
+                        set_first_as_cover=True
+                    )
+                    flash(f"Se subieron {len(images)} imágenes correctamente", "success")
+                except Exception as e:
+                    flash(f"Error al subir imágenes: {e}", "warning")
+
+            flash("Se creó correctamente el sitio", "success")
             return redirect(url_for("site_bp.list_paginated_sites"))
+
         except Exception as e:
             flash(f"Error al crear el sitio, {e}", "error")
             return redirect(url_for("site_bp.get_create"))
@@ -258,7 +275,6 @@ def post_create():
             if (city.province_id == form.province.data)
         ]
         return render_template("historic_site/create.html", form=form)
-
 
 @site_bp.get("/edit/<int:site_id>")
 @login_required
@@ -299,10 +315,9 @@ def get_edit(site_id):
 @login_required
 @permission_required("site_update")
 def post_edit(site_id):
-    """Recibe y verifica los datos enviados por el formulario de edición.
-    Si los datos enviados son válidos hace el edit del sitio histórico.
-    """
+    """Recibe y verifica los datos enviados por el formulario de edición."""
     form = EditSiteForm()
+
     if form.validate_on_submit():
         try:
             body = {
@@ -321,9 +336,44 @@ def post_edit(site_id):
                 "category": form.category.data,
                 "tags": form.tags.data,
             }
+
             update_historic_site(body)
+
+            # Manejar nuevas imágenes
+            images = request.files.getlist('images')
+            if images and images[0].filename:
+                try:
+                    existing_images = get_site_images(site_id)
+                    if len(existing_images) + len(images) > 10:
+                        flash(
+                            f"No se pueden agregar {len(images)} imágenes. "
+                            f"Tienes {len(existing_images)} y el máximo es 10",
+                            "warning"
+                        )
+                    else:
+                        # Calcular el orden inicial para las nuevas imágenes
+                        start_order = len(existing_images)
+                        new_images = []
+
+                        for index, file in enumerate(images):
+                            if file and file.filename:
+                                from core.services.site_image_service import create_site_image
+                                create_site_image(
+                                    historic_site_id=site_id,
+                                    file=file,
+                                    order=start_order + index,
+                                    is_cover=False
+                                )
+                                new_images.append(file.filename)
+
+                        if new_images:
+                            flash(f"Se agregaron {len(new_images)} imágenes", "success")
+                except Exception as e:
+                    flash(f"Error al subir imágenes: {e}", "warning")
+
             flash(f"El sitio {form.name.data} fue editado exitosamente", "success")
             return redirect(url_for("site_bp.list_paginated_sites"))
+
         except Exception as e:
             flash(
                 f"Se produjo un error al intentar editar el sitio {form.name.data}, {e}",
@@ -353,6 +403,27 @@ def delete(site_id):
     except Exception as e:
         flash(f"Error al intentar eliminar el sitio {site_id}, {e}", "error")
         return redirect(url_for("site_bp.list_paginated_sites"))
+
+
+@site_bp.post("/image/delete/<int:image_id>")
+@login_required
+@permission_required("site_update")
+def delete_image(image_id):
+    """Elimina una imagen específica de un sitio"""
+    try:
+        from core.services.site_image_service import delete_site_image
+        from core.models import SiteImage
+
+        image = SiteImage.query.get_or_404(image_id)
+        site_id = image.historic_site_id
+
+        delete_site_image(image_id)
+        flash("Imagen eliminada correctamente", "success")
+
+    except Exception as e:
+        flash(f"Error al eliminar imagen: {e}", "error")
+
+    return redirect(url_for("site_bp.get_edit", site_id=site_id))
 
 
 @site_bp.post("/restore/<int:site_id>")

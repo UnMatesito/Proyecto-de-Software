@@ -1,9 +1,9 @@
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import ValidationError
+from geoalchemy2.functions import ST_X, ST_Y
 from core.services import historic_site_service
 from core.database import db
-from geoalchemy2.functions import ST_X, ST_Y
 from . import api_bp
 from web.schemas import SiteQuerySchema, SiteCreateSchema
 from web.utils.format_marshmallow_validation_errors import format_validation_errors
@@ -13,7 +13,7 @@ from web.utils.format_marshmallow_validation_errors import format_validation_err
 def list_sites():
     """
     GET /sites
-    Lista sitios históricos con filtros combinables según el PDF de la API.
+    Lista sitios históricos con filtros combinables según la especificación de la API.
     """
     try:
         # Validar parámetros con schema
@@ -29,22 +29,22 @@ def list_sites():
                 }
             }), 400
 
-        # Delegar al servicio
+        # Delegar al servicio con todos los filtros combinables
         result = historic_site_service.list_published_sites(
             name=params.get("name"),
             description=params.get("description"),
             city_name=params.get("city"),
             province_name=params.get("province"),
             tags_str=params.get("tags"),
-            order_by=params["order_by"],
+            order_by=params.get("order_by", "latest"),
             lat=params.get("lat"),
-            lon=params.get("long"),
+            lon=params.get("lon"),
             radius=params.get("radius"),
-            page=params["page"],
-            per_page=params["per_page"]
+            page=params.get("page", 1),
+            per_page=params.get("per_page", 20)
         )
 
-        # Formatear respuesta
+        # Formatear respuesta de salida
         data = []
         for site in result["items"]:
             lat_value = db.session.scalar(ST_Y(site.location))
@@ -57,9 +57,9 @@ def list_sites():
                 "description": site.full_description,
                 "city": site.city.name if site.city else None,
                 "province": site.city.province.name if site.city and site.city.province else None,
-                "country": site.country if hasattr(site, "country") else None,
-                "lat": float(lat_value) if lat_value else None,
-                "long": float(long_value) if long_value else None,
+                "country": getattr(site, "country", None),
+                "lat": float(lat_value) if lat_value is not None else None,
+                "long": float(long_value) if long_value is not None else None,
                 "tags": [t.slug for t in site.tags],
                 "state_of_conservation": (
                     site.conservation_state.state if site.conservation_state else None
@@ -99,7 +99,6 @@ def get_site(site_id):
     Devuelve el detalle completo de un sitio histórico.
     """
     try:
-        # Delegar al servicio
         site = historic_site_service.get_published_site_by_id(site_id)
 
         lat_value = db.session.scalar(ST_Y(site.location))
@@ -112,9 +111,9 @@ def get_site(site_id):
             "description": site.full_description,
             "city": site.city.name if site.city else None,
             "province": site.city.province.name if site.city and site.city.province else None,
-            "country": site.country if hasattr(site, "country") else None,
-            "lat": float(lat_value) if lat_value else None,
-            "long": float(long_value) if long_value else None,
+            "country": getattr(site, "country", None),
+            "lat": float(lat_value) if lat_value is not None else None,
+            "long": float(long_value) if long_value is not None else None,
             "tags": [t.slug for t in site.tags],
             "state_of_conservation": (
                 site.conservation_state.state if site.conservation_state else None
@@ -193,8 +192,8 @@ def create_site():
             "city": site.city.name if site.city else None,
             "province": site.city.province.name if site.city and site.city.province else None,
             "country": validated_data["country"],
-            "lat": float(lat_value) if lat_value else validated_data["lat"],
-            "long": float(long_value) if long_value else validated_data["long"],
+            "lat": float(lat_value) if lat_value is not None else validated_data["lat"],
+            "long": float(long_value) if long_value is not None else validated_data["long"],
             "tags": validated_data["tags"],
             "state_of_conservation": validated_data["state_of_conservation"],
             "inauguration_year": site.inauguration_year,
@@ -207,7 +206,6 @@ def create_site():
         return jsonify(response_data), 201
 
     except ValueError as e:
-        # Errores de validación del servicio
         return jsonify({
             "error": {
                 "code": "invalid_data",

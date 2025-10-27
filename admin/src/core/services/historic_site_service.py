@@ -417,11 +417,11 @@ def list_published_sites(
     Lista sitios históricos publicados con filtros.
 
     Args:
-        name: Búsqueda parcial por nombre
-        description: Búsqueda parcial por descripción
-        city_name: Nombre exacto de ciudad
-        province_name: Nombre exacto de provincia
-        tags_str: Tags separados por coma
+        name: Búsqueda parcial por nombre (case-insensitive)
+        description: Búsqueda parcial por descripción (case-insensitive)
+        city_name: Nombre exacto de ciudad (case-insensitive)
+        province_name: Nombre exacto de provincia (case-insensitive)
+        tags_str: Tags separados por coma (todos deben coincidir)
         order_by: latest | oldest | rating-5-1 | rating-1-5
         lat, lon, radius: Para búsqueda geoespacial
         page: Número de página
@@ -431,23 +431,24 @@ def list_published_sites(
         Dict con paginación: {"items": [], "current_page": 1, "per_page": 20, "total": 100}
     """
     from core.models import City, Province, Tag
+    from geoalchemy2.functions import ST_DWithin, ST_Transform
+    from sqlalchemy import func, or_
 
     filters = {}
 
-    # Filtros de texto - usar search_text que aprovecha GenericSearchBuilder
-    search_terms = []
+    # Filtros de texto - SEPARADOS (ambos deben coincidir si se envían ambos)
     if name:
-        search_terms.append(name)
-    if description:
-        search_terms.append(description)
+        filters["name"] = name  # Búsqueda parcial en columna name
 
-    if search_terms:
-        filters["search_text"] = " ".join(search_terms)
+    if description:
+        # Buscar en brief_description y full_description
+        # Necesitamos manejar esto como caso especial
+        filters["description_search"] = description
 
     # Filtro por ciudad - buscar city_id
     if city_name:
         city = City.query.filter(
-            db.func.lower(City.name) == city_name.lower()
+            func.lower(City.name) == city_name.lower()
         ).first()
         if city:
             filters["city_id"] = city.id
@@ -455,7 +456,7 @@ def list_published_sites(
     # Filtro por provincia - buscar province_id
     if province_name:
         province = Province.query.filter(
-            db.func.lower(Province.name) == province_name.lower()
+            func.lower(Province.name) == province_name.lower()
         ).first()
         if province:
             filters["province_id"] = province.id
@@ -477,6 +478,33 @@ def list_published_sites(
     filters["is_visible"] = True
     filters["pending_validation"] = False
 
+    # Construir query base
+    query = build_search_query(HistoricSite, filters)
+
+    # Filtro especial para description (buscar en ambas columnas de descripción)
+    if description:
+        query = query.filter(
+            or_(
+                HistoricSite.brief_description.ilike(f"%{description}%"),
+                HistoricSite.full_description.ilike(f"%{description}%")
+            )
+        )
+
+    # Búsqueda geoespacial
+    if lat is not None and lon is not None and radius is not None:
+
+        radius_meters = float(radius) * 1000
+        ref_point = WKTElement(f"POINT({lon} {lat})", srid=4326)
+
+        # Filtrar usando ST_DWithin con transformación a metros
+        query = query.filter(
+            ST_DWithin(
+                ST_Transform(HistoricSite.location, 3857),
+                ST_Transform(ref_point, 3857),
+                radius_meters
+            )
+        )
+
     # Mapear order_by del API al formato interno
     service_order_by = "created_at"
     service_sorted_by = "desc"
@@ -487,28 +515,32 @@ def list_published_sites(
     elif order_by == "oldest":
         service_order_by = "created_at"
         service_sorted_by = "asc"
-    elif order_by in ["rating-5-1", "rating-1-5"]:
-        # TODO: Implementar cuando se agregue rating promedio
-        pass
+    elif order_by == "rating-5-1":
+        service_order_by = "average_rating"
+        service_sorted_by = "desc"
+    elif order_by == "rating-1-5":
+        service_order_by = "average_rating"
+        service_sorted_by = "asc"
 
-    # TODO: Implementar búsqueda geoespacial con lat, lon, radius
-    # if lat and lon and radius:
-    #     filters["geo_search"] = {"lat": lat, "lon": lon, "radius": radius}
+    # Aplicar ordenamiento
+    query = apply_ordering(query, HistoricSite, service_order_by, service_sorted_by)
 
-    # Usar get_sites_filtered que ya usa los utils
-    result = get_sites_filtered(
-        filters=filters,
-        order_by=service_order_by,
-        sorted_by=service_sorted_by,
-        paginate=True,
+    # Aplicar paginación
+    pagination = paginate_query(
+        query,
         page=page,
-        per_page=per_page
+        per_page=per_page,
+        order_by=service_order_by,
+        sorted_by=service_sorted_by
     )
 
     # Filtrar sitios eliminados (doble verificación)
-    result["items"] = [site for site in result["items"] if site.deleted_at is None]
+    pagination["items"] = [
+        site for site in pagination["items"]
+        if site.deleted_at is None
+    ]
 
-    return result
+    return pagination
 
 
 def get_city_and_province(city_name, province_name):
@@ -660,3 +692,5 @@ def create_site_from_api(
     )
 
     return site
+
+
