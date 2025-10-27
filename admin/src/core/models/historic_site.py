@@ -109,7 +109,7 @@ class HistoricSite(db.Model):
         secondary="user_favorite_site",
         back_populates="favorite_sites",
     )
-    reviews = db.relationship("Review", back_populates="site", cascade="all, delete-orphan")
+    reviews = db.relationship("Review", back_populates="historic_site", cascade="all, delete-orphan")
 
     # Metodos
     def is_deleted(self):

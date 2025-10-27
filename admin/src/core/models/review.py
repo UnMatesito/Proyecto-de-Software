@@ -36,7 +36,7 @@ class Review(db.Model):
     historic_site_id = db.Column(
         db.Integer, db.ForeignKey("historic_site.id", ondelete="CASCADE"), nullable=False
     )
-    historic_site = db.relationship("HistoricSite", backref="reviews")
+    historic_site = db.relationship("HistoricSite", back_populates="reviews")
 
     # Restricciones
     __table_args__ = (
