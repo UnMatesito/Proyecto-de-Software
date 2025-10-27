@@ -21,21 +21,6 @@ historic_site_tag = db.Table(
     ),
 )
 
-user_favorite_site = db.Table(
-    "user_favorite_site",
-    db.Column(
-        "user_id",
-        db.Integer,
-        db.ForeignKey("user.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-    db.Column(
-        "historic_site_id",
-        db.Integer,
-        db.ForeignKey("historic_site.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-)
 
 class HistoricSite(db.Model):
     __tablename__ = "historic_site"
@@ -49,8 +34,6 @@ class HistoricSite(db.Model):
     is_visible = db.Column(db.Boolean, default=False, nullable=False)
     pending_validation = db.Column(db.Boolean, default=True, nullable=False)
     location = db.Column(Geometry(geometry_type="POINT", srid=4326), nullable=False)
-    average_rating = db.Column(db.Float, default=0.0, nullable=False)
-    rating_count = db.Column(db.Integer, default=0, nullable=False)
 
     # Latitud
     @property
@@ -101,15 +84,6 @@ class HistoricSite(db.Model):
     site_histories = db.relationship(
         "SiteHistory", back_populates="historic_site", cascade="all, delete-orphan"
     )
-
-    images = db.relationship("SiteImage", back_populates="historic_site", cascade="all, delete-orphan")
-
-    favorited_by = db.relationship(
-        "User",
-        secondary="user_favorite_site",
-        back_populates="favorite_sites",
-    )
-    reviews = db.relationship("Review", back_populates="historic_site", cascade="all, delete-orphan")
 
     # Metodos
     def is_deleted(self):
@@ -224,43 +198,6 @@ class HistoricSite(db.Model):
 
         return pending_validation == self.pending_validation
 
-    def get_cover_image(self):
-        """Retorna la imagen de portada del sitio histórico si existe, de lo contrario retorna None"""
-
-        for image in self.images:
-            if image.is_cover:
-                return image
-        return None
-
-    def get_image_urls(self):
-        """Retorna una lista de URLs de las imágenes asociadas al sitio histórico."""
-
-        return [image.public_url for image in self.images]
-
-    def add_rating(self, rating: int):
-        """Actualiza el promedio de rating al agregar una nueva reseña aprobada."""
-        n = self.rating_count
-        self.average_rating = self.average_rating + (rating - self.average_rating) / (n + 1)
-        self.rating_count = n + 1
-
-    def remove_rating(self, rating: int):
-        """Actualiza el promedio de rating al eliminar una reseña aprobada."""
-        n = self.rating_count
-        if n <= 1:
-            self.average_rating = 0.0
-            self.rating_count = 0
-        else:
-            self.average_rating = ((self.average_rating * n) - rating) / (n - 1)
-            self.rating_count = n - 1
-
-    def update_rating(self, old_rating: int, new_rating: int):
-        """Actualiza el promedio de rating al modificar una reseña aprobada."""
-        n = self.rating_count
-        if n == 0:
-            return
-        total = self.average_rating * n
-        total = total - old_rating + new_rating
-        self.average_rating = total / n
     def __repr__(self):
         """Retorna una representación de sitio histórico la cual posee su nombre"""
 

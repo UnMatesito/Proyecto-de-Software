@@ -19,18 +19,11 @@ class Config:
         "pool_recycle": 60,
         "pool_pre_ping": True,
     }
-    MINIO_SERVER = os.getenv("MINIO_SERVER", "localhost:9000")
-    MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
-    MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
-    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "supersecretjwtkey")
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
 
 
 class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
-    MINIO_SECURE = True
     pass
 
 
@@ -39,7 +32,6 @@ class DevelopmentConfig(Config):
         False  # Para evitar que el debugbar se detenga en los redirects
     )
     SESSION_COOKIE_SECURE = False
-    MINIO_SECURE = False
     pass
 
 

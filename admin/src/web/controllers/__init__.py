@@ -7,7 +7,6 @@ from .site_history.site_history import site_history_bp
 from .tag.tag import tag_bp
 from .user.user import user_bp
 from .user.user_management import user_management_bp
-from .review.review import review_bp
 
 __all__ = [
     "user_management_bp",
@@ -19,5 +18,4 @@ __all__ = [
     "city_bp",
     "site_history_bp",
     "main_bp",
-    review_bp
 ]
