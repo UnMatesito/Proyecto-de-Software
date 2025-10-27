@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import CheckConstraint
+from sqlalchemy import CheckConstraint, event
 
 from core.database import db
 import enum
@@ -73,3 +73,51 @@ class Review(db.Model):
 
     def __repr__(self):
         return f"<Review {self.id} - {self.status}>"
+
+
+@event.listens_for(Review, "after_insert")
+def add_site_rating(mapper, connection, target):
+    from core.models import HistoricSite
+    if target.status == ReviewStatus.APROBADA:
+        session = db.object_session(target)
+        site = session.get(HistoricSite, target.historic_site_id)
+        if site:
+            site.add_rating(target.rating)
+
+
+@event.listens_for(Review, "after_update")
+def update_site_rating(mapper, connection, target):
+    from core.models import HistoricSite
+    session = db.object_session(target)
+    site = session.get(HistoricSite, target.historic_site_id)
+    if not site:
+        return
+
+    # Detectar cambios en rating o estado
+    history = db.inspect(target).attrs.rating.history
+    status_history = db.inspect(target).attrs.status.history
+
+    # Caso 1: rating cambió (sigue aprobada)
+    if history.has_changes() and target.status == ReviewStatus.APROBADA:
+        old = history.deleted[0] if history.deleted else None
+        if old is not None:
+            site.update_rating(old, target.rating)
+
+    # Caso 2: pasó a Aprobada
+    elif status_history.has_changes() and target.status == ReviewStatus.APROBADA:
+        site.add_rating(target.rating)
+
+    # Caso 3: pasó de Aprobada a Rechazada o Pendiente
+    elif status_history.has_changes() and status_history.deleted and \
+            status_history.deleted[0] == ReviewStatus.APROBADA:
+        site.remove_rating(target.rating)
+
+
+@event.listens_for(Review, "after_delete")
+def remove_site_rating(mapper, connection, target):
+    from core.models import HistoricSite
+    if target.status == ReviewStatus.APROBADA:
+        session = db.object_session(target)
+        site = session.get(HistoricSite, target.historic_site_id)
+        if site:
+            site.remove_rating(target.rating)
