@@ -112,11 +112,11 @@ def detail(review_id):
     try:
         review = get_review_by_id(review_id)
         if not review:
-            flash("Review no encontrada", "error")
+            flash("Reseña no encontrada", "error")
             return redirect(url_for("reviews.index"))
         return render_template("reviews/detail.html", review=review)
     except Exception as e:
-        flash(f"Error al cargar la review: {str(e)}", "error")
+        flash(f"Error al cargar la reseña: {str(e)}", "error")
         return redirect(url_for("reviews.index"))
 
 
@@ -128,7 +128,7 @@ def approve(review_id):
     """Aprueba una reseña"""
     try:
         approve_review(review_id)
-        flash("Review aprobada", "success")
+        flash("Reseña aprobada", "success")
     except ValueError as e:
         flash(str(e), "warning")
     except RuntimeError as e:
@@ -144,7 +144,7 @@ def delete(review_id):
     """Elimina una reseña"""
     try:
         delete_review(review_id)
-        flash("Review eliminada", "success")
+        flash("Reseña eliminada", "success")
     except ValueError as e:
         flash(str(e), "warning")
     except RuntimeError as e:
