@@ -30,6 +30,7 @@
     <section>
         <h3 class="text-lg font-semibold mb-2">Ordenar Reseñas</h3>
         <ul class="space-y-2">
+            <!-- Contenedor ordenar por fecha de creacion -->
             <li>
                 <a href="{{ url_for('reviews.index', sorted_by='desc', order_by='created_at') }}"
                    class="block px-3 py-2 rounded text-center
@@ -50,6 +51,29 @@
                             bg-green-100 hover:bg-green-200
                           {% endif %}">
                     Más antiguos
+                </a>
+            </li>
+            <!-- Ordenar por calificación -->
+            <li>
+                <a href="{{ url_for('reviews.index', sorted_by='desc', order_by='rating') }}"
+                    class="block px-3 py-2 rounded text-center
+                            {% if order_by == 'rating' and sorted_by == 'desc' %}
+                                bg-yellow-300 font-semibold
+                            {% else %}
+                                bg-yellow-100 hover:bg-blue-200
+                            {% endif %}">
+                    Mejor calificados
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('reviews.index', sorted_by='asc', order_by='rating') }}"
+                    class="block px-3 py-2 rounded text-center
+                            {% if order_by == 'rating' and sorted_by == 'asc' %}
+                                bg-yellow-300 font-semibold
+                            {% else %}
+                                bg-yellow-100 hover:bg-blue-200
+                            {% endif %}">
+                    Peor calificados
                 </a>
             </li>
         </ul>
