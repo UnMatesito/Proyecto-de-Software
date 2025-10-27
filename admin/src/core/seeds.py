@@ -33,6 +33,7 @@ def run(env="production"):
         seed_aditional_moderators()
         seed_historic_sites()
         seed_aditional_historic_sites()
+        seed_aditional_validated_historic_sites()
         seed_site_tags()
         seed_favorites()
 
@@ -777,6 +778,7 @@ def seed_aditional_public_users():
     from faker import Faker
     from core.models import User
     from core.services import role_service as RoleService
+    import uuid
 
     print("Creando usuarios públicos adicionales...")
     fake = Faker("es_AR")
@@ -785,7 +787,7 @@ def seed_aditional_public_users():
 
     usuarios = [
         User(
-            email=fake.unique.email(),
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
             first_name=fake.first_name(),
             last_name=fake.last_name(),
             password="password123",
@@ -804,6 +806,7 @@ def seed_aditional_editors():
     from faker import Faker
     from core.models import User
     from core.services import role_service as RoleService
+    import uuid
 
     print("Creando usuarios editores adicionales...")
     fake = Faker("es_AR")
@@ -812,7 +815,7 @@ def seed_aditional_editors():
 
     usuarios = [
         User(
-            email=fake.unique.email(),
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
             first_name=fake.first_name(),
             last_name=fake.last_name(),
             password="editor123",
@@ -831,6 +834,7 @@ def seed_aditional_admins():
     from faker import Faker
     from core.models import User
     from core.services import role_service as RoleService
+    import uuid
 
     print("Creando usuarios administradores adicionales...")
     fake = Faker("es_AR")
@@ -839,7 +843,7 @@ def seed_aditional_admins():
 
     usuarios = [
         User(
-            email=fake.unique.email(),
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
             first_name=fake.first_name(),
             last_name=fake.last_name(),
             password="admin123",
@@ -858,6 +862,7 @@ def seed_aditional_moderators():
     from faker import Faker
     from core.models import User
     from core.services import role_service as RoleService
+    import uuid
 
     print("Creando usuarios moderadores adicionales...")
     fake = Faker("es_AR")
@@ -866,7 +871,7 @@ def seed_aditional_moderators():
 
     usuarios = [
         User(
-            email=fake.unique.email(),
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
             first_name=fake.first_name(),
             last_name=fake.last_name(),
             password="moderador123",
@@ -927,6 +932,65 @@ def seed_aditional_historic_sites():
                 created_at=datetime.now(timezone.utc),
                 is_visible=False,
                 pending_validation=True,
+                city_id=city.id,
+                category_id=category.id,
+                conservation_state_id=state.id,
+                proposed_by=user.id,
+                location=WKTElement(f"POINT({lon} {lat})", srid=4326),
+            )
+        )
+
+    db.session.add_all(sitios)
+    db.session.commit()
+    enable_audit_listeners()
+
+
+def seed_aditional_validated_historic_sites():
+    """
+    Crea sitios históricos adicionales validados, con Faker para desarrollo.
+    Genera ubicaciones aleatorias dentro de provincias existentes.
+    """
+    from faker import Faker
+    from geoalchemy2.elements import WKTElement
+    from random import choice, randint, uniform
+    from datetime import datetime, timezone
+    from core.models import HistoricSite, City, Category, ConservationState, User
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+
+    print("Creando sitios históricos validados con Faker...")
+
+    fake = Faker("es_AR")
+    disable_audit_listeners()
+
+    cities = City.query.all()
+    categories = Category.query.all()
+    states = ConservationState.query.all()
+    users = User.query.filter_by(system_admin=False).all()
+
+    if not (cities and categories and states and users):
+        print("No hay datos base suficientes para generar sitios validados.")
+        return
+
+    sitios = []
+    for _ in range(20):
+        city = choice(cities)
+        category = choice(categories)
+        state = choice(states)
+        user = choice(users)
+
+        # Coordenadas aleatorias dentro del rango general de Argentina
+        lon = round(uniform(-73, -53), 6)
+        lat = round(uniform(-55, -21), 6)
+
+        sitios.append(
+            HistoricSite(
+                name=f"Sitio validado {fake.city()}",
+                brief_description=fake.sentence(nb_words=10)[:50],
+                full_description=fake.paragraph(nb_sentences=4),
+                inauguration_year=randint(1600, 2020),
+                created_at=datetime.now(timezone.utc),
+                is_visible=True,
+                pending_validation=False,
                 city_id=city.id,
                 category_id=category.id,
                 conservation_state_id=state.id,
