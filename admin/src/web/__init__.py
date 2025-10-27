@@ -48,7 +48,11 @@ def create_app(env="development", static_folder="../../static"):
     db.init_app(app)
     session.init_app(app)
     storage.init_app(app)
-    CORS(app)
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},
+        supports_credentials=True
+    )
     jwt.init_app(app)
 
     # Hooks
