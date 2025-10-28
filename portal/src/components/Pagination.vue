@@ -23,14 +23,7 @@ import IconArrowLeft from './icons/IconArrowLeft.vue';
                 'text-white', 
                 'cursor-pointer'
     ]
-    watch(
-        () => route.query,
-        (newValue, oldValue) => {
-            query.value = newValue
-                        console.log(query.value)
 
-        }
-    )
 </script>
 
 <template>
@@ -39,7 +32,7 @@ import IconArrowLeft from './icons/IconArrowLeft.vue';
             <IconArrowLeft></IconArrowLeft>
         </div>
         <router-link v-for="value in pageToShow" 
-            :to="{query: { ...query, page:value }}"
+            :to="value != '...' ? {query: { ...route.query, page:value }} :  {query: { ...route.query}}"
             v-on="value != '...' ? {click: fetchSites} : {}"
             class="
             w-10 h-10 

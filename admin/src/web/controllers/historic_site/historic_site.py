@@ -27,7 +27,7 @@ from core.services import (
     get_user_by_id,
     restore_historic_site,
     update_historic_site,
-    validate_historic_site, create_multiple_images, get_site_images,
+    validate_historic_site,
 )
 from core.utils.export import export_sites_to_csv, get_csv_filename
 from web.forms.historic_site import CreateSiteForm, EditSiteForm

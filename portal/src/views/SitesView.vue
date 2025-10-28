@@ -39,13 +39,15 @@
   const apiMessage = ref('')
   const sites = ref({})
   const pagination = ref({})
-  const root = useRoute()
+  const rout = useRoute()
 
   const fetchSites = async (url) => {
     try {
-      const { data } = await api.get("/sites")
+      console.log(rout.fullPath)
+      const { data } = await api.get(rout.fullPath)
       const response = data
       sites.value = response.data
+      console.log(response.meta)
       pagination.value = response.meta
     } catch (error) {
       apiMessage.value = '❌ No se pudo conectar con la API'
@@ -55,4 +57,8 @@
   onMounted(
       () => fetchSites()
   )
+  watch(rout, () => {
+    fetchSites()
+    console.log("fetch")
+  })
 </script>

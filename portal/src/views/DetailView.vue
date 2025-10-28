@@ -1,67 +1,71 @@
 <template>
-    <router-link to="/sites"  type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none gap-2 focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-         <IconArrowLeft class="w-3.5 h-3.5 ms-2 fill-white"> </IconArrowLeft>
-        Volver
-    </router-link >
-    <section class="w-full p-3 max-w-screen-xl">
-        <div class="flex items-start gap-4 w-full justify-center border-b-2 pt-1 pb-3 flex-wrap">
-            <Carrousel></Carrousel>
-            <aside class="flex gap-4 flex-col">
-                <h2 class="text-2xl font-bold">
-                    {{ detalle.name }}
-                </h2>
-                <div class="flex gap-1 items-center  border-b-2 pb-2">
-                    <Stars :rating="detalle.rating"></Stars>
-                    <span class="text-lg font-semibold text-yellow-500">
-                        ({{ detalle.count_rating || 0}})
-                    </span>
-                </div>
 
-                <div class="flex gap-1  border-b-2 pt-1 pb-2">
-                    <IconLocation class="fill-red-700 w-3"></IconLocation>
-                    <span>
-                        {{ detalle.province }},
-                    </span>
-                    <span>
-                        {{ detalle.city }}
-                    </span>
-                </div>
-                <div class="flex gap-7">
-                    <div>
-                        <p class="font-semibold">Estado de conservación</p>
-                        <span>
-                            {{ detalle.state_of_conservation }}
-                        </span>
-                        <p class="font-semibold">Año de inagaruación</p>
-                        <span class="">
-                            {{ detalle.inauguration_year }}
+    <div class="flex flex-col items-center justify-center ">
+
+        <section class="w-full p-3 max-w-screen-xl">
+            <router-link to="/sites"  type="button" class=" ml-10 mb-3 mt-3  text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none gap-2 focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                <IconArrowLeft class="w-3.5 h-3.5 ms-2 fill-white"> </IconArrowLeft>
+                Volver
+            </router-link >
+            <div class="flex items-start gap-4 w-full justify-center pt-1 pb-3 flex-wrap">
+                <Carrousel></Carrousel>
+                <aside class="flex gap-4 flex-col">
+                    <h2 class="text-2xl font-bold">
+                        {{ detalle.name }}
+                    </h2>
+                    <div class="flex gap-1 items-center  border-b-2 pb-2">
+                        <Stars :rating="detalle.rating"></Stars>
+                        <span class="text-lg font-semibold text-yellow-500">
+                            ({{ detalle.count_rating || 0}})
                         </span>
                     </div>
-                    <div>
-                        <p class="font-semibold">Categoria</p>
-                        <span>
-                            {{ detalle.category }}
-                        </span>
 
+                    <div class="flex gap-1  border-b-2 pt-1 pb-2">
+                        <IconLocation class="fill-red-700 w-3"></IconLocation>
+                        <span>
+                            {{ detalle.province }},
+                        </span>
+                        <span>
+                            {{ detalle.city }}
+                        </span>
                     </div>
-                </div>
-            </aside>
-        </div>      
-        <Acordion 
-                :content="content">
-        </Acordion>
-    </section>
-    <div class="w-4/6 max-w-full flex flex-col gap-3 mt-3">
-        <h3 class="text-2xl bg-proyecto-accent p-3 text-white">Locación</h3>
-        <Map :long="detalle.long" :lat="detalle.lat" :name="detalle.name"></Map>
-    </div>
-    <section class="w-4/6 max-w-full flex flex-col gap-3 mt-3" >
-        <h3 class="text-2xl bg-proyecto-accent p-3 text-white">Reseñas</h3>
-        <div>
-            <Review v-for="avatar in reviews" :name="avatar.name" :email="avatar.email" :text="avatar.text" :created_at="avatar.created_at"></Review>
+                    <div class="flex gap-7">
+                        <div>
+                            <p class="font-semibold">Estado de conservación</p>
+                            <span>
+                                {{ detalle.state_of_conservation }}
+                            </span>
+                            <p class="font-semibold">Año de inagaruación</p>
+                            <span class="">
+                                {{ detalle.inauguration_year }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Categoria</p>
+                            <span>
+                                {{ detalle.category }}
+                            </span>
+
+                        </div>
+                    </div>
+                </aside>
+            </div>      
+            <Acordion 
+                    :content="content">
+            </Acordion>
+        </section>
+        <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
+            <h3 class="text-3xl text-proyecto-accent">Locación</h3>
+            <Map :long="detalle.long" :lat="detalle.lat" :name="detalle.name"></Map>
         </div>
-        <p v-if="detalle.page > 1" @click="fetchReviews()" class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out">Ver más reseñas...</p>
-    </section>
+        <section class="w-full max-w-[1200px] flex flex-col gap-3 mt-3" >
+            <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
+            <div>
+                <Review v-for="avatar in reviews" :name="avatar.name" :email="avatar.email" :text="avatar.text" :created_at="avatar.created_at"></Review>
+            </div>
+            <p v-if="detalle.page > 1" @click="fetchReviews()" class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out">Ver más reseñas...</p>
+        </section>
+    </div>
 </template>
 
 <script setup>
@@ -96,7 +100,6 @@
             console.log(error)
         }
     }
-
     const fetchReviews = async () => {
         try {
             const { data } = await api.get(`${route.path}/reviews/${page}`)

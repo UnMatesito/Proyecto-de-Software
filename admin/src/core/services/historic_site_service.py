@@ -439,7 +439,6 @@ def list_published_sites(
     # Filtros de texto - SEPARADOS (ambos deben coincidir si se envían ambos)
     if name:
         filters["name"] = name  # Búsqueda parcial en columna name
-
     if description:
         # Buscar en brief_description y full_description
         # Necesitamos manejar esto como caso especial
@@ -453,6 +452,7 @@ def list_published_sites(
         if city:
             filters["city_id"] = city.id
 
+    print(filters)
     # Filtro por provincia - buscar province_id
     if province_name:
         province = Province.query.filter(

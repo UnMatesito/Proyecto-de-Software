@@ -22,7 +22,6 @@
 </script>
 <style>
     #map { height: 60vh;
-            max-width: 800px;
             width: 100%; 
             border-radius: 6px;
             border: 1px solid #c0bfbf;
