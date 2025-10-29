@@ -50,7 +50,25 @@
           </div>
 
           <!-- Botón de login (solo escritorio) -->
-          <ButtonPrimary icon_left="fa-regular fa-user mr-2" text="Iniciar Sesión" class="text-xs sm:text-sm hidden lg:flex"/>
+          <div v-if="!authStore.isAuthenticated" class="hidden lg:flex">
+            <button
+              @click="loginWithGoogle"
+              class="flex items-center bg-white border border-gray-400 rounded-lg px-3 py-2 hover:shadow transition hover:bg-gray-100"
+            >
+              <img
+                src="https://www.svgrepo.com/show/355037/google.svg"
+                alt="Google"
+                class="w-5 h-5 mr-2"
+              />
+              <span class="text-gray-600 text-sm font-medium">Continuar con Google</span>
+            </button>
+          </div>
+
+          <div v-else class="hidden lg:flex items-center gap-2">
+            <img :src="authStore.user?.avatar" class="w-8 h-8 rounded-full" alt="avatar" />
+            <span class="text-gray-700 font-medium">{{ authStore.user?.name }}</span>
+            <button @click="authStore.logout" class="text-sm text-white font-medium bg-proyecto-primary hover:bg-proyecto-primary/80 rounded-md px-3 py-2 transition-colors duration-200">Cerrar sesión</button>
+          </div>
         </div>
       </div>
 
@@ -104,7 +122,26 @@
               </li>
             </RouterLink>
           </ul>
-          <ButtonPrimary icon_left="fa-regular fa-user mr-2" text="Iniciar Sesión" class="text-sm font-semibold sm:text-sm w-full justify-center py-2 mt-3 items-center"/>
+
+          <div v-if="!authStore.isAuthenticated">
+            <button
+              @click="loginWithGoogle"
+              class="flex items-center bg-white border border-gray-300 rounded-lg px-3 py-2 w-full justify-center mt-3 hover:shadow transition"
+            >
+              <img
+                src="https://www.svgrepo.com/show/355037/google.svg"
+                alt="Google"
+                class="w-5 h-5 mr-2"
+              />
+              <span class="text-gray-600 text-sm font-medium">Continuar con Google</span>
+            </button>
+          </div>
+
+            <div v-else class="flex flex-col items-center gap-2 mt-3">
+              <img :src="authStore.user?.avatar" class="w-10 h-10 rounded-full" alt="avatar" />
+              <span class="text-gray-700 font-medium">{{ authStore.user?.name }}</span>
+              <button @click="authStore.logout" class="text-sm text-white font-medium bg-proyecto-primary hover:bg-proyecto-primary/80 rounded-md px-4 py-2 mt-2 transition-colors duration-200 w-full max-w-xs">Cerrar sesión</button>
+            </div>
           </div>
         </div>
       </Transition>
@@ -132,5 +169,15 @@
 import { RouterLink, RouterView } from 'vue-router'
 import ButtonPrimary from "@/components/buttons/ButtonPrimary.vue";
 import { ref } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+
 const open = ref(false)
+const authStore = useAuthStore()
+
+authStore.checkAuthStatus()
+
+function loginWithGoogle() {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+  window.location.href = `${apiUrl}/auth/google/login`
+}
 </script>

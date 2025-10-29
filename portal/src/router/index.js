@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import AuthView from '../views/AuthView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +27,11 @@ const router = createRouter({
       path: '/sites/:name/:description/:city/:province/:tags/:order_by/:lat/:long/:radius/:page/:per_page',
       name: 'sitesQuery',
       component: () => import('../views/SitesView.vue'),
+    },
+    {
+      path: '/auth/callback', 
+      name: 'authCallback',
+      component: AuthView,
     },
   ],
 })

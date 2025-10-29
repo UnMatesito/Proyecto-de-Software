@@ -25,6 +25,19 @@ class Config:
     MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "supersecretjwtkey")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    JWT_TOKEN_LOCATION = ["cookies"]
+    JWT_COOKIE_CSRF_PROTECT = True
+    JWT_COOKIE_SECURE = True
+    JWT_SKIP_OPTIONS_REQUESTS = True
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+    GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+    FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5174')
+    GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', 'http://localhost:5000/api/auth/google/callback')
+    CORS_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://grupo09.proyecto2025.linti.unlp.edu.ar",
+    ]
 
 
 class ProductionConfig(Config):
@@ -40,6 +53,7 @@ class DevelopmentConfig(Config):
     )
     SESSION_COOKIE_SECURE = False
     MINIO_SECURE = False
+    JWT_COOKIE_SECURE = False
     pass
 
 
