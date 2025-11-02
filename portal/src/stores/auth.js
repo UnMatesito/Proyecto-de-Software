@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import api from '../api/axios.js';
+import router from '@/router';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(JSON.parse(localStorage.getItem('user_data') || 'null'));
@@ -24,7 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
   function logoutLocal() {
     user.value = null;
     localStorage.removeItem('user_data');
-    console.log("logout local: Estado local limpiado.");
+    router.push('/')
   }
 
   async function fetchUser() {

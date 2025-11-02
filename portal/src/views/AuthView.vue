@@ -17,9 +17,9 @@ onMounted(async () => {
     await authStore.fetchUser();
     if (authStore.isAuthenticated){
       console.log("Callback exitoso, usuario autenticado:", authStore.user);
-      const redirectPath = localStorage.getItem('authRedirect') || '/';
+      const redirectPath =  localStorage.getItem('authRedirect');
       localStorage.removeItem('authRedirect'); 
-      router.push(redirectPath);
+      router.push(redirectPath || '/');
     }
     else {
       throw new Error('La autenticación falló después de obtener el usuario.');
@@ -27,7 +27,7 @@ onMounted(async () => {
 
   } catch (error) {
     console.error("Callback: Error al verificar la autenticación:", error);
-    router.push('/login?error=auth_failed');
+    router.push('/?error=auth_failed');
   }
 });
 </script>
