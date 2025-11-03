@@ -10,14 +10,14 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="mb-12">
+  <div class="mb-8">
     <div class="flex flex-row justify-between items-center mb-4">
-        <h2 class="text-4xl text-proyecto-primary font-semibold">{{ title }}</h2>
-        <a href="#" class="font-semibold hover:bg-proyecto-primary hover:text-white rounded-full px-4 py-2 transition-colors duration-400">Ver Todos <i class="fa-solid fa-chevron-right ml-1"></i></a>
+        <h2 class="text-2xl sm:text-4xl text-proyecto-primary font-semibold">{{ title }}</h2>
+        <a href="#" class="text-sm sm:text-md font-semibold hover:bg-proyecto-primary hover:text-white rounded-full px-2.5 sm:px-4 py-1 sm:py-2 transition-colors duration-400">Ver Todos <i class="fa-solid fa-chevron-right ml-1"></i></a>
     </div>
     <!-- Cambiar la condición v-if por la lógica correspondiente para mostrar los sitios -->
-    <ul v-if="true" class="grid grid-cols-4 gap-4 mt-4 justify-items-center">
-      <li v-for="site in [1,2,3,4] " :key="site">
+    <ul v-if="true" class="flex gap-3 sm:gap-4 overflow-x-auto scroll-smooth pb-4 scrollbar-hide lg:px-2">
+      <li v-for="site in [1,2,3,4,5,6,7,8,9,10] " :key="site" class="flex-none w-40 sm:w-48 md:w-56 lg:w-64">
         <Card
           name="Obelisco"
           province="Buenos Aires"

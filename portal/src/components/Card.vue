@@ -13,18 +13,29 @@
 </script>
 
 <template>
-    <div class=" rounded-lg relative flex flex-col gap-1 overflow-hidden md:max-w-64 cursor-pointer shadow-lg" >
-        <span class="absolute left-1 top-1 bg-slate-200 p-1.5 border-0 rounded-full w-9 fill-gray-500 text-center hover:opacity-75 z-20 hover:fill-red-700 transition-all duration-400 ease-in-out"> 
-            <IconFavorite class=""></IconFavorite>
-        </span>                   
-         <img class="object-cover " :src="urlImg" :alt ="alt">
-        <div class="w-full pt-2 flex justify-center">
-          <Stars rating="1" class="w-28"></Stars>
+    <!-- Gap reducido en mobile, más compacto -->
+    <div class="rounded-lg relative flex flex-col gap-0.5 sm:gap-1 overflow-hidden w-full cursor-pointer shadow-lg hover:shadow-2xl transition duration-300 ease-in-out bg-white hover:shadow-proyecto-accent/80">
+        <!-- Botón favorito más pequeño en mobile -->
+        <span class="absolute left-1.5 top-1.5 sm:left-2 sm:top-2 bg-white/90 backdrop-blur-sm p-1 sm:p-1.5 border-0 rounded-full fill-gray-500 text-center hover:opacity-75 hover:fill-red-600 transition-all duration-400 ease-in-out z-10 shadow-md">
+            <IconFavorite class="w-3.5 h-3.5 sm:w-5 sm:h-5 block"></IconFavorite>
+        </span>
+
+        <!-- Imagen más compacta en mobile: 4:3 en mobile, 16:9 en desktop -->
+        <div class="relative w-full aspect-[4/3] sm:aspect-video">
+            <img class="absolute inset-0 w-full h-full object-cover" :src="urlImg" :alt="alt">
         </div>
-        <div class="p-2 flex flex-col gap-1">
-            <div class="flex gap-1 items-center">
-                <IconBuild class="fill-yellow-500 w-4 h-4"></IconBuild>
-                <h3 class="font-semibold">
+
+        <!-- Stars más pequeño y menos padding en mobile -->
+        <div class="w-full py-1 sm:py-2 flex justify-center">
+          <Stars rating="1" class="scale-75 sm:scale-100"></Stars>
+        </div>
+
+        <!-- Padding reducido en mobile -->
+        <div class="p-2 sm:p-4 flex flex-col gap-1 sm:gap-2">
+            <!-- Título más compacto -->
+            <div class="flex gap-1 sm:gap-1.5 items-start items-center">
+                <IconBuild class="fill-slate-400 w-3.5 h-3.5 sm:w-4 sm:h-4"></IconBuild>
+                <h3 class="font-semibold text-xs sm:text-base line-clamp-2 leading-tight sm:leading-normal">
                     {{ props.name }}
                 </h3>
                 <router-link v-if="id"  class="absolute w-full h-full z-10 top-0" :to="{name:'siteDetail', params:{site_id: id}}">
@@ -36,23 +47,26 @@
                 </span>
                 <p class="text-sm">{{ `${props.province}, ${props.city}` }}</p>
             </div>
-            <div class="flex gap-1 justify-between">
-                <div>
-                    <span class="text-proyecto-primary/80 text-sm font-semibold">Estado</span>
-                    <p  class="text-gray-700 text-sm font-semibold">{{ props.state_of_conservation }}</p>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-3 mt-0.5 sm:mt-0 justify-items-center">
+                <div class="text-center sm:text-left">
+                    <span class="text-proyecto-primary/80 text-[10px] sm:text-xs font-semibold block leading-tight">Estado</span>
+                    <p class="text-gray-700 text-[10px] sm:text-sm font-semibold leading-tight">{{ props.state_of_conservation }}</p>
                 </div>
-                <div>
-                    <span class="text-proyecto-primary/80 text-sm font-semibold">Año</span>
-                    <p  class="text-gray-700 text-sm font-semibold">{{ props.inauguration_year }}</p>
+                <div class="text-center sm:text-left">
+                    <span class="text-proyecto-primary/80 text-[10px] sm:text-xs font-semibold block leading-tight">Año</span>
+                    <p class="text-gray-700 text-[10px] sm:text-sm font-semibold leading-tight">{{ props.inauguration_year }}</p>
                 </div>
-                <div>
-                    <span class="text-proyecto-primary/80 text-sm font-semibold">Categoria</span>
-                    <p class="text-gray-700 text-sm font-semibold">{{ props.category }}</p>
+                <div class="text-center sm:text-left col-span-2 sm:col-span-1">
+                    <span class="text-proyecto-primary/80 text-[10px] sm:text-xs font-semibold block leading-tight">Categoría</span>
+                    <p class="text-gray-700 text-[10px] sm:text-sm font-semibold leading-tight">{{ props.category }}</p>
                 </div>
             </div>
-            <div class="flex gap-2 text-blue-700 flex-wrap border-t-2 pt-1 pb-2">
-                <span v-for="tag in tags_to_show" class="inline-flex items-center bg-blue-50 text-blue-500 text-xs font-semibold px-2.5 py-0.5 border-2 rounded-full border-blue-500">{{ tag }}</span>
-                <span v-if="tags_left > 0" class="inline-flex items-center bg-blue-100 text-blue-500 text-xs font-bold px-2.5 py-0.5 border-2 rounded-full border-blue-500">{{ `+${tags_left}` }}</span>
+
+            <!-- Tags más compactos en mobile -->
+            <div class="flex gap-1 sm:gap-2 text-blue-700 flex-wrap border-t-2 pt-1 sm:pt-2 pb-0.5 sm:pb-1">
+                <span v-for="tag in tags_to_show" class="inline-flex items-center bg-blue-50 text-blue-500 text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2.5 py-0.5 border sm:border-2 rounded-full border-blue-500 whitespace-nowrap">{{ tag }}</span>
+                <span v-if="tags_left > 0" class="inline-flex items-center bg-blue-100 text-blue-500 text-[10px] sm:text-xs font-bold px-1.5 sm:px-2.5 py-0.5 border sm:border-2 rounded-full border-blue-500">{{ `+${tags_left}` }}</span>
             </div>
         </div>
     </div>
