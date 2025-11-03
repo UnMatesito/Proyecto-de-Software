@@ -14,7 +14,7 @@
 
 <template>
     <div class=" rounded-lg relative flex flex-col gap-1 overflow-hidden md:max-w-64 cursor-pointer shadow-lg" >
-        <span class="absolute left-1 top-1 bg-slate-200 p-1.5 border-0 rounded-full w-9 fill-gray-500 text-center hover:opacity-75 hover:fill-red-700 transition-all duration-400 ease-in-out"> 
+        <span class="absolute left-1 top-1 bg-slate-200 p-1.5 border-0 rounded-full w-9 fill-gray-500 text-center hover:opacity-75 z-20 hover:fill-red-700 transition-all duration-400 ease-in-out"> 
             <IconFavorite class=""></IconFavorite>
         </span>                   
          <img class="object-cover " :src="urlImg" :alt ="alt">
@@ -27,8 +27,7 @@
                 <h3 class="font-semibold">
                     {{ props.name }}
                 </h3>
-                <router-link v-if="id"   :to="{name:'siteDetail', params:{site_id: id}}">
-                        asdsad
+                <router-link v-if="id"  class="absolute w-full h-full z-10 top-0" :to="{name:'siteDetail', params:{site_id: id}}">
                 </router-link>
             </div>
             <div class="flex flex-row gap-1 items-center">

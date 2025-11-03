@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen shadow-md">
     <!-- Header/Navbar -->
-    <header class="bg-white shadow-sm sticky top-0 w-full z-10">
+    <header class="bg-white shadow-sm sticky top-0 w-full z-50">
       <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div>
           <div class="flex justify-between h-16 items-center">
