@@ -19,7 +19,7 @@
         </span>                   
          <img class="object-cover " :src="urlImg" :alt ="alt">
         <div class="w-full pt-2 flex justify-center">
-          <Stars rating="1" class=""></Stars>
+          <Stars rating="1" class="w-28"></Stars>
         </div>
         <div class="p-2 flex flex-col gap-1">
             <div class="flex gap-1 items-center">
