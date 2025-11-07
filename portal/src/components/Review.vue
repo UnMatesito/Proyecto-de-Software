@@ -1,12 +1,12 @@
 <template>
-    <div class="flex flex-col gap-2 border-b-2 border-b-gray-300 pb-2">
+    <div class="flex flex-col gap-2 border-b-2 border-b-gray-300 pb-2" id="reviews">
         <div class="flex justify-between flex-wrap">
             <Avatar :name="name" :email="email"></Avatar>
-            <div class="flex items-center gap-3 flex-col">
+            <div class="flex gap-3 flex-col">
+                <Stars :rating="rating" :class="'w-28 flex justify-start'"></Stars>
                 <span class="text-sm  gap-3 text-gray-500 dark:text-gray-400">
                     Subido {{ created_at.slice(0, props.created_at.indexOf("T")).replaceAll("-", "/") }}
                 </span>
-                <Stars :rating="rating"></Stars>
             </div>
         </div>
         <p class="text-gray-700 w-min:full ">

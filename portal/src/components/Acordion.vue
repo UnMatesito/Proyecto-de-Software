@@ -17,12 +17,12 @@ const handleToggle = (faqId) => {
 
 <template>
   <section
-    class="relative z-20 overflow-hidden max-w-3xl bg-white dark:bg-dark pl-6"
+    class="relative z-20 overflow-hidden max-w-3xl bg-white dark:bg-dark "
   >
     <div class=" w-full">
 
       <div class="-mx-4 flex flex-wrap">
-        <div class="w-full px-4 ">
+        <div class="w-full pl-2">
           <template :key="faq.id" v-for="faq in faqs">
             <div
               class="mb-3 w-full rounded-lg bg-white  shadow-[0px_20px_95px_0px_rgba(201,203,204,0.30)] dark:bg-dark-2 dark:shadow-[0px_20px_95px_0px_rgba(0,0,0,0.30)]"

@@ -2,19 +2,17 @@
 
     <div class="flex flex-col items-center justify-center ">
 
-        <section class="w-full p-3 max-w-screen-xl">
-            <router-link to="/sites"  type="button" class=" ml-10 mb-3 mt-3  text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none gap-2 focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                <IconArrowLeft class="w-3.5 h-3.5 ms-2 fill-white"> </IconArrowLeft>
-                Volver
-            </router-link >
-            <div class="flex items-start gap-4 w-full justify-center pt-1 pb-3 flex-wrap">
+        <section class="w-full p-3 max-w-screen-xl ">
+            <ButtonPrimary :text="'Volver'" :icon_left="'fa-solid fa-arrow-left mr-2'" :link="'/sites'" :class="'my-4'"> </ButtonPrimary>
+            <div class="flex items-start gap-4 w-full  pt-1 pb-3 flex-wrap relative" >
+  
                 <Carrousel></Carrousel>
                 <aside class="flex gap-4 flex-col">
                     <h2 class="text-2xl font-bold">
                         {{ detalle.name }}
                     </h2>
                     <div class="flex gap-1 items-center  border-b-2 pb-2">
-                        <Stars :rating="detalle.rating"></Stars>
+                        <Stars :rating="detalle.rating" :class="'w-32'"></Stars>
                         <span class="text-lg font-semibold text-yellow-500">
                             ({{ detalle.count_rating || 0}})
                         </span>
@@ -22,10 +20,10 @@
 
                     <div class="flex gap-1  border-b-2 pt-1 pb-2">
                         <IconLocation class="fill-red-700 w-3"></IconLocation>
-                        <span>
+                        <span class="font-semibold text-gray-500">
                             {{ detalle.province }},
                         </span>
-                        <span>
+                        <span class="font-semibold text-gray-500">
                             {{ detalle.city }}
                         </span>
                     </div>
@@ -45,9 +43,17 @@
                             <span>
                                 {{ detalle.category }}
                             </span>
-
+                            <p class="font-semibold">Subido</p>
+                            <span>
+                                {{ detalle.inserted_at }}
+                            </span>
                         </div>
+                    </div> 
+                    <div class="flex justify-between gap-2">
+                        <ButtonPrimary :text="'Reseñas'" :icon_left="'fa-solid fa-arrow-down mr-2'" @click="scrollToReviews" > </ButtonPrimary>
+                        <ButtonPrimary :text="'Ver en el mapa'" :icon_left="'fa-solid fa-arrow-down mr-2'" @click="scrollToMap" > </ButtonPrimary>
                     </div>
+
                 </aside>
             </div>      
             <Acordion 
@@ -56,13 +62,13 @@
         </section>
         <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
             <h3 class="text-3xl text-proyecto-accent">Locación</h3>
-            <Map :long="detalle.long" :lat="detalle.lat" :name="detalle.name"></Map>
+            <div id="map">
+
+            </div>
         </div>
         <section class="w-full max-w-[1200px] flex flex-col gap-3 mt-3" >
             <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
-            <div>
-                <Review v-for="avatar in reviews" :name="avatar.name" :email="avatar.email" :text="avatar.text" :created_at="avatar.created_at"></Review>
-            </div>
+            <Review v-for="avatar in reviews" :name="avatar.name" :email="avatar.email" :text="avatar.text" :created_at="avatar.created_at"></Review>
             <p v-if="detalle.page > 1" @click="fetchReviews()" class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out">Ver más reseñas...</p>
         </section>
     </div>
@@ -76,9 +82,10 @@
     import Tag from '@/components/Tag.vue'
     import Carrousel from '@/components/Carrousel.vue'
     import IconArrowLeft from '@/components/icons/IconArrowLeft.vue'
-    import Map from '@/components/Map.vue'
     import api from '@/api/axios'
     import Review from '@/components/Review.vue'
+    import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
+    import IconFavorite from '@/components/icons/IconFavorite.vue'
     import { useRoute } from 'vue-router';
     const route  = useRoute()
     const detalle = ref({})
@@ -95,6 +102,7 @@
             const { data } = await api.get(`${route.path}`)
             detalle.value = data
             console.log(data)
+            detalle.value = {...detalle.value, 'inserted_at': detalle.value.inserted_at.slice(0,  detalle.value.inserted_at.indexOf("T")).replaceAll("-", "/")}
             content.value = [{id:1, header:'Descripción detallada', text:detalle.value.description},{id:2, header:'Descripción breve', text:detalle.value.short_description}]
         } catch (error) {
             console.log(error)
@@ -102,7 +110,8 @@
     }
     const fetchReviews = async () => {
         try {
-            const { data } = await api.get(`${route.path}/reviews/${page}`)
+            console.log(page)
+            const { data } = await api.get(`${route.path}/reviews/${page.value}`)
             reviews.value = data
             page.value++
         } catch {
@@ -113,4 +122,13 @@
         fetchDetalleSitio()
         fetchReviews()
     } )
+
+    const scrollToMap = () => {
+        const map = document.getElementById('map');
+        map.scrollIntoView({ behavior: "smooth" });
+    }
+    const scrollToReviews = () => {
+        const reviews = document.getElementById('reviews');
+        reviews.scrollIntoView({ behavior: "smooth" });
+    }
 </script>    

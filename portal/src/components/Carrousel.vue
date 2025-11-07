@@ -1,6 +1,9 @@
 <template>
     <div id="default-carousel" class="relative  w-full max-w-[800px] " data-carousel="slide">
         <!-- Carousel wrapper -->
+                        <span class="absolute left-1.5 top-1.5 sm:left-2 sm:top-2 bg-white/90 backdrop-blur-sm p-1 sm:p-1.5 border-0 rounded-full fill-gray-500 text-center hover:opacity-75 hover:fill-red-600 transition-all duration-300 ease-in-out z-40 shadow-md">
+                            <IconFavorite class="w-3.5 h-3.5 sm:w-5 sm:h-5 block"></IconFavorite>
+                        </span>
         <div class="relative h-56 overflow-hidden rounded-lg md:h-96">
             <!-- Item 1 -->
             <div class="hidden duration-700 ease-in-out" data-carousel-item>
@@ -52,5 +55,6 @@
 </template>
 
 <script setup>
+    import IconFavorite from './icons/IconFavorite.vue';
 // No se necesita lógica JS, Flowbite maneja el carrusel automáticamente
 </script>
