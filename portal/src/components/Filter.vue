@@ -1,9 +1,8 @@
 <template>
-
     <form class="  ">
         <div class="flex items-center gap-3 flex-wrap ">
             <div class="flex flex-col gap-2 ">
-                <select id="small" v-model="provinceValue" class="block w-96 p-2  text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <select id="small" v-model="provinceValue" class="block max-w-96  p-2  text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                     <option selected>Provincia</option>
                     <option value="US">United States</option>
                     <option value="CA">Canada</option>

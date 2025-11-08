@@ -1,13 +1,13 @@
 <template>
 
-    <div class="flex flex-col items-center justify-center ">
+    <div class="flex flex-col items-center justify-center">
 
         <section class="w-full p-3 max-w-screen-xl ">
             <ButtonPrimary :text="'Volver'" :icon_left="'fa-solid fa-arrow-left mr-2'" :link="'/sites'" :class="'my-4'"> </ButtonPrimary>
             <div class="flex items-start gap-4 w-full  pt-1 pb-3 flex-wrap relative" >
   
                 <Carrousel></Carrousel>
-                <aside class="flex gap-4 flex-col">
+                <aside class="flex gap-4 flex-col max-w-[300px]">
                     <h2 class="text-2xl font-bold">
                         {{ detalle.name }}
                     </h2>
@@ -18,14 +18,17 @@
                         </span>
                     </div>
 
-                    <div class="flex gap-1  border-b-2 pt-1 pb-2">
-                        <IconLocation class="fill-red-700 w-3"></IconLocation>
-                        <span class="font-semibold text-gray-500">
+                    <div class="flex gap-1 border-b-2 pt-1 pb-2 ">
+                        <IconLocation class="fill-red-700 w-4"></IconLocation>
+                        <div>
+                        <span class="font-semibold text-gray-500">  
                             {{ detalle.province }},
                         </span>
                         <span class="font-semibold text-gray-500">
                             {{ detalle.city }}
                         </span>
+                        </div>
+
                     </div>
                     <div class="flex gap-7">
                         <div>
@@ -63,11 +66,12 @@
         <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
             <h3 class="text-3xl text-proyecto-accent">Locación</h3>
             <div id="map">
-
+                <Map v-if="detalle.lat && detalle.long" :center="[detalle.lat, detalle.long]" :marks="[{name: detalle.name, mark: [detalle.lat, detalle.long]}]"></Map>
             </div>
         </div>
         <section class="w-full max-w-[1200px] flex flex-col gap-3 mt-3" >
             <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
+            <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto"> </ButtonPrimary>
             <Review v-for="avatar in reviews" :name="avatar.name" :email="avatar.email" :text="avatar.text" :created_at="avatar.created_at"></Review>
             <p v-if="detalle.page > 1" @click="fetchReviews()" class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out">Ver más reseñas...</p>
         </section>
@@ -86,6 +90,7 @@
     import Review from '@/components/Review.vue'
     import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
     import IconFavorite from '@/components/icons/IconFavorite.vue'
+    import Map from '@/components/Map.vue'
     import { useRoute } from 'vue-router';
     const route  = useRoute()
     const detalle = ref({})
@@ -121,7 +126,7 @@
     onMounted(()=> {
         fetchDetalleSitio()
         fetchReviews()
-    } )
+    })
 
     const scrollToMap = () => {
         const map = document.getElementById('map');
