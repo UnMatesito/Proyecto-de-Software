@@ -56,7 +56,7 @@
           ← Volver
         </button>
 
-        <ButtonPrimary :text=" existingReview ? 'Guardar ' : 'Publicar '  "  class="max-w-36 w-auto"> </ButtonPrimary>
+        <ButtonPrimary :text=" 'Publicar'  "  class="max-w-36 w-auto" type="submit"> </ButtonPrimary>
 
       </div>
     </form>
@@ -69,25 +69,8 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 // --- Aca simulo la api ya que no esta terminada ---
-const getReviewsBySite = async (siteId) => {
-  return {
-    data: [
-      {
-        id: 1,
-        site_id: siteId,
-        rating: 4,
-        text: "Excelente lugar histórico, muy bien conservado.",
-        isUserReview: true,
-      },
-    ],
-  };
-};
+import { getReviewsBySite, createReview } from "@/api/axios.js";
 
-const createOrUpdateReview = async (siteId, review) => {
-  console.log("Simulando envío de reseña:", { siteId, ...review });
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return { data: { success: true } };
-};
 // --- fin del sim---
 
 const route = useRoute();
@@ -122,11 +105,11 @@ onMounted(async () => {
 const setRating = (n) => {
   review.value.rating = n;
 };
+const token = localStorage.getItem("token"); // o de tu store de auth
 
 const handleSubmit = async () => {
   error.value = "";
   success.value = "";
-
   if (!review.value.rating || review.value.rating < 1 || review.value.rating > 5) {
     error.value = "Seleccioná una puntuación válida (1 a 5 estrellas).";
     return;
@@ -138,13 +121,17 @@ const handleSubmit = async () => {
   }
 
   try {
-    await createOrUpdateReview(siteId, review.value);
-    success.value = "Tu reseña fue enviada correctamente.";
+
+      await createReview(siteId, review.value,);
+      success.value = "Tu reseña fue enviada correctamente.";
+
     setTimeout(() => router.push(`/sitios/${siteId}`), 1500);
   } catch (e) {
+    console.error(e);
     error.value = "Error al guardar la reseña. Intentá más tarde.";
   }
 };
+
 
 const goBack = () => {
   router.push(`/sitios/${siteId}`);
