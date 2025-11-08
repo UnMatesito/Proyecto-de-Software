@@ -1,61 +1,98 @@
 <template>
-  <div class="max-w-lg mx-auto mt-10 bg-white shadow-md rounded-lg p-6">
-    <h1 class="text-2xl font-bold mb-6 text-center">
+    <div class="w-full max-w-4xl mx-auto mt-16 bg-white shadow-lg rounded-2xl p-10">
+    <h1 class="text-3xl font-bold mb-8 text-center">
       {{ existingReview ? "Editar tu reseña" : "Escribir una reseña" }}
     </h1>
 
-    <form @submit.prevent="handleSubmit">
-      <div class="mb-4">
-        <label class="block mb-2 font-semibold">Puntuación (1–5)</label>
-        <select v-model="review.rating" class="border rounded w-full p-2">
-          <option disabled value="">Selecciona una puntuación</option>
-          <option v-for="n in 5" :key="n" :value="n">{{ n }}</option>
-        </select>
+    <form @submit.prevent="handleSubmit" class="space-y-6 ">
+      <!-- Rating con estrellas -->
+      <div class="text-center">
+        <label class="block mb-3 font-semibold text-lg">Puntuación</label>
+        <div class="flex justify-center space-x-2">
+          <span
+            v-for="n in 5"
+            :key="n"
+            @click="setRating(n)"
+            @mouseover="hoverRating = n"
+            @mouseleave="hoverRating = 0"
+            class="cursor-pointer text-4xl transition-transform duration-150"
+            :class="[
+              n <= (hoverRating || review.rating)
+                ? 'text-yellow-400 scale-110'
+                : 'text-gray-300',
+            ]"
+          >
+            ★
+          </span>
+        </div>
       </div>
 
-      <div class="mb-4">
-        <label class="block mb-2 font-semibold">Tu reseña</label>
+      <!-- Texto de reseña -->
+      <div>
+        <label class="block mb-2 font-semibold text-lg">Tu reseña</label>
         <textarea
           v-model="review.text"
-          class="border rounded w-full p-2"
-          rows="5"
+          class="border rounded-lg w-full p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          rows="6"
           placeholder="Contanos tu experiencia..."
         ></textarea>
       </div>
 
-      <div v-if="error" class="text-red-500 mb-4">{{ error }}</div>
-      <div v-if="success" class="text-green-600 mb-4">{{ success }}</div>
+      <!-- Mensajes -->
+      <div v-if="error" class="text-red-500 text-center font-medium">
+        {{ error }}
+      </div>
+      <div v-if="success" class="text-green-600 text-center font-medium">
+        {{ success }}
+      </div>
 
-      <div class="flex justify-between items-center">
+      <!-- Botones -->
+      <div class="flex justify-between mt-8">
         <button
           type="button"
           @click="goBack"
-          class="text-gray-600 hover:underline"
+          class="text-gray-600 hover:text-gray-900 transition-colors text-lg"
         >
-          ← Volver al sitio
+          ← Volver
         </button>
 
-        <button
-          type="submit"
-          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          {{ existingReview ? "Guardar cambios" : "Publicar reseña" }}
-        </button>
+        <ButtonPrimary :text=" existingReview ? 'Guardar ' : 'Publicar '  "  class="max-w-36 w-auto"> </ButtonPrimary>
+
       </div>
     </form>
   </div>
 </template>
 
 <script setup>
+import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { createOrUpdateReview, getReviewsBySite } from "@/api/reviews.js";
+
+// --- Aca simulo la api ya que no esta terminada ---
+const getReviewsBySite = async (siteId) => {
+  return {
+    data: [
+      {
+        id: 1,
+        site_id: siteId,
+        rating: 4,
+        text: "Excelente lugar histórico, muy bien conservado.",
+        isUserReview: true,
+      },
+    ],
+  };
+};
+
+const createOrUpdateReview = async (siteId, review) => {
+  console.log("Simulando envío de reseña:", { siteId, ...review });
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  return { data: { success: true } };
+};
+// --- fin del sim---
 
 const route = useRoute();
 const router = useRouter();
-
-// el id del sitio viene por parámetro en la ruta
-const siteId = Number(route.params.siteId);
+const siteId = Number(route.params.site_id);
 
 const review = ref({
   rating: "",
@@ -65,12 +102,12 @@ const review = ref({
 const existingReview = ref(null);
 const error = ref("");
 const success = ref("");
+const hoverRating = ref(0);
 
 // al montar, buscamos si el usuario ya tiene reseña previa
 onMounted(async () => {
   try {
     const res = await getReviewsBySite(siteId);
-    // simulamos que la API marca la reseña del usuario con isUserReview = true
     existingReview.value = res.data.find((r) => r.isUserReview) || null;
 
     if (existingReview.value) {
@@ -82,12 +119,16 @@ onMounted(async () => {
   }
 });
 
+const setRating = (n) => {
+  review.value.rating = n;
+};
+
 const handleSubmit = async () => {
   error.value = "";
   success.value = "";
 
   if (!review.value.rating || review.value.rating < 1 || review.value.rating > 5) {
-    error.value = "La puntuación debe estar entre 1 y 5.";
+    error.value = "Seleccioná una puntuación válida (1 a 5 estrellas).";
     return;
   }
 
@@ -99,7 +140,7 @@ const handleSubmit = async () => {
   try {
     await createOrUpdateReview(siteId, review.value);
     success.value = "Tu reseña fue enviada correctamente.";
-    setTimeout(() => router.push(`/sitios/${siteId}`), 1500); // vuelve al detalle del sitio
+    setTimeout(() => router.push(`/sitios/${siteId}`), 1500);
   } catch (e) {
     error.value = "Error al guardar la reseña. Intentá más tarde.";
   }
@@ -109,3 +150,10 @@ const goBack = () => {
   router.push(`/sitios/${siteId}`);
 };
 </script>
+
+<style scoped>
+/* Transición suave para las estrellas */
+span {
+  transition: color 0.2s, transform 0.15s ease-in-out;
+}
+</style>
