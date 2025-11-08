@@ -27,7 +27,6 @@ def run(env="production"):
 
     # Solo si estamos en development
     if env == "development":
-        seed_aditional_public_users()
         seed_aditional_editors()
         seed_aditional_admins()
         seed_aditional_moderators()
@@ -773,34 +772,6 @@ def seed_site_tags():
 
     # Rehabilitar listeners de auditoría
     enable_audit_listeners()
-
-def seed_aditional_public_users():
-    """Crea usuarios públicos adicionales (portal)"""
-    from faker import Faker
-    from core.models import User
-    from core.services import role_service as RoleService
-    import uuid
-
-    print("Creando usuarios públicos adicionales...")
-    fake = Faker("es_AR")
-
-    role_public = RoleService.get_role_by_name("Usuario público")
-
-    usuarios = [
-        User(
-            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
-            first_name=fake.first_name(),
-            last_name=fake.last_name(),
-            password="password123",
-            role_id=role_public.id,
-            system_admin=False,
-        )
-        for _ in range(50)
-    ]
-
-    db.session.add_all(usuarios)
-    db.session.commit()
-
 
 def seed_aditional_editors():
     """Crea usuarios editores adicionales"""

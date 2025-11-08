@@ -1,5 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import AuthView from '../views/AuthView.vue'
+import ProfileView from '../views/ProfileView.vue'
+import { useAuthStore } from '../stores/auth'
+
+const requireAuth = (to, from, next) => {
+  const authStore = useAuthStore();
+
+  if (authStore.isAuthenticated) {
+    next();
+  } else {
+    next('/');
+  }
+};  
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,6 +49,15 @@ const router = createRouter({
       path: "/sites/:site_id/review",
       name: "reviewEditor",
       component: () => import("../views/ReviewEditorView.vue"),
+      path: '/auth/callback', 
+      name: 'authCallback',
+      component: AuthView,
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: ProfileView,
+      beforeEnter: requireAuth,
     }
   ],
 })

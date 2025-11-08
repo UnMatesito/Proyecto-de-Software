@@ -1,57 +1,76 @@
-from flask import request, jsonify
-from flask_jwt_extended import create_access_token
+from flask import request, jsonify, current_app, redirect, session, url_for
+from web import oauth
+
+from authlib.integrations.base_client.errors import AuthlibBaseError
+from urllib.parse import urlencode
+from datetime import timedelta
+from flask_jwt_extended import create_access_token, jwt_required, unset_jwt_cookies, set_access_cookies
 from core.models.user import User
+from core.services import user_service
 from . import api_bp
 
+@api_bp.route("/auth/google/login") 
+def google_login():
+    """Redirige al usuario a Google para autenticarse."""
+    redirect_uri = current_app.config['GOOGLE_REDIRECT_URI']
+    
+    print(f"DEBUG: Google Redirect URI usada: {redirect_uri}")
+    return oauth.google.authorize_redirect(redirect_uri)
 
-@api_bp.post("/auth")
-def login():
-    """
-    POST /api/auth
-    Autentica un usuario con email y contraseña y devuelve un token JWT.
 
-    Según PDF:
-    - Campo: "user" (no "email")
-    - Respuesta: "token" y "expires_in"
-    - Error 401: código "invalid_credentials"
-    """
-    data = request.get_json() or {}
+@api_bp.route("/auth/google/callback")
+def google_callback():
+    """Callback de Google. Procesa la respuesta y genera JWT (CORREGIDO)."""
+    error_message = "Error durante la autenticación con Google." 
+    frontend_redirect_url = f"{current_app.config.get('FRONTEND_URL', 'http://localhost:5173')}/login"
 
-    # Según el PDF, el campo se llama "user" (que contiene el email)
-    user_email = data.get("user")
-    password = data.get("password")
+    try:
+        token = oauth.google.authorize_access_token()
+        if not token:
+            error_message = "No se recibió token de autorización de Google."
+            raise AuthlibBaseError(error='token_missing', description=error_message)
 
-    # Validar que los campos estén presentes
-    if not user_email or not password:
-        return jsonify({
-            "error": {
-                "code": "invalid_data",
-                "message": "User and password are required",
-                "details": {
-                    "user": ["This field is required"] if not user_email else [],
-                    "password": ["This field is required"] if not password else []
-                }
-            }
-        }), 400
+        user_info = oauth.google.userinfo(token=token)
 
-    # Buscar usuario por email
-    user = User.query.filter_by(email=user_email).first()
+        if not user_info or not user_info.get('email'):
+             error_message = "No se pudo obtener información válida del usuario desde Google."
+             raise ValueError(error_message) 
 
-    # Validar credenciales
-    if not user or not user.check_password(password):
-        return jsonify({
-            "error": {
-                "code": "invalid_credentials",
-                "message": "Credenciales inválidas."
-            }
-        }), 401
+        user = user_service.find_or_create_google_user(user_info)
 
-    # Generar token JWT con expiración de 1 hora (3600 segundos)
-    token = create_access_token(identity=user.id)
-    expires_in = 3600  # 1 hora en segundos
+        expires_delta = current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES", timedelta(hours=1))
+        access_token = create_access_token(identity=str(user.id), expires_delta=expires_delta)
 
-    # Respuesta según el formato del PDF
-    return jsonify({
-        "token": token,
-        "expires_in": expires_in
-    }), 200
+        frontend_callback_url_ok = f"{current_app.config.get('FRONTEND_URL', 'http://localhost:5173')}/auth/callback"
+        response = redirect(frontend_callback_url_ok)
+        set_access_cookies(response, access_token, max_age=expires_delta)
+        
+        print(f"DEBUG: Google Auth OK. Seteando cookie JWT y redirigiendo a frontend.")
+
+        return response
+
+    except ValueError as e: 
+        error_code = "user_issue"
+        error_message = str(e)
+        print(f"ERROR (ValueError) en callback de Google: {e}")
+    except AuthlibBaseError as e:
+        error_code = e.error if hasattr(e, 'error') else "oauth_error"
+        error_message = f"{e.description}" if hasattr(e, 'description') else str(e)
+        print(f"ERROR (Authlib) en callback de Google: {e}")
+    except Exception as e:
+        error_code = "internal_error"
+        print(f"ERROR (Inesperado) en callback de Google: {e}")
+        error_message = "Ocurrió un error inesperado durante la autenticación." 
+
+    error_params = urlencode({'error': error_code, 'message': error_message})
+    return redirect(f"{frontend_redirect_url}?{error_params}")
+
+
+@api_bp.route("/auth/google/logout", methods=["POST"]) 
+@jwt_required()
+def google_logout():
+    """Cierra la sesión del usuario en Google."""
+    session.clear()
+    response = jsonify({"message": "Google logout successful"})
+    unset_jwt_cookies(response)
+    return response
