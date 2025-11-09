@@ -59,7 +59,7 @@ def list_reviews(site_id):
 
     except Exception:
         return jsonify({
-            "error": {"code": "server_error", "message": "An unexpected error occurred"}
+            "error": {"code": "server_error", "message": "Error inesperado"}
         }), 500
 
 
@@ -89,12 +89,12 @@ def create_review(site_id):
     except ValueError as e:
         msg = str(e).lower()
         if "ya dejó" in msg:
-            details = {"site_id": ["User already reviewed this site"]}
+            details = {"site_id": ["Uste ya tiene un reseña en el sitio"]}
         elif "rango" in msg or "calificación" in msg:
-            details = {"rating": ["Must be between 1 and 5"]}
+            details = {"rating": ["Tiene que ser entre 1 y 5 "]}
         elif "sitio" in msg:
             return jsonify({
-                "error": {"code": "not_found", "message": "Site not found"}
+                "error": {"code": "not_found", "message": "Sitio no encontrado"}
             }), 404
         else:
             details = {"comment": [str(e)]}
@@ -102,7 +102,7 @@ def create_review(site_id):
         return jsonify({
             "error": {
                 "code": "invalid_data",
-                "message": "Invalid input data",
+                "message": "Datos invalidos ingresados",
                 "details": details
             }
         }), 400
@@ -110,7 +110,7 @@ def create_review(site_id):
     except Exception:
         db.session.rollback()
         return jsonify({
-            "error": {"code": "server_error", "message": "An unexpected error occurred"}
+            "error": {"code": "server_error", "message": "Error inesperador"}
         }), 500
 
 
@@ -128,14 +128,14 @@ def get_review(site_id, review_id):
 
         if not review:
             return jsonify({
-                "error": {"code": "not_found", "message": "Review not found"}
+                "error": {"code": "not_found", "message": "Reseña no encontrada"}
             }), 404
 
         return jsonify(ReviewResponseSchema().dump(review)), 200
 
     except Exception:
         return jsonify({
-            "error": {"code": "server_error", "message": "An unexpected error occurred"}
+            "error": {"code": "server_error", "message": "Error inesperado"}
         }), 500
 
 
@@ -152,14 +152,14 @@ def delete_review(site_id, review_id):
         review = Review.query.get(review_id)
         if not review or review.historic_site_id != site_id:
             return jsonify({
-                "error": {"code": "not_found", "message": "Review not found"}
+                "error": {"code": "not_found", "message": "Reseña no encontrada"}
             }), 404
 
         if review.user_id != user_id:
             return jsonify({
                 "error": {
                     "code": "forbidden",
-                    "message": "You do not have permission to delete this review"
+                    "message": "No tenes permisos para eliminar esta reseña"
                 }
             }), 403
 
@@ -169,5 +169,5 @@ def delete_review(site_id, review_id):
     except Exception:
         db.session.rollback()
         return jsonify({
-            "error": {"code": "server_error", "message": "An unexpected error occurred"}
+            "error": {"code": "server_error", "message": "Error inesperado"}
         }), 500

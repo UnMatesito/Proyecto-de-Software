@@ -1,7 +1,7 @@
 <template>
     <div class="w-full max-w-4xl mx-auto mt-16 bg-white shadow-lg rounded-2xl p-10">
     <h1 class="text-3xl font-bold mb-8 text-center">
-      {{ existingReview ? "Editar tu reseña" : "Escribir una reseña" }}
+      Escribir una reseña 
     </h1>
 
     <form @submit.prevent="handleSubmit" class="space-y-6 ">
@@ -68,10 +68,10 @@ import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-// --- Aca simulo la api ya que no esta terminada ---
-import { getReviewsBySite, createReview } from "@/api/axios.js";
 
-// --- fin del sim---
+import {createReview } from "@/api/axios.js";
+
+
 
 const route = useRoute();
 const router = useRouter();
@@ -82,30 +82,14 @@ const review = ref({
   text: "",
 });
 
-const existingReview = ref(null);
 const error = ref("");
 const success = ref("");
 const hoverRating = ref(0);
 
-// al montar, buscamos si el usuario ya tiene reseña previa
-onMounted(async () => {
-  try {
-    const res = await getReviewsBySite(siteId);
-    existingReview.value = res.data.find((r) => r.isUserReview) || null;
-
-    if (existingReview.value) {
-      review.value.rating = existingReview.value.rating;
-      review.value.text = existingReview.value.text;
-    }
-  } catch (e) {
-    console.error("Error cargando reseña:", e);
-  }
-});
 
 const setRating = (n) => {
   review.value.rating = n;
 };
-const token = localStorage.getItem("token"); // o de tu store de auth
 
 const handleSubmit = async () => {
   error.value = "";
@@ -121,20 +105,30 @@ const handleSubmit = async () => {
   }
 
   try {
+  await createReview(siteId, review.value);
+  success.value = "Tu reseña fue enviada correctamente.";
+  setTimeout(() => router.push(`/sitios/${siteId}`), 2500);
 
-      await createReview(siteId, review.value,);
-      success.value = "Tu reseña fue enviada correctamente.";
-
-    setTimeout(() => router.push(`/sitios/${siteId}`), 1500);
   } catch (e) {
-    console.error(e);
-    error.value = "Error al guardar la reseña. Intentá más tarde.";
-  }
+    console.error("Error creando reseña:", e);
+
+    if (e.response?.data?.error) {
+      const backendError = e.response.data.error;
+      const details = backendError.details
+        ? Object.values(backendError.details).flat().join(", ")
+        : backendError.message;
+
+      error.value = details || "Error al guardar la reseña.";
+    } else {
+      error.value = "Error de conexión con el servidor.";
+    }
+}
+
 };
 
 
 const goBack = () => {
-  router.push(`/sitios/${siteId}`);
+  router.push(`/sites/${siteId}`);
 };
 </script>
 

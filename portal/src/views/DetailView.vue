@@ -71,7 +71,7 @@
         </div>
         <section class="w-full max-w-[1200px] flex flex-col gap-3 mt-3" >
             <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
-            <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto"> </ButtonPrimary>
+            <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto" :link="`/sites/${detalle.id}/review`" />
             <Review v-for="avatar in reviews" :name="avatar.name" :email="avatar.email" :text="avatar.text" :created_at="avatar.created_at"></Review>
             <p v-if="detalle.page > 1" @click="fetchReviews()" class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out">Ver más reseñas...</p>
         </section>
