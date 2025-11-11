@@ -264,9 +264,9 @@ def seed_event_types():
         "Edición",
         "Eliminación",
         "Restauración",
-        "Cambio de estado",  # cambio de visibilidad
+        "Cambio de estado",  # Cambio de visibilidad
         "Cambio de tags",
-        # "Cambio de imágenes",  para etapa 2
+        "Cambio de imágenes",
     ]
 
     for event_name in event_types:

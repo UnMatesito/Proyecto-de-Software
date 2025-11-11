@@ -305,7 +305,7 @@ def update_historic_site(body):
             elif key != "historic_site_id":
                 raise ValueError("Campos invalidos enviados")
 
-        site.update_at = datetime.now(timezone.utc)
+        site.updated_at = datetime.now(timezone.utc)
 
         db.session.commit()
         return site
