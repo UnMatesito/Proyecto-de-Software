@@ -196,9 +196,7 @@
             }
         });
 
-        let inputTag = document.getElementById("tag-input")
-        inputTag.className = "w-full"
-        inputTag.setAttribute("readonly", "")
+        document.getElementById("tag-input").className = "w-full"
         document.getElementById("dropdown").setAttribute('style', 'z-index:1200');
 
         // Mapa de Leaflet
@@ -259,7 +257,7 @@
         const previewContainer = document.getElementById('image-preview');
         const maxImages = 10;
         {% if site %}
-        const currentImages = {{ site.images||length if site.images else 0 }};
+        const currentImages = {{ site.images|length if site.images else 0 }};
         {% else %}
         const currentImages = 0;
         {% endif %}
