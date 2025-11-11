@@ -4,7 +4,6 @@
     <aside class="p-3">
       <Filter :page="pagination.page"></Filter>
       <Map styleContent="height:400px;  width: 100%" :marks="marks"></Map>
-
     </aside>
 
     <section class="grid md:grid-cols-4 gap-3 p-3">

@@ -31,9 +31,18 @@ class ReviewResponseSchema(Schema):
     comment = fields.Str(attribute="content")
     inserted_at = fields.Method("get_inserted_at")
     updated_at = fields.Method("get_updated_at")
-
+    user_email = fields.Method("get_user_email")
+    user_name = fields.Method("get_user_name")
+  
     def get_inserted_at(self, obj):
         return obj.created_at.isoformat() + "Z" if obj.created_at else None
 
     def get_updated_at(self, obj):
         return obj.updated_at.isoformat() + "Z" if obj.updated_at else None
+    
+    def get_user_email(self, obj):
+        return obj.user.email
+    
+    def get_user_name(self, obj):
+        return obj.user.first_name
+    

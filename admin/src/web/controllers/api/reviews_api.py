@@ -46,8 +46,7 @@ def list_reviews(site_id):
             order_by=params["order_by"],
             order_dir=params["sorted_by"],
             text_search_columns=["content"]
-        )
-
+        )                
         data = ReviewResponseSchema(many=True).dump(pagination["items"])
         meta = {
             "page": pagination["current_page"],

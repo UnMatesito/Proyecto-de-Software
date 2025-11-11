@@ -66,15 +66,15 @@
         <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
             <h3 class="text-3xl text-proyecto-accent">Locación</h3>
             <div id="map">
-                <Map styleContent="height:400px;  width: 100%" :marks="marks"></Map>
+                <Map v-if="detalle.name" styleContent="height:400px;  width: 100%" :marks="[{name: detalle.name, lat: detalle.lat, long: detalle.long}]" :center="[detalle.lat, detalle.long]"  ></Map>
             </div>
         </div>
         <section class="w-full max-w-[1200px] flex flex-col gap-3 mt-3" >
             <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
             <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto"> </ButtonPrimary>
             <Review v-for="r in reviews" 
-            :name="r.name" 
-            :email="r.email" 
+            :user_name="r.user_name" 
+            :user_email="r.user_email" 
             :text="r.comment" 
             :created_at="r.inserted_at" 
             :rating="r.rating"></Review>
@@ -90,11 +90,9 @@
     import Acordion from '@/components/Acordion.vue'
     import Tag from '@/components/Tag.vue'
     import Carrousel from '@/components/Carrousel.vue'
-    import IconArrowLeft from '@/components/icons/IconArrowLeft.vue'
     import api from '@/api/axios'
     import Review from '@/components/Review.vue'
     import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
-    import IconFavorite from '@/components/icons/IconFavorite.vue'
     import Map from '@/components/Map.vue'
     import { useRoute } from 'vue-router';
     const route  = useRoute()
