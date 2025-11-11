@@ -133,12 +133,13 @@ from .review_service import (
 """
 # SiteImage services
 from .site_image_service import (
-    add_image,
-    delete_image,
-    get_image_by_id,
-    get_images_by_site_id,
+    create_site_image,
+    create_multiple_images,
     set_cover_image,
-    reorder_images,
+    delete_all_site_images,
+    get_site_images,
+    update_image_order,
+    delete_site_image,
 )
 """
 
@@ -249,10 +250,11 @@ __all__ = [
     "reject_review",
     "get_review_by_id",
     # SiteImage services
-    "add_image",
-    "delete_image",
-    "get_image_by_id",
-    "get_images_by_site_id",
+    "create_site_image",
+    "create_multiple_images",
     "set_cover_image",
-    "reorder_images",
+    "delete_all_site_images",
+    "get_site_images",
+    "update_image_order",
+    "delete_site_image",
 ]
