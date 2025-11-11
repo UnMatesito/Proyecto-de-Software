@@ -17,24 +17,24 @@ const handleToggle = (faqId) => {
 
 <template>
   <section
-    class="relative z-20 overflow-hidden bg-white dark:bg-dark "
+    class="relative z-20 overflow-hidden max-w-3xl bg-white dark:bg-dark "
   >
     <div class=" w-full">
 
       <div class="-mx-4 flex flex-wrap">
-        <div class="w-full px-4 ">
+        <div class="w-full pl-2">
           <template :key="faq.id" v-for="faq in faqs">
             <div
               class="mb-3 w-full rounded-lg bg-white  shadow-[0px_20px_95px_0px_rgba(201,203,204,0.30)] dark:bg-dark-2 dark:shadow-[0px_20px_95px_0px_rgba(0,0,0,0.30)]"
             >
               <button class="faq-btn flex w-full text-left" @click="handleToggle(faq.id)">
                 <div
-                  class="mr-5 flex h-10 w-full max-w-[40px] items-center justify-center rounded-lg bg-primary/5 text-primary dark:bg-white/5"
+                  class="mr-1 flex h-10 w-full max-w-[40px] items-center justify-center rounded-lg bg-primary/5 text-primary dark:bg-white/5"
                 >
                   <svg
                     class="fill-primary stroke-primary duration-200 ease-in-out"
                     :class="{ 'rotate-180': activeFaq === faq.id }"
-                    width="17"
+                    width="14"
                     height="10"
                     viewBox="0 0 17 10"
                     xmlns="http://www.w3.org/2000/svg"
@@ -48,14 +48,14 @@ const handleToggle = (faqId) => {
                 </div>
 
                 <div class="w-full">
-                  <h4 class="mt-1 text-lg font-semibold text-dark dark:text-white">
+                  <h4 class="mt-2 text-md font-semibold text-dark dark:text-white">
                     {{ faq.header }}
                   </h4>
                 </div>
               </button>
 
               <div v-show="activeFaq === faq.id" class="pl-[62px]">
-                <p class="py-3 text-base leading-relaxed text-body-color dark:text-dark-6 break-words hyphens-auto">
+                <p class="py-3 text-md leading-relaxed text-body-color dark:text-dark-6 break-words hyphens-auto">
                   {{ faq.text }}
                 </p>
               </div>

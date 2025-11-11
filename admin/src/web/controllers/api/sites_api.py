@@ -28,7 +28,6 @@ def list_sites():
                     "details": err.messages
                 }
             }), 400
-
         # Delegar al servicio con todos los filtros combinables
         result = historic_site_service.list_published_sites(
             name=params.get("name"),

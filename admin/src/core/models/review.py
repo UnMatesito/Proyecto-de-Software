@@ -1,14 +1,16 @@
+import enum
 from datetime import datetime, timezone
 
 from sqlalchemy import CheckConstraint, event
 
 from core.database import db
-import enum
+
 
 class ReviewStatus(enum.Enum):
     PENDIENTE = "Pendiente"
     APROBADA = "Aprobada"
     RECHAZADA = "Rechazada"
+
 
 class Review(db.Model):
     __tablename__ = "review"
@@ -19,22 +21,27 @@ class Review(db.Model):
     status = db.Column(
         db.Enum(ReviewStatus, name="review_status_enum", native_enum=False),
         default=ReviewStatus.PENDIENTE,
-        nullable=False
+        nullable=False,
     )
     rejected_reason = db.Column(db.String(200), nullable=True)
 
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(
-        db.DateTime, default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc)
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
     )
 
     # Relaciones
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
     user = db.relationship("User", backref="reviews")
 
     historic_site_id = db.Column(
-        db.Integer, db.ForeignKey("historic_site.id", ondelete="CASCADE"), nullable=False
+        db.Integer,
+        db.ForeignKey("historic_site.id", ondelete="CASCADE"),
+        nullable=False,
     )
     site = db.relationship("HistoricSite", back_populates="reviews")
 
@@ -64,13 +71,13 @@ class Review(db.Model):
         self.rejected_reason = reason[:200] if reason else None
 
     def is_pending(self):
-        return self.status == "Pendiente"
+        return self.status.value == "Pendiente"
 
     def is_approved(self):
-        return self.status == "Aprobada"
+        return self.status.value == "Aprobada"
 
     def is_rejected(self):
-        return self.status == "Rechazada"
+        return self.status.value == "Rechazada"
 
     def __repr__(self):
         return f"<Review {self.id} - {self.status}>"
@@ -112,8 +119,11 @@ def update_site_rating(mapper, connection, target):
         site.add_rating(target.rating)
 
     # Caso 3: pasó de Aprobada a Rechazada o Pendiente
-    elif status_history.has_changes() and status_history.deleted and \
-            status_history.deleted[0] == ReviewStatus.APROBADA:
+    elif (
+        status_history.has_changes()
+        and status_history.deleted
+        and status_history.deleted[0] == ReviewStatus.APROBADA
+    ):
         site.remove_rating(target.rating)
 
 

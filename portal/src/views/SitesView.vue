@@ -1,8 +1,10 @@
 <template>
     <h2 class="font-semibold text-3xl">Listado de sitios históricos</h2>
     <p>Aqui puedes buscar el sitio que justo necesitas.</p>
-    <aside>
+    <aside class="p-3">
       <Filter :page="pagination.page"></Filter>
+      <Map styleContent="height:400px;  width: 100%" :marks="marks"></Map>
+
     </aside>
 
     <section class="grid md:grid-cols-4 gap-3 p-3">
@@ -36,17 +38,22 @@
   import Card from '@/components/Card.vue'
   import Pagination from '@/components/Pagination.vue'
   import Filter from '@/components/Filter.vue'
+  import Map from '@/components/Map.vue'
   const apiMessage = ref('')
   const sites = ref({})
   const pagination = ref({})
-  const root = useRoute()
-
+  const rout = useRoute()
+  const marks = ref([])
   const fetchSites = async (url) => {
     try {
-      const { data } = await api.get("/sites")
+      const { data } = await api.get(rout.fullPath)
       const response = data
       sites.value = response.data
       pagination.value = response.meta
+      console.log(sites.value)
+      sites.value.forEach(site => {
+        marks.value.push({name: site.name, lat: site.lat, long: site.long})
+      });
     } catch (error) {
       apiMessage.value = '❌ No se pudo conectar con la API'
       console.error(error)
@@ -55,4 +62,8 @@
   onMounted(
       () => fetchSites()
   )
+  watch(rout, () => {
+    fetchSites()
+    console.log("fetch")
+  })
 </script>

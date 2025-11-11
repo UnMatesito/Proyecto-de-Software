@@ -110,6 +110,7 @@ class HistoricSite(db.Model):
         secondary="user_favorite_site",
         back_populates="favorite_sites",
     )
+    reviews = db.relationship("Review", back_populates="historic_site", cascade="all, delete-orphan")
 
     reviews = db.relationship("Review", back_populates="site", cascade="all, delete-orphan")
 
@@ -263,7 +264,6 @@ class HistoricSite(db.Model):
         total = self.average_rating * n
         total = total - old_rating + new_rating
         self.average_rating = total / n
-
     def __repr__(self):
         """Retorna una representación de sitio histórico la cual posee su nombre"""
 

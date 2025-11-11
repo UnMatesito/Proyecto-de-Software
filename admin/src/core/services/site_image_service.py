@@ -22,7 +22,6 @@ def create_site_image(
         validate=True,
         public=True  # URL pública sin vencimiento
     )
-
     # Crear registro en BD
     image = SiteImage(
         historic_site_id=historic_site_id,

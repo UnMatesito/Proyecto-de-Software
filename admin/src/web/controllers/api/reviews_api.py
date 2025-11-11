@@ -16,7 +16,6 @@ from . import api_bp
 
 
 @api_bp.get("/sites/<int:site_id>/reviews")
-@jwt_required()
 def list_reviews(site_id):
     """
     GET /sites/{site_id}/reviews

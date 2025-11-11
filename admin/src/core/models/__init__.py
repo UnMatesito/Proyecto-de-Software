@@ -11,7 +11,7 @@ from .site_history import SiteHistory
 from .tag import Tag
 from .user import User
 from .site_image import SiteImage
-from .review import Review
+from .review import Review, ReviewStatus
 
 __all__ = [
     "User",
@@ -30,5 +30,6 @@ __all__ = [
     "Role",
     "role_permission",
     "SiteImage",
-    "Review"
+    "Review",
+    "ReviewStatus"
 ]
