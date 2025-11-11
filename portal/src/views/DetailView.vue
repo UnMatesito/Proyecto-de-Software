@@ -1,6 +1,6 @@
 <template>
 
-    <div class="flex flex-col items-center justify-center">
+    <div class="flex flex-col items-center justify-center max-w-[1200px] w-full">
 
         <section class="w-full p-3 max-w-screen-xl ">
             <ButtonPrimary :text="'Volver'" :icon_left="'fa-solid fa-arrow-left mr-2'" :link="'/sites'" :class="'my-4'"> </ButtonPrimary>
@@ -66,13 +66,18 @@
         <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
             <h3 class="text-3xl text-proyecto-accent">Locación</h3>
             <div id="map">
-                <Map v-if="detalle.lat && detalle.long" :center="[detalle.lat, detalle.long]" :marks="[{name: detalle.name, mark: [detalle.lat, detalle.long]}]"></Map>
+                <Map styleContent="height:400px;  width: 100%" :marks="marks"></Map>
             </div>
         </div>
         <section class="w-full max-w-[1200px] flex flex-col gap-3 mt-3" >
             <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
             <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto"> </ButtonPrimary>
-            <Review v-for="avatar in reviews" :name="avatar.name" :email="avatar.email" :text="avatar.text" :created_at="avatar.created_at"></Review>
+            <Review v-for="r in reviews" 
+            :name="r.name" 
+            :email="r.email" 
+            :text="r.comment" 
+            :created_at="r.inserted_at" 
+            :rating="r.rating"></Review>
             <p v-if="detalle.page > 1" @click="fetchReviews()" class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out">Ver más reseñas...</p>
         </section>
     </div>
@@ -106,7 +111,6 @@
         try {
             const { data } = await api.get(`${route.path}`)
             detalle.value = data
-            console.log(data)
             detalle.value = {...detalle.value, 'inserted_at': detalle.value.inserted_at.slice(0,  detalle.value.inserted_at.indexOf("T")).replaceAll("-", "/")}
             content.value = [{id:1, header:'Descripción detallada', text:detalle.value.description},{id:2, header:'Descripción breve', text:detalle.value.short_description}]
         } catch (error) {
@@ -115,10 +119,11 @@
     }
     const fetchReviews = async () => {
         try {
-            console.log(page)
-            const { data } = await api.get(`${route.path}/reviews/${page.value}`)
-            reviews.value = data
+            const response = await api.get(`${route.path}/reviews`)
+            console.log(response.data.data)
+            reviews.value = response.data.data
             page.value++
+            console.log(reviews.value)
         } catch {
 
         }

@@ -5,7 +5,7 @@
             <div class="flex gap-3 flex-col">
                 <Stars :rating="rating" :class="'w-28 flex justify-start'"></Stars>
                 <span class="text-sm  gap-3 text-gray-500 dark:text-gray-400">
-                    Subido {{ created_at.slice(0, props.created_at.indexOf("T")).replaceAll("-", "/") }}
+                     {{ created_at ? created_at.slice(0, props.created_at.indexOf("T")).replaceAll("-", "/")  : '...'}}
                 </span>
             </div>
         </div>
@@ -20,8 +20,9 @@
     import Stars from './Stars.vue';
     import Avatar from './Avatar.vue';
     import { ref } from 'vue'
-    const props = defineProps(["name", "text", "email", "reting", "created_at"])
+    const props = defineProps(["name", "text", "email", "rating", "created_at"])
     const createdDate = ref("")
     console.log(props.created_at)
-    createdDate.value = props.created_at.slice(0, props.created_at.indexOf(":"))
+    console.log(props)
+   /* createdDate.value = props.created_at.slice(0, props.created_at.indexOf(":")) */
 </script>er

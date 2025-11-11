@@ -4,7 +4,7 @@
         <span class="absolute left-1.5 top-1.5 sm:left-2 sm:top-2 bg-white/90 backdrop-blur-sm p-1 sm:p-1.5 border-0 rounded-full text-center hover:opacity-75  z-40 shadow-md cursor-pointer" :class="is_fav ? 'fill-red-600 hover:fill-gray-500 transition-all duration-300 ease-in-out' : ' fill-gray-500 hover:fill-red-600 transition-all duration-300 ease-in-out'">
             <IconFavorite class="w-3.5 h-3.5 sm:w-5 sm:h-5 block" ></IconFavorite>
         </span>
-        <div class="relative h-56 overflow-hidden rounded-lg md:h-96">
+        <div class="relative h-[22rem] overflow-hidden rounded-lg ">
             <!-- Item 1 -->
             <div class="hidden duration-700 ease-in-out" data-carousel-item>
                 <img src="https://www.infobae.com/resizer/v2/https%3A%2F%2Fs3.amazonaws.com%2Farc-wordpress-client-uploads%2Finfobae-wp%2Fwp-content%2Fuploads%2F2019%2F02%2F13105727%2FMarcha-Movimientos-sociales-Obelisco-3.jpeg?auth=98ea526ca284a14796ed1e27f354b65dc880d7115c2a54ed2e28ebf23b40563f&smart=true&width=1200&height=675&quality=85" class="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="...">
