@@ -98,11 +98,12 @@ def list_favorites():
                 "name": site.name,
                 "short_description": site.brief_description,
                 "description": site.full_description,
+                "review_count": site.rating_count,
+                "average_rating": site.average_rating,
                 "city": site.city.name if site.city else None,
                 "province": site.city.province.name if site.city and site.city.province else None,
-                "country": site.country if hasattr(site, "country") else None,
                 "lat": site.latitude,
-                "long": site.longitude,
+                "lon": site.longitude,
                 "tags": [t.slug for t in site.tags],
                 "state_of_conservation": (
                     site.conservation_state.state if site.conservation_state else None
@@ -119,6 +120,7 @@ def list_favorites():
             "page": pagination["current_page"],
             "per_page": pagination["per_page"],
             "total": pagination["total"],
+            "total_pages": pagination["pages"],
         }
 
         return jsonify({"data": data, "meta": meta}), 200

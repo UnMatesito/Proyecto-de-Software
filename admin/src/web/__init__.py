@@ -65,6 +65,9 @@ def create_app(env="development", static_folder="../../static"):
     )
     from .controllers.api import api_bp
 
+    # Registrar listeners de auditoría
+    from core import audit
+
     # Hooks
     app.before_request(hook_admin_maintenance)
 
