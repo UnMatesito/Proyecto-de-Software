@@ -6,13 +6,23 @@ from .sites_schemas import (
     SiteCreateSchema,
     SiteResponseSchema,
     SiteListResponseSchema,
-    format_validation_errors
+    HistoricSiteShortSchema
 )
 
+from .reviews_schemas import (
+    ReviewQuerySchema,
+    ReviewResponseSchema,
+    ReviewCreateSchema,
+    MyReviewResponseSchema
+)
 __all__ = [
     'SiteQuerySchema',
     'SiteCreateSchema',
     'SiteResponseSchema',
     'SiteListResponseSchema',
-    'format_validation_errors'
+    'HistoricSiteShortSchema',
+    'ReviewQuerySchema',
+    'ReviewResponseSchema',
+    'ReviewCreateSchema',
+    'MyReviewResponseSchema'
 ]

@@ -3,11 +3,11 @@
     <h1 class="text-3xl font-bold mb-6 text-gray-800">Mi Perfil</h1>
 
     <div v-if="user" class="bg-white p-6 rounded-lg shadow-md mb-8 flex items-center space-x-4">
-      <img 
-        :src="user.avatar || 'https://via.placeholder.com/150'" 
-        alt="Avatar" 
+      <img
+        :src="user.avatar || 'https://via.placeholder.com/150'"
+        alt="Avatar"
         class="w-20 h-20 rounded-full border-2 border-gray-300 object-cover"
-        referrerpolicy="no-referrer" 
+        referrerpolicy="no-referrer"
       >
       <div>
         <h2 class="text-2xl font-semibold text-gray-700">{{ user.name }}</h2>
@@ -20,23 +20,23 @@
 
     <div class="mb-4 border-b border-gray-200">
       <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-        <button 
+        <button
           @click="activeTab = 'reviews'"
           :class="[
             'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm',
-            activeTab === 'reviews' 
-              ? 'border-proyecto-primary text-proyecto-primary' 
+            activeTab === 'reviews'
+              ? 'border-proyecto-primary text-proyecto-primary'
               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
           ]"
         >
           Mis Reseñas
         </button>
-        <button 
+        <button
           @click="activeTab = 'favorites'"
           :class="[
             'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm',
-            activeTab === 'favorites' 
-              ? 'border-proyecto-primary text-proyecto-primary' 
+            activeTab === 'favorites'
+              ? 'border-proyecto-primary text-proyecto-primary'
               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
           ]"
         >
@@ -47,37 +47,48 @@
 
     <div>
       <div v-if="loading" class="text-center py-10">
-        <p class="text-gray-500">Cargando...</p> 
+        <p class="text-gray-500">Cargando...</p>
       </div>
       
       <div v-else>
         <div v-show="activeTab === 'reviews'">
           <h3 class="text-xl font-semibold mb-4 text-gray-700">Mis Reseñas</h3>
           
+          <div class="flex space-x-4 mb-4">
+            <select
+              v-model="reviewsSortOrder"
+              @change="handleReviewPageChange(1)"
+              class="border-gray-300 rounded-md shadow-sm"
+            >
+              <option value="date_desc">Más Recientes</option>
+              <option value="date_asc">Más Antiguos</option>
+            </select>
+          </div>
+          
           <div v-if="reviewsLoading" class="text-center py-5">Cargando reseñas...</div>
           
           <div v-else>
             <ul v-if="reviews.length > 0" class="space-y-4">
-              <li v-for="review in reviews" :key="review.site_id" class="bg-white p-4 rounded-lg shadow">
-                <p><strong>Sitio:</strong> {{ review.name }}</p>
+              <li v-for="review in reviews" :key="review.id" class="bg-white p-4 rounded-lg shadow">
+                <p><strong>Sitio:</strong> {{ review.site.name }}</p>
                 <div class="flex items-center">
                   <strong class="mr-2">Calificación:</strong>
                   <RatingStars :rating="review.rating" />
-                </div> 
-                <p><strong>Fecha:</strong> {{ new Date(review.created_at).toLocaleDateString() }}</p>
-                <p class="mt-2 text-gray-600">{{ review.comment_excerpt }}</p>
+                </div>
+                <p><strong>Fecha:</strong> {{ new Date(review.inserted_at).toLocaleDateString() }}</p>
+                <p class="mt-2 text-gray-600">{{ review.comment }}</p>
               </li>
             </ul>
-            <p v-else class="text-gray-500 italic">Aún no escribiste reseñas.</p> 
+            <p v-else class="text-gray-500 italic">Aún no escribiste reseñas.</p>
             
-          <div class="flex justify-center mt-6">
-            <Pagination
-              :page="reviewsPage"
-              :pages="reviewsTotalPages"
-              @page-changed="handleReviewPageChange"
-              class="mt-6"
-            />
-          </div>
+            <div class="flex justify-center mt-6">
+              <Pagination
+                :page="reviewsPage"
+                :pages="reviewsTotalPages"
+                @page-changed="handleReviewPageChange"
+                class="mt-6"
+              />
+            </div>
           </div>
         </div>
 
@@ -91,14 +102,14 @@
                 <li v-for="fav in favorites" :key="fav.site_id" class="bg-white p-4 rounded-lg shadow flex justify-between items-center">
                   <div>
                     <p class="font-medium">{{ fav.name }}</p>
-                    <p class="text-sm text-gray-500">{{ fav.city }}</p> 
+                    <p class="text-sm text-gray-500">{{ fav.city }}</p>
                   </div>
                   <a :href="`/sites/${fav.site_id}`" class="text-proyecto-primary hover:underline text-sm">Ver sitio</a>
                 </li>
               </ul>
-              <p v-else class="text-gray-500 italic">Aún no marcaste ningún sitio como favorito.</p> 
+              <p v-else class="text-gray-500 italic">Aún no marcaste ningún sitio como favorito.</p>
 
-            <div class="flex justify-center mt-6">  
+            <div class="flex justify-center mt-6">
               <Pagination
                 :page="favoritesPage"
                 :pages="favoritesTotalPages"
@@ -118,40 +129,24 @@ import { ref, onMounted } from 'vue';
 import RatingStars from '@/components/Stars.vue';
 import { useAuthStore } from '@/stores/auth';
 import api from '../api/axios.js';
-import Pagination from '@/components/Pagination.vue'; 
+import Pagination from '@/components/Pagination.vue';
 
 const authStore = useAuthStore();
-const user = authStore.user; 
+const user = authStore.user;
 
 const activeTab = ref('reviews');
-const loading = ref(true); 
+const loading = ref(true);
 
 const reviews = ref([]);
 const reviewsPage = ref(1);
-const reviewsTotalPages = ref(1); 
+const reviewsTotalPages = ref(1);
 const reviewsLoading = ref(true);
+const reviewsSortOrder = ref('date_desc');
 
 const favorites = ref([]);
 const favoritesPage = ref(1);
-const favoritesTotalPages = ref(1); 
+const favoritesTotalPages = ref(1);
 const favoritesLoading = ref(true);
-
-
-const mockReviews = {
-  items: [
-    { site_id: 1, name: 'Museo de Arte Moderno', rating: 5, created_at: '2025-10-28T10:30:00Z', comment_excerpt: '¡Increíble!...' },
-    { site_id: 2, name: 'Plaza Central Histórica', rating: 4, created_at: '2025-09-15T14:00:00Z', comment_excerpt: 'Un lugar muy lindo...' }
-  ],
-  pagination: { page: 1, pages: 3, total: 30, per_page: 25 } 
-};
-
-const mockFavorites = {
-  items: [
-    { site_id: 3, name: 'Antigua Biblioteca Nacional', city: 'Ciudad Capital' },
-    { site_id: 4, name: 'Faro del Fin del Mundo', city: 'Patagonia' }
-  ],
-  pagination: { page: 1, pages: 2, total: 20, per_page: 25 } 
-};
 
 
 async function fetchListData(listType, page = 1) {
@@ -164,20 +159,24 @@ async function fetchListData(listType, page = 1) {
   
   try {
     const endpoint = listType === 'reviews' ? '/me/reviews' : '/me/favorites';
-    const response = await api.get(endpoint, {
-      params: { page: page, sort: 'date_desc' }
-    });
     
-    itemsRef.value = response.data.items;
-    pageRef.value = response.data.pagination.page;
-    totalPagesRef.value = response.data.pagination.pages; 
+    const params = { page: page };
+    
+    if (listType === 'reviews') {
+        params.sort = reviewsSortOrder.value;
+    }
+
+    const response = await api.get(endpoint, { params });
+    
+    itemsRef.value = response.data.data;
+    pageRef.value = response.data.meta.page;
+    totalPagesRef.value = response.data.meta.pages;
 
   } catch (error) {
-    console.warn(`ADVERTENCIA: API falló. Usando datos mock para ${listType}.`);
-    const mockData = listType === 'reviews' ? mockReviews : mockFavorites;
-    itemsRef.value = mockData.items;
-    pageRef.value = mockData.pagination.page;
-    totalPagesRef.value = mockData.pagination.pages; 
+    console.error(`Error real al cargar ${listType}:`, error);
+    itemsRef.value = [];
+    pageRef.value = 1;
+    totalPagesRef.value = 0;
 
   } finally {
     isLoadingRef.value = false;

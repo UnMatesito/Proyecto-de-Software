@@ -60,7 +60,8 @@ def create_app(env="development", static_folder="../../static"):
 
     from .controllers import (
         auth_bp, city_bp, feature_flag_bp, main_bp, site_bp,
-        site_history_bp, tag_bp, user_bp, user_management_bp
+        site_history_bp, tag_bp, user_bp, user_management_bp,
+        review_bp
     )
     from .controllers.api import api_bp
 
