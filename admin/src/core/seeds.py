@@ -34,6 +34,7 @@ def run(env="production"):
         seed_aditional_historic_sites()
         seed_site_tags()
         seed_favorites()
+        seed_reviews()
 
     print("Seed finalizado")
 
@@ -830,6 +831,7 @@ def seed_aditional_moderators():
     from faker import Faker
     from core.models import User
     from core.services import role_service as RoleService
+    import uuid
 
     print("Creando usuarios moderadores adicionales...")
     fake = Faker("es_AR")
@@ -838,7 +840,7 @@ def seed_aditional_moderators():
 
     usuarios = [
         User(
-            email=fake.unique.email(),
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
             first_name=fake.first_name(),
             last_name=fake.last_name(),
             password="moderador123",
@@ -850,7 +852,6 @@ def seed_aditional_moderators():
 
     db.session.add_all(usuarios)
     db.session.commit()
-
 
 def seed_aditional_historic_sites():
     """
@@ -911,6 +912,76 @@ def seed_aditional_historic_sites():
     db.session.commit()
     enable_audit_listeners()
 
+def seed_reviews():
+    """Genera reseñas (reviews) aleatorias para los sitios históricos."""
+    from faker import Faker
+    import random
+    from core.models import Review, User, HistoricSite
+    from core.models.review import ReviewStatus
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from datetime import datetime, timezone
+    from core.services import role_service as RoleService
+
+
+    print("Generando reseñas aleatorias...")
+
+    fake = Faker("es_AR")
+
+    # Deshabilitar auditoría temporalmente
+    disable_audit_listeners()
+
+    # Obtenemos usuarios públicos (no administradores)
+    public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
+    sites = HistoricSite.query.all()
+
+    reviews = []
+    used_pairs = set()  # para evitar duplicar (user_id, site_id)
+
+    for user in random.sample(public_users, min(len(public_users), 30)):  # hasta 30 usuarios dejan reseñas
+        reviewed_sites = random.sample(sites, random.randint(2, 5))  # cada uno deja entre 2 y 5 reseñas
+        for site in reviewed_sites:
+            pair = (user.id, site.id)
+            if pair in used_pairs:
+                continue  # ya reseñó ese sitio
+
+            used_pairs.add(pair)
+
+            status = random.choices(
+                [ReviewStatus.PENDIENTE, ReviewStatus.APROBADA, ReviewStatus.RECHAZADA],
+                weights=[0.2, 0.6, 0.2],
+                k=1
+            )[0]
+
+            rejected_reason = None
+            if status == ReviewStatus.RECHAZADA:
+                rejected_reason = random.choice([
+                    "Lenguaje inapropiado",
+                    "Contenido irrelevante",
+                    "No cumple las normas del sitio"
+                ])
+
+            review = Review(
+                rating=random.randint(1, 5),
+                content=fake.paragraph(nb_sentences=random.randint(2, 5)),
+                status=status,
+                rejected_reason=rejected_reason,
+                user_id=user.id,
+                historic_site_id=site.id,
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
+            )
+
+            reviews.append(review)
+
+    db.session.add_all(reviews)
+    db.session.commit()
+
+    enable_audit_listeners()
+    print(f"✅ {len(reviews)} reseñas generadas correctamente.")
+
+
+
+
 def seed_favorites():
     """Asocia aleatoriamente sitios históricos a usuarios públicos como favoritos."""
     from random import sample, randint
@@ -946,3 +1017,7 @@ def seed_favorites():
 
     # Rehabilitar listeners de auditoría
     enable_audit_listeners()
+
+
+
+

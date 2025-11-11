@@ -77,6 +77,7 @@ def create_app(env="development", static_folder="../../static"):
     app.register_blueprint(site_bp)
     app.register_blueprint(city_bp)
     app.register_blueprint(site_history_bp)
+    app.register_blueprint(review_bp)
 
     # Blueprints API
     app.register_blueprint(api_bp, url_prefix="/api")
