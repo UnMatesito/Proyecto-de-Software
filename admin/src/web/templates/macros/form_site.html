@@ -13,14 +13,14 @@
         {% endif %}
     </div>
     <div class="p-6 bg-white w-160 shadow-lg rounded-lg border border-gray-200">
-        <form method="POST" class="space-y-5 flex gap-3 flex-col ">
+        <form method="POST" enctype="multipart/form-data" class="space-y-5 flex gap-3 flex-col ">
             {{ form.hidden_tag() }}
             <div class="flex flex-col lg:flex-row gap-6 justify-center">
                 <div>
                     <div>
                         {{ form.name.label(class="block font-medium text-gray-700 mb-1") }}
                         {{ form.name(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200")}}
-                        
+
                         {% for error in form.name.errors %}
                             <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
@@ -49,7 +49,7 @@
                             <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
-                    
+
                     <div>
                         {{ form.conservation_state.label(class="block font-medium text-gray-700 mb-1") }}
                         <select id="{{ form.conservation_state.id }}" name="{{ form.conservation_state.name }}" required
@@ -94,7 +94,7 @@
                             <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
-                    
+
                     <div>
                         {{ form.inauguration_year.label(class="block font-medium text-gray-700 mb-1") }}
                         {{ form.inauguration_year(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
@@ -110,7 +110,7 @@
                             <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
-                    
+
                     <div>
                         {{ form.full_description.label(class="block font-medium text-gray-700 mb-1") }}
                         {{ form.full_description(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
@@ -137,6 +137,34 @@
                 {% endfor %}
             </div>
 
+            <!-- Campo de imágenes -->
+            <div class="border-t pt-4">
+                <label for="images" class="block font-medium text-gray-700 mb-2">
+                    Imágenes del sitio (máximo 10)
+                    {% if site %}
+                        <span class="text-sm text-gray-500">- Actualmente: {{ site.images|length }}/10</span>
+                    {% endif %}
+                </label>
+                <input
+                    type="file"
+                    name="images"
+                    id="images"
+                    multiple
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200"
+                    {% if site and site.images|length >= 10 %}disabled{% endif %}
+                >
+                <p class="text-sm text-gray-500 mt-1">
+                    Formatos permitidos: JPG, JPEG, PNG, WEBP.
+                    {% if not site or site.images|length == 0 %}
+                        La primera imagen será la portada.
+                    {% endif %}
+                </p>
+
+                <!-- Preview de imágenes -->
+                <div id="image-preview" class="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+            </div>
+
             <div class="w-md ">
                 {{ form.submit(class="w-full text-white bg-proyecto-primary hover:bg-blue-800 focus:ring-4 focus:ring-proyecto-primary/20 font-semibold rounded-lg text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center inline-flex items-center" ) }}
             </div>
@@ -144,7 +172,7 @@
     </div>
 </div>
 
-<div class="flex items-center justify-center flex-col mt-2 gap-2 " style=" height: 70vh; max-width: 900px; width: 70%;"> 
+<div class="flex items-center justify-center flex-col mt-2 gap-2 " style=" height: 70vh; max-width: 900px; width: 70%;">
     <h3 class="block font-semibold text-gray-700 mb-1">Seleccione la ubicación en el mapa!</h3>
     {% if form.longitude.errors or form.latitude.errors  %}
         <p class="text-red-500 text-sm mt-1">La ubicación es obligatoria</p>
@@ -158,19 +186,20 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
 
-
+        // Multi-select para tags
         new MultiSelectTag('tags', {
-        rounded: true,   
-        shadow: true,
-        placeholder: "Seleccionar tags",
-        onChange: function(selected) {
-            console.log("Seleccionados:", selected);
-        }
+            rounded: true,
+            shadow: true,
+            placeholder: "Seleccionar tags",
+            onChange: function(selected) {
+                console.log("Seleccionados:", selected);
+            }
         });
 
         document.getElementById("tag-input").className = "w-full"
         document.getElementById("dropdown").setAttribute('style', 'z-index:1200');
 
+        // Mapa de Leaflet
         lonInput = document.getElementById("longitude")
         latIpunt = document.getElementById("latitude")
 
@@ -178,7 +207,8 @@
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         }).addTo(map);
-        var mark            
+
+        var mark
         var formName = document.getElementById("name").value
         var formLon = document.getElementById("longitude").value
         var formLat = document.getElementById("latitude").value
@@ -187,7 +217,7 @@
             mark = L.marker([parseFloat(formLat), parseFloat(formLon)]).addTo(map)
                 .bindPopup(`${formName}  <br> Latitud: ${parseFloat(formLat).toFixed(4)} <br> Longitud: ${parseFloat(formLon).toFixed(4)}`)
                 .openPopup();
-        } 
+        }
 
         var lat_lng_popup = L.popup();
 
@@ -200,12 +230,12 @@
                             "<br>Longitude: " + e.latlng.lng.toFixed(4))
                 .openOn(map);
             lonInput.value = e.latlng.lng
-            latIpunt.value = e.latlng.lat  
+            latIpunt.value = e.latlng.lat
         }
 
         map.on('click', latLngPop);
 
-        //Obtener la ciudades de la prov seleccionada
+        // Obtener la ciudades de la prov seleccionada
         document.getElementById("province").addEventListener("change", function() {
             const provinceId = this.value;
             fetch(`/cities/${provinceId}`)
@@ -221,7 +251,92 @@
                     });
                 })
         });
+
+        // Preview de imágenes
+        const imageInput = document.getElementById('images');
+        const previewContainer = document.getElementById('image-preview');
+        const maxImages = 10;
+        {% if site %}
+        const currentImages = {{ site.images|length if site.images else 0 }};
+        {% else %}
+        const currentImages = 0;
+        {% endif %}
+
+        if (imageInput) {
+            imageInput.addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                const availableSlots = maxImages - currentImages;
+
+                if (files.length > availableSlots) {
+                    alert(`Solo puedes agregar ${availableSlots} imagen(es) más. Actualmente tienes ${currentImages} de ${maxImages}.`);
+                    e.target.value = '';
+                    previewContainer.innerHTML = '';
+                    return;
+                }
+
+                if (files.length > maxImages) {
+                    alert(`Solo puedes subir un máximo de ${maxImages} imágenes`);
+                    e.target.value = '';
+                    previewContainer.innerHTML = '';
+                    return;
+                }
+
+                previewContainer.innerHTML = '';
+
+                files.forEach((file, index) => {
+                    // Validar tipo de archivo
+                    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                    if (!validTypes.includes(file.type)) {
+                        alert(`${file.name} no es un formato válido. Solo se permiten JPG, PNG y WEBP.`);
+                        return;
+                    }
+
+                    // Validar tamaño (5MB máximo)
+                    const maxSize = 5 * 1024 * 1024; // 5MB
+                    if (file.size > maxSize) {
+                        alert(`${file.name} es demasiado grande. Tamaño máximo: 5MB`);
+                        return;
+                    }
+
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        const previewItem = document.createElement('div');
+                        previewItem.className = 'relative group';
+
+                        const imageOrder = currentImages + index + 1;
+                        const isCover = (currentImages === 0 && index === 0) ?
+                            '<span class="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded font-semibold">Portada</span>' :
+                            '';
+
+                        previewItem.innerHTML = `
+                            <img src="${e.target.result}"
+                                 alt="Preview ${imageOrder}"
+                                 class="w-full h-32 object-cover rounded-lg border-2 border-gray-300">
+                            ${isCover}
+                            <span class="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+                                #${imageOrder}
+                            </span>
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition rounded-lg"></div>
+                        `;
+                        previewContainer.appendChild(previewItem);
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+            });
+        }
     });
-      
+
 </script>
+
+<style>
+    #image-preview img {
+        transition: transform 0.2s;
+    }
+
+    #image-preview .relative:hover img {
+        transform: scale(1.05);
+    }
+</style>
 {% endmacro %}
