@@ -265,9 +265,9 @@ def seed_event_types():
         "Edición",
         "Eliminación",
         "Restauración",
-        "Cambio de estado",  # cambio de visibilidad
+        "Cambio de estado",  # Cambio de visibilidad
         "Cambio de tags",
-        # "Cambio de imágenes",  para etapa 2
+        "Cambio de imágenes",
     ]
 
     for event_name in event_types:
@@ -462,7 +462,7 @@ def seed_categories():
     """Crea las categorías iniciales de los sitios históricos"""
     from core.models import Category
 
-    print("Cargando categorias...")
+    print("Creando categorias...")
 
     categories = [
         Category(name="Arquitectura"),
@@ -913,7 +913,7 @@ def seed_aditional_historic_sites():
         return
 
     sitios = []
-    for _ in range(20):
+    for _ in range(100):
         city = choice(cities)
         category = choice(categories)
         state = choice(states)
@@ -972,7 +972,7 @@ def seed_aditional_validated_historic_sites():
         return
 
     sitios = []
-    for _ in range(20):
+    for _ in range(100):
         city = choice(cities)
         category = choice(categories)
         state = choice(states)
