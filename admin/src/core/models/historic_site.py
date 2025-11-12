@@ -111,8 +111,6 @@ class HistoricSite(db.Model):
     )
     reviews = db.relationship("Review", back_populates="historic_site", cascade="all, delete-orphan")
 
-    reviews = db.relationship("Review", back_populates="site", cascade="all, delete-orphan")
-
     # Metodos
     def is_deleted(self):
         """Chequea si el sitio historico ha sido eliminado."""

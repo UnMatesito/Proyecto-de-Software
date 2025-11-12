@@ -54,7 +54,7 @@ class Review(db.Model):
         ),  # La calificación debe estar entre 1 y 5
         db.Index(
             "idx_historic_site_rating", "rating"
-        ), # Índice para optimizar consultas por calificación
+        ),  # Índice para optimizar consultas por calificación
     )
 
     # Validaciones
