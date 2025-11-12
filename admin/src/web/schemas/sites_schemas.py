@@ -235,3 +235,8 @@ class SiteListResponseSchema(Schema):
 
     data = fields.List(fields.Nested(SiteResponseSchema))
     meta = fields.Nested(SiteMetaSchema)
+
+class HistoricSiteShortSchema(Schema):
+    """Schema corto para representar un sitio histórico dentro de otra entidad."""
+    id = fields.Int()
+    name = fields.Str()

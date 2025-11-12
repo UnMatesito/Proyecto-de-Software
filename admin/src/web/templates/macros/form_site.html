@@ -210,7 +210,9 @@
             }
         });
 
-        document.getElementById("tag-input").className = "w-full"
+        let inputTag = document.getElementById("tag-input")
+        inputTag.className = "w-full"
+        inputTag.setAttribute("readonly", "")
         document.getElementById("dropdown").setAttribute('style', 'z-index:1200');
 
         // Mapa de Leaflet
@@ -249,7 +251,7 @@
 
         map.on('click', latLngPop);
 
-        // Obtener la ciudades de la prov seleccionada
+        // Obtener las ciudades de la provincia seleccionada
         document.getElementById("province").addEventListener("change", function() {
             const provinceId = this.value;
             fetch(`/cities/${provinceId}`)

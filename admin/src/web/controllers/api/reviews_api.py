@@ -19,6 +19,7 @@ from web.utils.format_marshmallow_validation_errors import format_validation_err
 from . import api_bp
 
 
+
 def _reviews_feature_blocked_response():
     flag = get_feature_flag_by_name("reviews_enabled")
 

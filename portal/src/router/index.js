@@ -1,10 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
 import { getFeatureFlag } from '@/api/featureFlags'
 import { maintenanceState } from '@/utils/maintenanceState'
+import { useAuthStore } from '../stores/auth'
 
 import HomeView from '../views/HomeView.vue'
+import AuthView from '../views/AuthView.vue'
+import ProfileView from '../views/ProfileView.vue'
 import MaintenanceView from '../views/MaintenanceView.vue'
+
+const requireAuth = (to, from, next) => {
+  const authStore = useAuthStore();
+
+  if (authStore.isAuthenticated) {
+    next();
+  } else {
+    next('/');
+  }
+};
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +40,27 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
     },
+    {
+      path: '/sites',
+      name: 'sites',
+      component: () => import('../views/SitesView.vue'),
+    },
+    {
+      path: '/sites/:name/:description/:city/:province/:tags/:order_by/:lat/:long/:radius/:page/:per_page',
+      name: 'sitesQuery',
+      component: () => import('../views/SitesView.vue'),
+    },
+    {
+      path: '/auth/callback',
+      name: 'authCallback',
+      component: AuthView,
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: ProfileView,
+      beforeEnter: requireAuth,
+    }
   ],
 })
 

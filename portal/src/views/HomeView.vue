@@ -1,28 +1,43 @@
 <template>
-  <div class="flex flex-col items-center justify-center py-12">
-    <h2 class="text-3xl font-bold text-proyecto-primary mb-4">
-      Bienvenido
-    </h2>
-    <p class="text-lg text-gray-700 mb-6 text-center">
-      Portal público del Proyecto de Software
-    </p>
+    <div class="bg-proyecto-accent w-screen h-[22rem] sm:h-[35rem] text-white flex items-center justify-evenly mb-8 shadow-xl">
+      <img src="../assets/images/mapa.png" alt="gif mapa" class="hidden sm:block sm:h-[22rem] lg:h-[40rem] pointer-events-none select-none transition-transform"/>
+      <div>
+        <h1 class="text-7xl md:text-8xl font-bold text-center">Histori.ar</h1>
+        <p class="font-medium sm:text-xl text-center">Donde cada lugar tiene una historia que contar.</p>
+        <form class="max-w-md mx-auto mt-8">
+            <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Buscar</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-black mx-1"></i>
+                </div>
+                <input type="search" id="default-search" class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-proyecto-primary focus:border-proyecto-primary" placeholder="¿Cual es tu proxima aventura?" required />
+                <ButtonPrimary type="submit" text="Buscar" class="absolute end-2.5 bottom-1.5"/>
+            </div>
+        </form>
+      </div>
+    </div>
 
-    <button
-      @click="fetchExample"
-      class="bg-proyecto-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-proyecto-accent transition"
-    >
-      Probar conexión con API Flask
-    </button>
+    <div class="mx-4 w-[90%] mx-auto">
+      <!-- Sección de Más Visitados -->
+      <Section title="Más Visitados"/>
 
-    <p v-if="apiMessage" class="mt-4 text-proyecto-accent font-medium">
-      {{ apiMessage }}
-    </p>
-  </div>
+      <!-- Seccion Mejor Puntuados -->
+      <Section title="Mejor Puntuados"/>
+
+      <!-- Seccion Favoritos del usuario-->
+      <Section title="Tus Favoritos"/>
+
+      <!-- Seccion recientemente agregados-->
+      <Section title="Recientemente Agregados"/>
+    </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import api from '@/api/axios'
+import Card from "@/components/Card.vue";
+import Section from "@/components/Section.vue";
+import ButtonPrimary from "@/components/buttons/ButtonPrimary.vue";
 
 const apiMessage = ref('')
 

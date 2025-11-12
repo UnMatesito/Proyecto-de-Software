@@ -5,7 +5,8 @@ from .sites_schemas import (
     SiteQuerySchema,
     SiteCreateSchema,
     SiteResponseSchema,
-    SiteListResponseSchema
+    SiteListResponseSchema,
+    HistoricSiteShortSchema
 )
 
 from .favorites_schemas import (
@@ -15,7 +16,8 @@ from .favorites_schemas import (
 from .reviews_schemas import (
     ReviewQuerySchema,
     ReviewResponseSchema,
-    ReviewCreateSchema
+    ReviewCreateSchema,
+    MyReviewResponseSchema
 )
 __all__ = [
     'SiteQuerySchema',
@@ -25,5 +27,7 @@ __all__ = [
     'FavoriteQuerySchema',
     'ReviewQuerySchema',
     'ReviewResponseSchema',
-    'ReviewCreateSchema'
+    'ReviewCreateSchema',
+    "MyReviewResponseSchema",
+    "HistoricSiteShortSchema"
 ]

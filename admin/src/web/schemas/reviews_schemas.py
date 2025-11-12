@@ -1,4 +1,5 @@
 from marshmallow import Schema, fields, validate
+from .sites_schemas import HistoricSiteShortSchema
 
 
 class ReviewCreateSchema(Schema):
@@ -37,3 +38,22 @@ class ReviewResponseSchema(Schema):
 
     def get_updated_at(self, obj):
         return obj.updated_at.isoformat() + "Z" if obj.updated_at else None
+
+class MyReviewResponseSchema(Schema):
+    """
+    Serializa reseñas para la página de "Mi Perfil".
+    Incluye la información básica del sitio histórico anidada.
+    """
+    id = fields.Int()
+    rating = fields.Int()
+    comment = fields.Str(attribute="content")
+    inserted_at = fields.Method("get_inserted_at")
+
+    historic_site = fields.Nested(
+        HistoricSiteShortSchema,
+        attribute="historic_site",
+        data_key="site"
+    )
+
+    def get_inserted_at(self, obj):
+        return obj.created_at.isoformat() + "Z" if obj.created_at else None

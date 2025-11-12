@@ -40,7 +40,7 @@
           {% endif %}
           {% if has_permission('review_index') %}
          <li>
-            <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-proyecto-primary/10 group transition-colors duration-300">
+            <a href="{{url_for('reviews.index')}}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-proyecto-primary/10 group transition-colors duration-300">
                 <i class="fa-solid fa-list-check"></i>
                <span class="flex-1 ms-3">Moderación de reseñas</span>
             </a>
