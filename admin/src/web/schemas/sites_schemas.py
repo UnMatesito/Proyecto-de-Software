@@ -191,8 +191,12 @@ class SiteImageSchema(Schema):
 
     id = fields.Int()
     url = fields.Str()
-    title = fields.Str()
-    description = fields.Str()
+    title = fields.Str(
+        required=True,
+        validate=validate.Length(min=1,max=100),
+        error_messages={"required": "Image title is required"}
+    )
+    description = fields.Str(allow_none=True, validate=validate.Length(max=255))
     is_cover = fields.Bool()
     order = fields.Int()
 

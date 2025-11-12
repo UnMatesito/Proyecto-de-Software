@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileAllowed, FileRequired
 from wtforms import (
     FloatField,
     IntegerField,
@@ -9,7 +8,6 @@ from wtforms import (
     SelectMultipleField,
     StringField,
     SubmitField,
-    FileField,
 )
 from wtforms.validators import DataRequired, Length, NumberRange
 from wtforms.widgets import TextArea
@@ -122,19 +120,6 @@ class CreateSiteForm(FlaskForm):
     tags = SelectMultipleField(
         "Seleccionar Tags",
         coerce=int,
-    )
-
-    images = FileField(
-        "Imágenes del sitio (máximo 10)",
-        validators=[
-            FileAllowed(['jpg', 'jpeg', 'png', 'webp'], 'Solo se permiten imágenes'),
-            FileRequired(message="Debe subir al menos una imágen"),
-        ],
-        render_kw={
-            'multiple': True,
-            'accept': 'image/*',
-            'max': 10
-        }
     )
 
     submit = SubmitField("Crear")

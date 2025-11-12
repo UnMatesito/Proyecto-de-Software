@@ -140,6 +140,7 @@ from .site_image_service import (
     get_site_images,
     update_image_order,
     delete_site_image,
+    reorder_site_images,
 )
 """
 
@@ -257,4 +258,5 @@ __all__ = [
     "get_site_images",
     "update_image_order",
     "delete_site_image",
+    "reorder_site_images",
 ]
