@@ -78,6 +78,7 @@ from .review_service import (
     delete_review,
     get_paginated_reviews,
     get_review_by_id,
+    get_user_reviews,
     reject_review,
 )
 
@@ -247,6 +248,7 @@ __all__ = [
     "create_review",
     "delete_review",
     "get_paginated_reviews",
+    "get_user_reviews",
     "reject_review",
     "get_review_by_id",
     # SiteImage services

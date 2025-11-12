@@ -1,19 +1,15 @@
 from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from sqlalchemy.orm import joinedload
+from marshmallow import ValidationError
 
-#from core.models.favorite import Favorite
-from core.database import db
-from core.models import Review
-from core.models.user import User
-from core.services import user_service
-from web.schemas.reviews_schemas import MyReviewResponseSchema, ReviewQuerySchema
+from core.services import review_service, user_service
+from web.schemas.reviews_schemas import MyReviewQuerySchema, MyReviewResponseSchema
 from web.utils.format_marshmallow_validation_errors import format_validation_errors
 
 from . import api_bp
 
 
-@api_bp.route("/user/me", methods=["GET"])
+@api_bp.route("/me", methods=["GET"])
 @jwt_required()
 def get_current_user():
     user_id = get_jwt_identity()
@@ -24,7 +20,7 @@ def get_current_user():
         full_name = user.get_full_name()
     except Exception as e:
         return jsonify({"msg": "Error interno al procesar nombre"}), 500
-        
+
     try:
         avatar_url = user.avatar or None
     except Exception as e:
@@ -48,43 +44,53 @@ def list_my_reviews():
     """
     user_id = get_jwt_identity()
 
+    schema = MyReviewQuerySchema()
+
     try:
-        page = int(request.args.get("page", 1))
-        per_page = 25 
-        if page < 1:
-            page = 1
+        params = schema.load(request.args)
+    except ValidationError as err:
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "invalid_query",
+                        "message": "Parameter validation failed",
+                        "details": format_validation_errors(err.messages),
+                    }
+                }
+            ),
+            400,
+        )
 
-        sort = request.args.get("sort", "date_desc")
-
-        query = Review.query.filter_by(user_id=user_id)
-        
-        query = query.options(joinedload(Review.historic_site))
-        
-
-        if sort == "date_asc":
-            query = query.order_by(Review.created_at.asc())
-        else:
-            query = query.order_by(Review.created_at.desc())
-
-        pagination = query.paginate(
-            page=page,
-            per_page=per_page,
-            error_out=False
+    try:
+        pagination = review_service.get_user_reviews(
+            user_id=user_id,
+            page=params["page"],
+            per_page=params["per_page"],
+            sort=params["sort"],
         )
 
         data = MyReviewResponseSchema(many=True).dump(pagination.items)
-        
+
         meta = {
             "page": pagination.page,
             "per_page": pagination.per_page,
             "total": pagination.total,
-            "pages": pagination.pages
+            "total_pages": pagination.pages,
         }
 
         return jsonify({"data": data, "meta": meta}), 200
 
     except Exception as e:
-        print(f"Error en list_my_reviews: {e}") 
-        return jsonify({
-            "error": {"code": "server_error", "message": "An unexpected error occurred"}
-        }), 500
+        print(f"Error en list_my_reviews: {e}")
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "server_error",
+                        "message": "An unexpected error occurred",
+                    }
+                }
+            ),
+            500,
+        )

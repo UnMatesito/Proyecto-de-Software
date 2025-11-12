@@ -55,7 +55,7 @@ def list_reviews(site_id):
     try:
         params = schema.load(request.args)
     except ValidationError as err:
-        return jsonify(format_validation_errors(err)), 400
+        return jsonify(format_validation_errors(err.messages)), 400
 
     try:
         # Buscar reseñas con paginación y filtros
@@ -98,11 +98,19 @@ def create_review(site_id):
     if blocked_response:
         return blocked_response
 
+    try:
+        site = historic_site_service.get_published_site_by_id(site_id)
+    except ValueError:
+        return jsonify({
+            "error": {"code": "not_found", "message": "Site not found or not visible"}
+        }), 404
+
+
     schema = ReviewCreateSchema()
     try:
         data = schema.load(request.get_json() or {})
     except ValidationError as err:
-        return jsonify(format_validation_errors(err)), 400
+        return jsonify(format_validation_errors(err.messages)), 400
 
     try:
         review = review_service.create_review(

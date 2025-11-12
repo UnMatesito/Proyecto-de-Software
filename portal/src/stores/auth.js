@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout(){
     try {
-      await api.post('/auth/google/logout'); 
+      await api.post('/auth/google/logout');
     } catch (error) {
       console.error("authStore: Error llamando al endpoint de logout", error);
     } finally {
@@ -31,10 +31,10 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchUser() {
 
     try {
-        const response = await api.get('/user/me');
+        const response = await api.get('/me');
 
         console.log("Usuario recibido:", response.data);
-        
+
         saveUser(response.data);
 
     } catch (error) {

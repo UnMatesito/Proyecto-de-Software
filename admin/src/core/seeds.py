@@ -1023,7 +1023,6 @@ def seed_reviews():
     from core.audit import disable_audit_listeners, enable_audit_listeners
     from core.models import HistoricSite, Review, User
     from core.models.review import ReviewStatus
-    from core.services import role_service as RoleService
 
 
     print("Generando reseñas aleatorias...")

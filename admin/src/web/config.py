@@ -29,6 +29,7 @@ class Config:
     JWT_COOKIE_CSRF_PROTECT = True
     JWT_COOKIE_SECURE = True
     JWT_SKIP_OPTIONS_REQUESTS = True
+    JWT_COOKIE_SAMESITE = "None"
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5174')
@@ -54,6 +55,8 @@ class DevelopmentConfig(Config):
     SESSION_COOKIE_SECURE = False
     MINIO_SECURE = False
     JWT_COOKIE_SECURE = False
+    JWT_COOKIE_SAMESITE = "Lax"
+    JWT_COOKIE_CSRF_PROTECT = False
     pass
 
 

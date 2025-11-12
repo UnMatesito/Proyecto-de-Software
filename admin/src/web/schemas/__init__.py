@@ -3,6 +3,7 @@ Schemas de validación para la API usando Marshmallow
 """
 from .favorites_schemas import FavoriteQuerySchema
 from .reviews_schemas import (
+    MyReviewQuerySchema,
     MyReviewResponseSchema,
     ReviewCreateSchema,
     ReviewQuerySchema,
@@ -25,6 +26,7 @@ __all__ = [
     'ReviewQuerySchema',
     'ReviewResponseSchema',
     'ReviewCreateSchema',
+    "MyReviewQuerySchema",
     "MyReviewResponseSchema",
     "HistoricSiteShortSchema"
 ]
