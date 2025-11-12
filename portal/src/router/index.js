@@ -1,5 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
+
+import { getFeatureFlag } from '@/api/featureFlags'
+import { maintenanceState } from '@/utils/maintenanceState'
+
 import HomeView from '../views/HomeView.vue'
+import MaintenanceView from '../views/MaintenanceView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,6 +15,11 @@ const router = createRouter({
       component: HomeView,
     },
     {
+      path: '/mantenimiento',
+      name: 'maintenance',
+      component: MaintenanceView,
+    },
+    {
       path: '/about',
       name: 'about',
       // route level code-splitting
@@ -18,6 +28,61 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue'),
     },
   ],
+})
+
+const PORTAL_FLAG_NAME = 'portal_maintenance_mode'
+const CACHE_WINDOW_MS = 15000
+let ongoingRequest = null
+
+const ensurePortalAvailability = async (forceRefresh = false) => {
+  const now = Date.now()
+
+  if (
+    !forceRefresh &&
+    maintenanceState.lastChecked &&
+    now - maintenanceState.lastChecked < CACHE_WINDOW_MS
+  ) {
+    return maintenanceState.isActive
+  }
+
+  if (!ongoingRequest) {
+    ongoingRequest = getFeatureFlag(PORTAL_FLAG_NAME)
+      .then((data) => {
+        maintenanceState.isActive = Boolean(data.is_enabled)
+        maintenanceState.message = data.maintenance_message || ''
+        maintenanceState.lastChecked = Date.now()
+
+        return maintenanceState.isActive
+      })
+      .catch((error) => {
+        console.error('No se pudo obtener el estado de mantenimiento del portal', error)
+        maintenanceState.isActive = false
+        maintenanceState.message = ''
+        maintenanceState.lastChecked = Date.now()
+
+        return false
+      })
+      .finally(() => {
+        ongoingRequest = null
+      })
+  }
+
+  return ongoingRequest
+}
+
+router.beforeEach(async (to, from, next) => {
+  const forceRefresh = maintenanceState.isActive
+  const portalInMaintenance = await ensurePortalAvailability(forceRefresh)
+
+  if (portalInMaintenance && to.name !== 'maintenance') {
+    return next({ name: 'maintenance' })
+  }
+
+  if (!portalInMaintenance && to.name === 'maintenance') {
+    return next({ name: 'home' })
+  }
+
+  return next()
 })
 
 export default router

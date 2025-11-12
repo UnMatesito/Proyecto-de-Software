@@ -4,7 +4,11 @@ from marshmallow import ValidationError
 
 from core.database import db
 from core.models import Review
-from core.services import review_service, historic_site_service
+from core.services import (
+    get_feature_flag_by_name,
+    historic_site_service,
+    review_service,
+)
 from core.utils.search import search_with_pagination
 from web.schemas import (
     ReviewCreateSchema,
@@ -15,6 +19,25 @@ from web.utils.format_marshmallow_validation_errors import format_validation_err
 from . import api_bp
 
 
+def _reviews_feature_blocked_response():
+    flag = get_feature_flag_by_name("reviews_enabled")
+
+    if flag and not flag.is_enabled:
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "feature_disabled",
+                        "message": flag.maintenance_message or "Reviews are disabled",
+                    }
+                }
+            ),
+            503,
+        )
+
+    return None
+
+
 @api_bp.get("/sites/<int:site_id>/reviews")
 @jwt_required()
 def list_reviews(site_id):
@@ -23,6 +46,10 @@ def list_reviews(site_id):
     Devuelve una lista paginada de reseñas para un sitio histórico específico.
     Usa los métodos genéricos de búsqueda y paginación.
     """
+    blocked_response = _reviews_feature_blocked_response()
+    if blocked_response:
+        return blocked_response
+
     try:
         historic_site_service.get_published_site_by_id(site_id)
     except ValueError:
@@ -72,6 +99,10 @@ def create_review(site_id):
     Crea una nueva reseña para un sitio histórico.
     """
     user_id = get_jwt_identity()
+    blocked_response = _reviews_feature_blocked_response()
+    if blocked_response:
+        return blocked_response
+
     schema = ReviewCreateSchema()
     try:
         data = schema.load(request.get_json() or {})
@@ -122,6 +153,10 @@ def get_review(site_id, review_id):
     GET /sites/{site_id}/reviews/{review_id}
     Devuelve una reseña específica.
     """
+    blocked_response = _reviews_feature_blocked_response()
+    if blocked_response:
+        return blocked_response
+
     try:
         review = Review.query.filter_by(
             id=review_id, historic_site_id=site_id
@@ -148,6 +183,10 @@ def delete_review(site_id, review_id):
     Elimina una reseña del usuario autenticado.
     """
     user_id = get_jwt_identity()
+
+    blocked_response = _reviews_feature_blocked_response()
+    if blocked_response:
+        return blocked_response
 
     try:
         review = Review.query.get(review_id)
