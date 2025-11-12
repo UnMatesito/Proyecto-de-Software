@@ -427,9 +427,9 @@ def list_published_sites(
         tags_str: Tags separados por coma (todos deben coincidir)
         order_by: latest | oldest | rating-5-1 | rating-1-5
         lat, lon, radius: Para búsqueda geoespacial
+        favorited_by_user_id: ID de usuario para filtrar sólo sus favoritos
         page: Número de página
         per_page: Items por página
-        favorited_by_user_id: ID de usuario para filtrar sólo sus favoritos
 
     Returns:
         Dict con paginación: {"items": [], "current_page": 1, "per_page": 20, "total": 100}
