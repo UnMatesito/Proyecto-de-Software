@@ -1,20 +1,64 @@
 <template>
+  <div class="border p-2 my-2 bg-white rounded-md">
+    <div class="flex justify-between">
+      <h4 class="font-semibold text-proyecto-text ">
+      Radio de búsqueda: {{ actualRadius / 1000 + " km" }}
+      </h4>
+      <ToggleButton />
+
+    </div>
+
+    <div class="flex justify-between items-center">
+
+      <div class="flex gap-2 mt-2">
+        
+        <ButtonPrimary 
+        v-for="value in radius" 
+        :text="value + ' km'"  
+        @click="onRadiusClick(value)" 
+        :class="actualRadius == value*1000 ? 'bg-proyecto-accent' : ''" />
+      </div>
+      <div class="flex flex-col items-end">
+        <ButtonPrimary v-if="showButton" 
+        :text="'Actualizar radio de búsqueda'" 
+        @click="updateRadiusPath" 
+        :icon_left="'fa-solid fa-rotate mr-2'" />
+      </div>
+    </div>
+
+
+  </div>
   <div :style="props.styleContent">
-    <l-map @update:zoom="zoomUpdated" @update:center="centerUpdated" @update:bounds="" :zoom="props.zoom" :center="props.center" :class="'border rounded-xl'">
+    <l-map @click="onMapClick"   @mousemove="onMouseMove" :zoom="props.zoom" :center="props.center" :class="'border rounded-xl'">
       <l-tile-layer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       ></l-tile-layer>
-      <l-control>
-        <ButtonPrimary v-if="showButton" :text="'Actualizar radio de busqueda'" @click="updateRedius" ></ButtonPrimary>
-      </l-control>
-      <l-marker  v-for="(m, index) in props.marks" 
-      :lat-lng="[m.lat, m.long]"
-      :key="index"
-      :icon="customIcon">
-        <l-popup :visible="true">{{ m.name }}</l-popup>
-      </l-marker>
-      <l-circle :lat-lng="radiusCenter" :radius="radius" color="orange">
 
+      <l-control>
+        <div class="bg-proyecto-bg p-2 bottom-1 rounded-md shadow-md text-proyecto-text border-1 text-xs font-semibold ">
+          {{ coordinates ? coordinates : '' }}
+        </div>
+      </l-control>
+
+      <l-marker  v-for="(m, index) in props.marks" 
+      :lat-lng="[m.lat, m.lon]"
+      :key="index"
+      :icon="customIconOrange">
+        <l-popup :visible="true">
+          {{ m.name }}
+        </l-popup>
+      </l-marker>
+
+      <l-marker v-if="actualRadius "  
+      :lat-lng="radiusCenter"
+      :icon="customIconRed">
+      </l-marker>
+
+      <l-circle 
+      v-if="actualRadius || route.path.lat"
+      :lat-lng="radiusCenter" 
+      :radius="actualRadius" 
+      color="orange">
       </l-circle>
     </l-map>
   </div>
@@ -22,20 +66,35 @@
 
 <script setup>
     import { ref } from 'vue'
-    import L, { map } from "leaflet";
+    import L from "leaflet";
     import "leaflet/dist/leaflet.css";
     import { LMap, LTileLayer, LMarker, LPopup, LControl, LCircle } from "@vue-leaflet/vue-leaflet";
-    import ButtonPrimary from "./buttons/ButtonPrimary.vue";
+    import { useRoute, useRouter } from 'vue-router';
+    import ButtonPrimary from "./buttons/ButtonPrimary.vue"
+    import ToggleButton from './buttons/ToggleButton.vue';
 
     const showButton = ref(false)
-    const radiusCenter = ref([-34.9205, -57.9536])
-    const radiusCenterHelper = ref([-34.9205, -57.9536])
-    const radius = ref(0)
-    const zoomRadius = ref(13)
-    
-    const customIcon =  L.icon({
+    const radiusCenter = ref({lat: -34.92098577515593, lng: -57.95459747314454})
+    const radius = [5, 10, 30, 50, 100]
+    const actualRadius = ref(null)
+    const coordinates = ref(null)
+    const route = useRoute()
+    const router = useRouter()
+
+    const customIconOrange =  L.icon({
         iconUrl:
           "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png",
+        shadowUrl:
+          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+      })
+      
+    const customIconRed=  L.icon({
+        iconUrl:
+          "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
         shadowUrl:
           "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
         iconSize: [25, 41],
@@ -53,30 +112,36 @@
         index: { default: true }
     })
 
-    const calculateNewRadius = () => {
-      const minRadius = 50;
-      const maxRadius = 5000000;
-      const referenceRadius = 500;
-      const referenceZone = 13;
-      const scale = Math.pow(2, referenceZone - zoomRadius.value);
-      return Math.round(Math.max(minRadius, Math.min(maxRadius, referenceRadius * scale)))
+    const calculateNewRadius = (r) => {
+      return r * 1000
     }
-    
-    const zoomUpdated = (newZoom) =>{
-      zoomRadius.value = newZoom;
-      console.log(newZoom)
-      showButton.value = true;
-    }  
-    
-    const centerUpdated = (newCenter) => { 
-      radiusCenterHelper.value = [newCenter.lat, newCenter.lng];
+    const onMapClick = (e) => {
+      radiusCenter.value = e.latlng
+      if (!actualRadius.value)
+        actualRadius.value = 5*1000;
       showButton.value = true;
     }
-    
-    const updateRedius = async () => {
-      radiusCenter.value = radiusCenterHelper.value;
-      radius.value = calculateNewRadius();
-      showButton.value = false;
+
+    const onMouseMove = (e) => {
+      coordinates.value = `Lat: ${parseFloat(e.latlng.lat).toFixed(3)} Lon: ${parseFloat(e.latlng.lng).toFixed(3)}`;
+    }
+
+    const onRadiusClick = (r) => {
+      actualRadius.value = calculateNewRadius(r);
+      showButton.value = true;
+    }
+
+    const updateRadiusPath = () => {
+      console.log(radiusCenter.value)
+      router.push({
+        path: route.path,
+        query: { 
+          ...route.query,
+          lat: radiusCenter.value.lat,
+          lon: radiusCenter.value.lng ,
+          radius: actualRadius.value / 1000,
+        }
+      })
     }
 
 </script>

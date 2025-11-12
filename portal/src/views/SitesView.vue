@@ -45,14 +45,16 @@
   const marks = ref([])
   const fetchSites = async (url) => {
     try {
+      console.log(rout.fullPath)
       const { data } = await api.get(rout.fullPath)
       const response = data
       sites.value = response.data
       pagination.value = response.meta
-      console.log(sites.value)
+      marks.value = []
       sites.value.forEach(site => {
-        marks.value.push({name: site.name, lat: site.lat, long: site.long})
+        marks.value.push({name: site.name, lat: site.lat, lon: site.lon})
       });
+      console.log(...sites.value)
     } catch (error) {
       apiMessage.value = '❌ No se pudo conectar con la API'
       console.error(error)

@@ -3,10 +3,9 @@
     <div class="flex flex-col items-center justify-center max-w-[1200px] w-full">
 
         <section class="w-full p-3 max-w-screen-xl ">
-            <ButtonPrimary :text="'Volver'" :icon_left="'fa-solid fa-arrow-left mr-2'" :link="'/sites'" :class="'my-4'"> </ButtonPrimary>
+            <ButtonPrimary :text="'Volver'" :icon_left="'fa-solid fa-arrow-left mr-2'" :link="'/sites'" :class="'my-4'"/> 
             <div class="flex items-start gap-4 w-full  pt-1 pb-3 flex-wrap relative" >
-  
-                <Carrousel></Carrousel>
+                <Carrousel/>
                 <aside class="flex gap-4 flex-col max-w-[300px]">
                     <h2 class="text-2xl font-bold">
                         {{ detalle.name }}
@@ -56,17 +55,18 @@
                         <ButtonPrimary :text="'Reseñas'" :icon_left="'fa-solid fa-arrow-down mr-2'" @click="scrollToReviews" > </ButtonPrimary>
                         <ButtonPrimary :text="'Ver en el mapa'" :icon_left="'fa-solid fa-arrow-down mr-2'" @click="scrollToMap" > </ButtonPrimary>
                     </div>
-
                 </aside>
             </div>      
             <Acordion 
-                    :content="content">
-            </Acordion>
+            :content="content"/>       
         </section>
         <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
             <h3 class="text-3xl text-proyecto-accent">Locación</h3>
             <div id="map">
-                <Map v-if="detalle.name" styleContent="height:400px;  width: 100%" :marks="[{name: detalle.name, lat: detalle.lat, long: detalle.long}]" :center="[detalle.lat, detalle.long]"  ></Map>
+                <Map v-if="detalle.name" 
+                styleContent="height:400px;  width: 100%" 
+                :marks="[{name: detalle.name, lat: detalle.lat, long: detalle.long}]" 
+                :center="[detalle.lat, detalle.long]"></Map>
             </div>
         </div>
         <section class="w-full max-w-[1200px] flex flex-col gap-3 mt-3" >
@@ -77,7 +77,7 @@
             :user_email="r.user_email" 
             :text="r.comment" 
             :created_at="r.inserted_at" 
-            :rating="r.rating"></Review>
+            :rating="r.rating"/>
             <p v-if="detalle.page > 1" @click="fetchReviews()" class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out">Ver más reseñas...</p>
         </section>
     </div>

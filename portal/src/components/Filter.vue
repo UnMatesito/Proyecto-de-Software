@@ -37,7 +37,7 @@
                 </div>        
             </div>
             <div class="flex flex-col gap-2">
-                <div v-on:click="tagss" class="w-96 p-2  text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <div v-on:click="tagss" class="w-96 p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                     <input id="bordered-checkbox-1" v-model="favoriteValue" type="checkbox" value="" name="bordered-checkbox" class=" text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                     <label for="bordered-checkbox-1" class="w-full  ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Favoritos</label>
                 </div>
@@ -62,9 +62,12 @@
                                     ...(cityValue) && {city: cityValue},
                                     ...(tagsValue.length > 0) && {tags: tagsValue.join()},
                                     ...{page: rout.query.page || 1},
-                                    ...(false) && {favorites: favoriteValue} 
-                                    }}" class="text-white bg-proyecto-primary hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Filtrar</router-link>
-                <router-link :to="{query: {}}" class="text-white  bg-proyecto-primary hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Restaurar</router-link>
+                                    ...(false) && {favorites: favoriteValue},
+                                    ...({lat: rout.query.lat}),
+                                    ...({lon: rout.query.lon}),
+                                    ...({radius: rout.query.radius})
+                                    }}" class="text-white bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Filtrar</router-link>
+                <router-link :to="{query: {}}" class="text-white  bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Restaurar</router-link>
             </div>
         </div>
         <div>

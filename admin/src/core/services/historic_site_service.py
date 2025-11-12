@@ -445,50 +445,8 @@ def list_published_sites(
 
     # Filtros de texto
     if name:
-        filters["name"] = name  # Búsqueda parcial en columna name
-    if description:
-        # Buscar en brief_description y full_description
-        # Necesitamos manejar esto como caso especial
-        filters["description_search"] = description
+        query = query.filter(HistoricSite.name.ilike(f"%{name}%"))
 
-    # Filtro por ciudad - buscar city_id
-    if city_name:
-        city = City.query.filter(
-            func.lower(City.name) == city_name.lower()
-        ).first()
-        if city:
-            filters["city_id"] = city.id
-
-    print(filters)
-    # Filtro por provincia - buscar province_id
-    if province_name:
-        province = Province.query.filter(
-            func.lower(Province.name) == province_name.lower()
-        ).first()
-        if province:
-            filters["province_id"] = province.id
-
-    # Filtro por tags - usar tags_id que aprovecha el filtro especial
-    if tags_str:
-        tag_list = [t.strip() for t in tags_str.split(",") if t.strip()]
-        if tag_list:
-            tag_ids = []
-            for slug in tag_list:
-                tag = Tag.query.filter_by(slug=slug).first()
-                if tag:
-                    tag_ids.append(tag.id)
-
-            if tag_ids:
-                filters["tags_id"] = tag_ids
-
-    # Filtros de visibilidad: solo sitios publicados
-    filters["is_visible"] = True
-    filters["pending_validation"] = False
-
-    # Construir query base
-    query = build_search_query(HistoricSite, filters)
-
-    # Filtro especial para description (buscar en ambas columnas de descripción)
     if description:
         query = query.filter(
             or_(
@@ -535,6 +493,7 @@ def list_published_sites(
 
     # Búsqueda geoespacial
     if lat is not None and lon is not None and radius is not None:
+        print(lat)
         radius_meters = float(radius) * 1000
         ref_point = WKTElement(f"POINT({lon} {lat})", srid=4326)
 

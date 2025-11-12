@@ -32,7 +32,7 @@ import IconArrowLeft from './icons/IconArrowLeft.vue';
             <IconArrowLeft></IconArrowLeft>
         </div>
         <router-link v-for="value in pageToShow" 
-            :to="value != '...' ? {query: { ...route.query, page:value }} :  {query: { ...route.query}}"
+            :to="value != '...' ? {query: { ...route.query, page:value }} : {query: { ...route.query}}"
             v-on="value != '...' ? {click: fetchSites} : {}"
             class="
             w-10 h-10 
