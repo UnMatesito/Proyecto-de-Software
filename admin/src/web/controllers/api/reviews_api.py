@@ -4,7 +4,11 @@ from marshmallow import ValidationError
 
 from core.database import db
 from core.models import Review
-from core.services import review_service, historic_site_service
+from core.services import (
+    get_feature_flag_by_name,
+    historic_site_service,
+    review_service,
+)
 from core.utils.search import search_with_pagination
 from web.schemas import (
     ReviewCreateSchema,
@@ -13,6 +17,25 @@ from web.schemas import (
 )
 from web.utils.format_marshmallow_validation_errors import format_validation_errors
 from . import api_bp
+
+
+def _reviews_feature_blocked_response():
+    flag = get_feature_flag_by_name("reviews_enabled")
+
+    if flag and not flag.is_enabled:
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "feature_disabled",
+                        "message": flag.maintenance_message or "Reviews are disabled",
+                    }
+                }
+            ),
+            503,
+        )
+
+    return None
 
 
 @api_bp.get("/sites/<int:site_id>/reviews")
@@ -72,6 +95,12 @@ def create_review(site_id):
     Crea una nueva reseña para un sitio histórico.
     """
     user_id = get_jwt_identity()
+
+    # Verificar si la funcionalidad de creación de reseñas está habilitada
+    blocked_response = _reviews_feature_blocked_response()
+    if blocked_response:
+        return blocked_response
+
     schema = ReviewCreateSchema()
     try:
         data = schema.load(request.get_json() or {})
