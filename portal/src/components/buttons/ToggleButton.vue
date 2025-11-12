@@ -19,7 +19,6 @@
     peer-checked:bg-proyecto-primary
     peer-checked:after:translate-x-full 
     peer-checked:after:content-[<i class='fa-solid fa-xmark'></i>] 
-
     peer-checked:after:border-white 
     peer-focus:ring-green-300">
     </div>

@@ -60,6 +60,9 @@
       console.error(error)
     }
   }
+  const fetchTags = async () => {
+    const { response } = await api.get("")
+  }
   onMounted(
       () => fetchSites()
   )
