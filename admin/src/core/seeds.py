@@ -776,10 +776,12 @@ def seed_site_tags():
 
 def seed_aditional_public_users():
     """Crea usuarios públicos adicionales (portal)"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
-    import uuid
 
     print("Creando usuarios públicos adicionales...")
     fake = Faker("es_AR")
@@ -803,10 +805,12 @@ def seed_aditional_public_users():
 
 def seed_aditional_editors():
     """Crea usuarios editores adicionales"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
-    import uuid
 
     print("Creando usuarios editores adicionales...")
     fake = Faker("es_AR")
@@ -831,10 +835,12 @@ def seed_aditional_editors():
 
 def seed_aditional_admins():
     """Crea usuarios administradores adicionales (no system admin)"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
-    import uuid
 
     print("Creando usuarios administradores adicionales...")
     fake = Faker("es_AR")
@@ -859,10 +865,12 @@ def seed_aditional_admins():
 
 def seed_aditional_moderators():
     """Crea usuarios moderadores adicionales"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
-    import uuid
 
     print("Creando usuarios moderadores adicionales...")
     fake = Faker("es_AR")
@@ -889,13 +897,14 @@ def seed_aditional_historic_sites():
     Crea sitios históricos adicionales con Faker para desarrollo.
     Genera ubicaciones aleatorias dentro de provincias existentes.
     """
+    from datetime import datetime, timezone
+    from random import choice, randint, uniform
+
     from faker import Faker
     from geoalchemy2.elements import WKTElement
-    from random import choice, randint
-    from datetime import datetime, timezone
-    from core.models import HistoricSite, City, Category, ConservationState, User
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
-    from random import uniform
+    from core.models import Category, City, ConservationState, HistoricSite, User
 
     print("Creando sitios históricos adicionales con Faker...")
 
@@ -949,12 +958,14 @@ def seed_aditional_validated_historic_sites():
     Crea sitios históricos adicionales validados, con Faker para desarrollo.
     Genera ubicaciones aleatorias dentro de provincias existentes.
     """
+    from datetime import datetime, timezone
+    from random import choice, randint, uniform
+
     from faker import Faker
     from geoalchemy2.elements import WKTElement
-    from random import choice, randint, uniform
-    from datetime import datetime, timezone
-    from core.models import HistoricSite, City, Category, ConservationState, User
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import Category, City, ConservationState, HistoricSite, User
 
     print("Creando sitios históricos validados con Faker...")
 
@@ -1004,12 +1015,14 @@ def seed_aditional_validated_historic_sites():
 
 def seed_reviews():
     """Genera reseñas (reviews) aleatorias para los sitios históricos."""
-    from faker import Faker
     import random
-    from core.models import Review, User, HistoricSite
-    from core.models.review import ReviewStatus
-    from core.audit import disable_audit_listeners, enable_audit_listeners
     from datetime import datetime, timezone
+
+    from faker import Faker
+
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import HistoricSite, Review, User
+    from core.models.review import ReviewStatus
     from core.services import role_service as RoleService
 
 
@@ -1072,9 +1085,10 @@ def seed_reviews():
 
 def seed_favorites():
     """Asocia aleatoriamente sitios históricos a usuarios públicos como favoritos."""
-    from random import sample, randint
-    from core.models import User, HistoricSite
+    from random import randint, sample
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import HistoricSite, User
 
     print("Agregando favoritos de usuarios...")
 

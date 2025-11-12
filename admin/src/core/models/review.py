@@ -1,9 +1,10 @@
+import enum
 from datetime import datetime, timezone
 
 from sqlalchemy import CheckConstraint, event
 
 from core.database import db
-import enum
+
 
 class ReviewStatus(enum.Enum):
     PENDIENTE = "Pendiente"

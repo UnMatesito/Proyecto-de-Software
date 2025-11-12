@@ -1,5 +1,5 @@
 from flask_wtf.file import FileAllowed
-from wtforms import BooleanField, SubmitField, FileField
+from wtforms import BooleanField, FileField, SubmitField
 
 from core.services import (
     get_all_categories,

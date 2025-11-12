@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import desc
@@ -6,7 +7,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from core.database import db
 from core.models import Role, User
 from core.utils import pagination
-import uuid
 
 
 def get_all_users():

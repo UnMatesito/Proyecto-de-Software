@@ -1,15 +1,17 @@
 from flask import jsonify, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, jwt_required
+from sqlalchemy.orm import joinedload
+
 #from core.models.favorite import Favorite
 from core.database import db
-from . import api_bp
-from core.services import user_service
-from core.models.user import User
-from web.schemas.reviews_schemas import ReviewQuerySchema, MyReviewResponseSchema
-from web.utils.format_marshmallow_validation_errors import format_validation_errors
 from core.models import Review
-from sqlalchemy.orm import joinedload
-    
+from core.models.user import User
+from core.services import user_service
+from web.schemas.reviews_schemas import MyReviewResponseSchema, ReviewQuerySchema
+from web.utils.format_marshmallow_validation_errors import format_validation_errors
+
+from . import api_bp
+
 
 @api_bp.route("/user/me", methods=["GET"])
 @jwt_required()

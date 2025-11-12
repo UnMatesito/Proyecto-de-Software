@@ -1,9 +1,11 @@
 from flask import jsonify, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
+
 from core.services import user_service
-from . import api_bp
 from web.schemas import FavoriteQuerySchema
+
+from . import api_bp
 
 
 @api_bp.put("/sites/<int:site_id>/favorite")

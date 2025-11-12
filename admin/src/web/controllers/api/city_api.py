@@ -1,6 +1,9 @@
 from flask import jsonify
+
 from core.services import city_service, province_service
+
 from . import api_bp
+
 
 @api_bp.get("/cities")
 def list_cities():

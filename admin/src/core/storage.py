@@ -1,12 +1,13 @@
-from minio import Minio
-from minio.error import S3Error
 import json
+import logging
 import mimetypes
 import uuid
 from pathlib import Path
 from typing import Optional
+
+from minio import Minio
+from minio.error import S3Error
 from werkzeug.datastructures import FileStorage
-import logging
 
 
 class StorageError(Exception):

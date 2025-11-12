@@ -550,7 +550,7 @@ def get_city_and_province(city_name, province_name):
     Raises:
         ValueError: Si la provincia o ciudad no existen
     """
-    from core.models import Province, City
+    from core.models import City, Province
 
     # Buscar provincia
     province = Province.query.filter(
@@ -634,7 +634,7 @@ def create_site_from_api(
     Raises:
         ValueError: Si hay datos inválidos
     """
-    from core.models import ConservationState, Category, User
+    from core.models import Category, ConservationState, User
 
     # Validar que el usuario exista
     user = User.query.get(user_id)

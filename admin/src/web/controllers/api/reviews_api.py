@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 
 from core.database import db
@@ -10,14 +10,10 @@ from core.services import (
     review_service,
 )
 from core.utils.search import search_with_pagination
-from web.schemas import (
-    ReviewCreateSchema,
-    ReviewQuerySchema,
-    ReviewResponseSchema,
-)
+from web.schemas import ReviewCreateSchema, ReviewQuerySchema, ReviewResponseSchema
 from web.utils.format_marshmallow_validation_errors import format_validation_errors
-from . import api_bp
 
+from . import api_bp
 
 
 def _reviews_feature_blocked_response():

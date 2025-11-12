@@ -1,8 +1,10 @@
-from core.database import db
-from core.models import SiteImage, HistoricSite
-from core.storage import storage
-from werkzeug.datastructures import FileStorage
 from typing import List, Optional, Sequence
+
+from werkzeug.datastructures import FileStorage
+
+from core.database import db
+from core.models import HistoricSite, SiteImage
+from core.storage import storage
 
 
 def create_site_image(

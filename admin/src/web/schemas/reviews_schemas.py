@@ -1,4 +1,5 @@
 from marshmallow import Schema, fields, validate
+
 from .sites_schemas import HistoricSiteShortSchema
 
 
