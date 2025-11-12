@@ -33,7 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchUser() {
 
     try {
-        const response = await api.get('/user/me');
+        const response = await api.get('/me');
 
         console.log("Usuario recibido:", response.data);
 

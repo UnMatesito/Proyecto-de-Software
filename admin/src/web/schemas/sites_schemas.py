@@ -3,7 +3,15 @@ Schemas de validación para la API de Sitios Históricos usando Marshmallow
 """
 from datetime import datetime, timezone
 
-from marshmallow import Schema, fields, validates, ValidationError, validate, validates_schema
+from marshmallow import (
+    Schema,
+    ValidationError,
+    fields,
+    validate,
+    validates,
+    validates_schema,
+)
+
 from core.services import conservation_state_service
 
 
@@ -130,8 +138,8 @@ class SiteCreateSchema(Schema):
     @validates('province')
     def validate_province(self, value):
         """Valida que la provincia exista"""
-        from core.models import Province
         from core.database import db
+        from core.models import Province
 
         if not value or not value.strip():
             raise ValidationError("Province name cannot be empty")
@@ -146,8 +154,8 @@ class SiteCreateSchema(Schema):
     @validates_schema
     def validate_city_in_province(self, data, **kwargs):
         """Valida que la ciudad exista en la provincia especificada"""
-        from core.models import Province, City
         from core.database import db
+        from core.models import City, Province
 
         city_name = data.get('city')
         province_name = data.get('province')
@@ -235,3 +243,8 @@ class SiteListResponseSchema(Schema):
 
     data = fields.List(fields.Nested(SiteResponseSchema))
     meta = fields.Nested(SiteMetaSchema)
+
+class HistoricSiteShortSchema(Schema):
+    """Schema corto para representar un sitio histórico dentro de otra entidad."""
+    id = fields.Int()
+    name = fields.Str()

@@ -2,17 +2,18 @@ from flask import (
     Blueprint,
     Response,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
     session,
     url_for,
-    jsonify,
 )
 
 from core.services import (
     assign_relations_to_historic_site,
     create_historic_site,
+    create_multiple_images,
     delete_historic_site,
     get_all_cities,
     get_all_conservation_state,
@@ -23,15 +24,14 @@ from core.services import (
     get_conservation_state_by_id,
     get_historic_site_by_id,
     get_province_by_id,
+    get_site_images,
     get_sites_filtered,
     get_tag_by_id,
     get_user_by_id,
+    reorder_site_images,
     restore_historic_site,
     update_historic_site,
     validate_historic_site,
-    create_multiple_images,
-    get_site_images,
-    reorder_site_images,
 )
 from core.utils.export import export_sites_to_csv, get_csv_filename
 from web.forms.historic_site import CreateSiteForm, EditSiteForm, SiteImageUploadForm
@@ -459,8 +459,8 @@ def delete(site_id):
 def delete_image(image_id):
     """Elimina una imagen específica de un sitio"""
     try:
-        from core.services.site_image_service import delete_site_image
         from core.models import SiteImage
+        from core.services.site_image_service import delete_site_image
 
         image = SiteImage.query.get_or_404(image_id)
         site_id = image.historic_site_id

@@ -1,6 +1,9 @@
 from flask import jsonify
+
 from core.services import tag_service
+
 from . import api_bp
+
 
 @api_bp.get("/tags")
 def list_tags():

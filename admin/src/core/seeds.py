@@ -36,6 +36,7 @@ def run(env="production"):
         seed_aditional_validated_historic_sites()
         seed_site_tags()
         seed_favorites()
+        seed_reviews()
 
     print("Seed finalizado")
 
@@ -775,10 +776,12 @@ def seed_site_tags():
 
 def seed_aditional_public_users():
     """Crea usuarios públicos adicionales (portal)"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
-    import uuid
 
     print("Creando usuarios públicos adicionales...")
     fake = Faker("es_AR")
@@ -800,13 +803,14 @@ def seed_aditional_public_users():
     db.session.add_all(usuarios)
     db.session.commit()
 
-
 def seed_aditional_editors():
     """Crea usuarios editores adicionales"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
-    import uuid
 
     print("Creando usuarios editores adicionales...")
     fake = Faker("es_AR")
@@ -831,10 +835,12 @@ def seed_aditional_editors():
 
 def seed_aditional_admins():
     """Crea usuarios administradores adicionales (no system admin)"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
-    import uuid
 
     print("Creando usuarios administradores adicionales...")
     fake = Faker("es_AR")
@@ -859,10 +865,12 @@ def seed_aditional_admins():
 
 def seed_aditional_moderators():
     """Crea usuarios moderadores adicionales"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
-    import uuid
 
     print("Creando usuarios moderadores adicionales...")
     fake = Faker("es_AR")
@@ -884,19 +892,19 @@ def seed_aditional_moderators():
     db.session.add_all(usuarios)
     db.session.commit()
 
-
 def seed_aditional_historic_sites():
     """
     Crea sitios históricos adicionales con Faker para desarrollo.
     Genera ubicaciones aleatorias dentro de provincias existentes.
     """
+    from datetime import datetime, timezone
+    from random import choice, randint, uniform
+
     from faker import Faker
     from geoalchemy2.elements import WKTElement
-    from random import choice, randint
-    from datetime import datetime, timezone
-    from core.models import HistoricSite, City, Category, ConservationState, User
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
-    from random import uniform
+    from core.models import Category, City, ConservationState, HistoricSite, User
 
     print("Creando sitios históricos adicionales con Faker...")
 
@@ -950,12 +958,14 @@ def seed_aditional_validated_historic_sites():
     Crea sitios históricos adicionales validados, con Faker para desarrollo.
     Genera ubicaciones aleatorias dentro de provincias existentes.
     """
+    from datetime import datetime, timezone
+    from random import choice, randint, uniform
+
     from faker import Faker
     from geoalchemy2.elements import WKTElement
-    from random import choice, randint, uniform
-    from datetime import datetime, timezone
-    from core.models import HistoricSite, City, Category, ConservationState, User
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import Category, City, ConservationState, HistoricSite, User
 
     print("Creando sitios históricos validados con Faker...")
 
@@ -1003,11 +1013,81 @@ def seed_aditional_validated_historic_sites():
     db.session.commit()
     enable_audit_listeners()
 
+def seed_reviews():
+    """Genera reseñas (reviews) aleatorias para los sitios históricos."""
+    import random
+    from datetime import datetime, timezone
+
+    from faker import Faker
+
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import HistoricSite, Review, User
+    from core.models.review import ReviewStatus
+
+
+    print("Generando reseñas aleatorias...")
+
+    fake = Faker("es_AR")
+
+    # Deshabilitar auditoría temporalmente
+    disable_audit_listeners()
+
+    # Obtenemos usuarios públicos (no administradores)
+    public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
+    sites = HistoricSite.query.all()
+
+    reviews = []
+    used_pairs = set()  # para evitar duplicar (user_id, site_id)
+
+    for user in random.sample(public_users, min(len(public_users), 30)):  # hasta 30 usuarios dejan reseñas
+        reviewed_sites = random.sample(sites, random.randint(2, 5))  # cada uno deja entre 2 y 5 reseñas
+        for site in reviewed_sites:
+            pair = (user.id, site.id)
+            if pair in used_pairs:
+                continue  # ya reseñó ese sitio
+
+            used_pairs.add(pair)
+
+            status = random.choices(
+                [ReviewStatus.PENDIENTE, ReviewStatus.APROBADA, ReviewStatus.RECHAZADA],
+                weights=[0.2, 0.6, 0.2],
+                k=1
+            )[0]
+
+            rejected_reason = None
+            if status == ReviewStatus.RECHAZADA:
+                rejected_reason = random.choice([
+                    "Lenguaje inapropiado",
+                    "Contenido irrelevante",
+                    "No cumple las normas del sitio"
+                ])
+
+            review = Review(
+                rating=random.randint(1, 5),
+                content=fake.paragraph(nb_sentences=random.randint(2, 5)),
+                status=status,
+                rejected_reason=rejected_reason,
+                user_id=user.id,
+                historic_site_id=site.id,
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
+            )
+
+            reviews.append(review)
+
+    db.session.add_all(reviews)
+    db.session.commit()
+
+    enable_audit_listeners()
+
+
+
 def seed_favorites():
     """Asocia aleatoriamente sitios históricos a usuarios públicos como favoritos."""
-    from random import sample, randint
-    from core.models import User, HistoricSite
+    from random import randint, sample
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import HistoricSite, User
 
     print("Agregando favoritos de usuarios...")
 

@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import desc
@@ -6,7 +7,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from core.database import db
 from core.models import Role, User
 from core.utils import pagination
-import uuid
 
 
 def get_all_users():
@@ -314,66 +314,6 @@ def get_user_history():
         .all()
     )
 
-def find_or_create_google_user(user_info: dict) -> User:
-    """
-    Busca un usuario por email. Si no existe, lo crea usando la info de Google.
-    'user_info' es el diccionario devuelto por Google (ej. userinfo endpoint).
-    """
-    email = user_info.get('email')
-    if not email:
-        raise ValueError("No se recibió email válido desde Google.")
-
-    user = get_user_by_email(email)
-
-    if user:
-        if not user.is_active():
-            raise ValueError("El usuario existe pero está inactivo o bloqueado.")
-
-        user.avatar = user_info.get('picture')
-        user.first_name = user_info.get('given_name', user.first_name)
-        user.last_name = user_info.get('family_name', user.last_name)
-
-        try:
-            db.session.commit()
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            print(f"Error al actualizar usuario de Google {email}: {e}")
-
-        return user
-
-    else:
-        public_role = Role.query.filter_by(name="Usuario público").first()
-        if not public_role:
-            raise RuntimeError("El rol 'Usuario público' no se encuentra en la base de datos.")
-
-        first_name = user_info.get('given_name', '')
-        last_name = user_info.get('family_name', '')
-
-        if not first_name: first_name = email.split('@')[0]
-        if not last_name: last_name = "(Usuario Google)"
-
-        random_password = str(uuid.uuid4())
-
-        user_data = {
-            "email": email,
-            "first_name": first_name,
-            "last_name": last_name,
-            "role_id": public_role.id,
-            "system_admin": False,
-            "blocked": False,
-            "password": random_password,
-            "avatar": user_info.get('picture'),
-        }
-
-        try:
-            new_user = create_user(**user_data)
-            return new_user
-        except (ValueError, RuntimeError, SQLAlchemyError) as e:
-            print(f"Error al intentar crear usuario de Google {email}: {e}")
-            user = get_user_by_email(email)
-            if user and user.is_active():
-                return user
-            raise RuntimeError(f"No se pudo crear o verificar el usuario: {e}")
 def add_favorite_site(user_id: int, site_id: int):
     """Agrega un sitio histórico a los favoritos del usuario."""
     from core.services.historic_site_service import get_historic_site_by_id
@@ -435,3 +375,64 @@ def get_user_favorites(user_id: int, page: int = 1, per_page: int = 20, order_by
         order_by=order_by,
         sorted_by=sorted_by,
     )
+
+def find_or_create_google_user(user_info: dict) -> User:
+    """
+    Busca un usuario por email. Si no existe, lo crea usando la info de Google.
+    'user_info' es el diccionario devuelto por Google (ej. userinfo endpoint).
+    """
+    email = user_info.get('email')
+    if not email:
+        raise ValueError("No se recibió email válido desde Google.")
+
+    user = get_user_by_email(email)
+
+    if user:
+        if not user.is_active():
+            raise ValueError("El usuario existe pero está inactivo o bloqueado.")
+
+        user.avatar = user_info.get('picture')
+        user.first_name = user_info.get('given_name', user.first_name)
+        user.last_name = user_info.get('family_name', user.last_name)
+
+        try:
+            db.session.commit()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            print(f"Error al actualizar usuario de Google {email}: {e}")
+
+        return user
+
+    else:
+        public_role = Role.query.filter_by(name="Usuario público").first()
+        if not public_role:
+            raise RuntimeError("El rol 'Usuario público' no se encuentra en la base de datos.")
+
+        first_name = user_info.get('given_name', '')
+        last_name = user_info.get('family_name', '')
+
+        if not first_name: first_name = email.split('@')[0]
+        if not last_name: last_name = "(Usuario Google)"
+
+        random_password = str(uuid.uuid4())
+
+        user_data = {
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name,
+            "role_id": public_role.id,
+            "system_admin": False,
+            "blocked": False,
+            "password": random_password,
+            "avatar": user_info.get('picture'),
+        }
+
+        try:
+            new_user = create_user(**user_data)
+            return new_user
+        except (ValueError, RuntimeError, SQLAlchemyError) as e:
+            print(f"Error al intentar crear usuario de Google {email}: {e}")
+            user = get_user_by_email(email)
+            if user and user.is_active():
+                return user
+            raise RuntimeError(f"No se pudo crear o verificar el usuario: {e}")

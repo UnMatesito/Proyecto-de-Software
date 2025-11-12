@@ -1,23 +1,27 @@
-import flask
-import werkzeug
-from flask import request, jsonify, current_app, redirect, session, url_for
-from web import oauth
+from datetime import timedelta
+from urllib.parse import urlencode
 
 from authlib.integrations.base_client.errors import AuthlibBaseError
-from urllib.parse import urlencode
-from datetime import timedelta
-from flask_jwt_extended import create_access_token, jwt_required, unset_jwt_cookies, set_access_cookies
+from flask import current_app, jsonify, redirect, request, session, url_for
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    set_access_cookies,
+    unset_jwt_cookies,
+)
+
 from core.models.user import User
 from core.services import user_service
+from web import oauth
+
 from . import api_bp
 
-@api_bp.route("/auth/google/login")
-def google_login() -> werkzeug.Response:
+
+@api_bp.route("/auth/google/login") 
+def google_login():
     """Redirige al usuario a Google para autenticarse."""
-    print(flask.request.args.get('state'), flask.session.get('_google_authlib_state_'))
-
     redirect_uri = current_app.config['GOOGLE_REDIRECT_URI']
-
+    
     print(f"DEBUG: Google Redirect URI usada: {redirect_uri}")
     return oauth.google.authorize_redirect(redirect_uri)
 
