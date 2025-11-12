@@ -11,7 +11,7 @@ from core.models import Review
 from sqlalchemy.orm import joinedload
     
 
-@api_bp.route("/user/me", methods=["GET"])
+@api_bp.route("/me", methods=["GET"])
 @jwt_required()
 def get_current_user():
     user_id = get_jwt_identity()

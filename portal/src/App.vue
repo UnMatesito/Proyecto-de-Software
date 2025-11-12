@@ -1,4 +1,8 @@
 <template>
+  <div v-if="authStore.authError" class="auth-error-banner">
+    <span>{{ authStore.authError }}</span>
+    <button @click="authStore.clearAuthError()">×</button>
+  </div>
   <div class="min-h-screen shadow-md">
     <!-- Header/Navbar -->
     <header class="bg-white shadow-sm sticky top-0 w-full z-50">
@@ -204,16 +208,51 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
 // import ButtonPrimary from "@/components/buttons/ButtonPrimary.vue"; // Comentado si no se usa
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
 const open = ref(false)
 const authStore = useAuthStore()
+const router = useRouter()
 
-authStore.checkAuthStatus()
+onMounted(async () => {
+  await router.isReady();
+  authStore.checkAuthStatus();
+});
 
 function loginWithGoogle() {
+  const currentPath = router.currentRoute.value.fullPath
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-  window.location.href = `${apiUrl}/auth/google/login`;
+  window.location.href = `${apiUrl}/auth/google/login?next=${encodeURIComponent(currentPath)}`;
 }
 </script>
+
+<style scoped>
+.auth-error-banner {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid #f5c6cb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.auth-error-banner button {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #721c24;
+  cursor: pointer;
+  padding: 0 0.5rem;
+}
+</style>

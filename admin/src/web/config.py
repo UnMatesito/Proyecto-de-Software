@@ -29,6 +29,7 @@ class Config:
     JWT_COOKIE_CSRF_PROTECT = True
     JWT_COOKIE_SECURE = True
     JWT_SKIP_OPTIONS_REQUESTS = True
+    JWT_COOKIE_SAMESITE = "None"
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5174')
@@ -36,6 +37,8 @@ class Config:
     CORS_ORIGINS = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
         "https://grupo09.proyecto2025.linti.unlp.edu.ar",
     ]
 
@@ -49,13 +52,19 @@ class ProductionConfig(Config):
 
 class DevelopmentConfig(Config):
     DEBUG_TB_INTERCEPT_REDIRECTS = (
-        False  # Para evitar que el debugbar se detenga en los redirects
+        False
     )
     SESSION_COOKIE_SECURE = False
     MINIO_SECURE = False
     JWT_COOKIE_SECURE = False
-    pass
+    JWT_COOKIE_SAMESITE = "Lax"
 
+    CORS_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174"
+    ]
 
 class TestingConfig(Config):
     TESTING = True
