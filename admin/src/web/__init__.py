@@ -9,7 +9,6 @@ from flask_session import Session
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
-from web.controllers.api import api_bp
 from .config import get_current_config
 
 from .handlers import error

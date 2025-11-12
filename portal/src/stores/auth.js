@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout(){
     try {
-      await api.post('/auth/google/logout'); 
+      await api.post('/auth/google/logout');
     } catch (error) {
       console.error("authStore: Error llamando al endpoint de logout", error);
     } finally {
@@ -25,7 +25,9 @@ export const useAuthStore = defineStore('auth', () => {
   function logoutLocal() {
     user.value = null;
     localStorage.removeItem('user_data');
-    router.push('/')
+    router.push('/').then(() => {
+      window.location.reload(); // Recargar después de navegar
+    });
   }
 
   async function fetchUser() {
@@ -34,7 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
         const response = await api.get('/user/me');
 
         console.log("Usuario recibido:", response.data);
-        
+
         saveUser(response.data);
 
     } catch (error) {
