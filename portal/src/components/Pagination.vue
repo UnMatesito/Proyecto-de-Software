@@ -18,6 +18,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  pageSizeLabel: {
+    type: String,
+    default: 'Reseñas por página',
+  },
 });
 
 const emit = defineEmits(['page-change', 'page-size-change']);
@@ -89,7 +93,7 @@ function onPageSizeChange(event) {
 <template>
   <div class="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div v-if="showPageSizeSelector" class="flex items-center gap-2 text-sm text-gray-600">
-      <label class="font-medium text-gray-700">Reseñas por página</label>
+      <label class="font-medium text-gray-700">{{ pageSizeLabel }}</label>
       <select
         :value="pageSize"
         class="rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-proyecto-primary focus:outline-none"
