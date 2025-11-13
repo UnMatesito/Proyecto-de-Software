@@ -48,12 +48,6 @@ def create_app(env="development", static_folder="../../static"):
     jwt.init_app(app)
     oauth.init_app(app)
 
-    import os
-    _envs = []
-    for key, value in os.environ.items():
-        _envs.append(f"{key}={value}")
-    raise Exception("\n".join(_envs))
-
     oauth.register(
         name="google",
         client_id=app.config.get("GOOGLE_CLIENT_ID"),
