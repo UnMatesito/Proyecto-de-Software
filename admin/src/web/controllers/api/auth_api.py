@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 from urllib.parse import urlencode
 
@@ -12,7 +13,7 @@ from flask_jwt_extended import (
 
 from core.models.user import User
 from core.services import user_service
-import os
+
 if os.getenv("FLASK_ENV") == "development":
     from web import oauth
 else:
@@ -41,7 +42,9 @@ def google_callback():
     Redirige al frontend con el token o un código de error.
     """
 
-    frontend_base = current_app.config.get("FRONTEND_URL", "https://grupo09.proyecto2025.linti.unlp.edu.ar/")
+    frontend_base = current_app.config.get(
+        "FRONTEND_URL", "https://grupo09.proyecto2025.linti.unlp.edu.ar/"
+    )
 
     if "error" in request.args and request.args.get("error") == "access_denied":
         print("DEBUG: El usuario canceló el login de Google.")

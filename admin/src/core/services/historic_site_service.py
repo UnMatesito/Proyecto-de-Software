@@ -470,11 +470,7 @@ def list_published_sites(
     if tags_str:
         from slugify import slugify
 
-        tag_slugs = [
-            slugify(tag.strip())
-            for tag in tags_str.split(",")
-            if tag.strip()
-        ]
+        tag_slugs = [slugify(tag.strip()) for tag in tags_str.split(",") if tag.strip()]
 
         if tag_slugs:
             existing_tags = Tag.query.filter(Tag.slug.in_(tag_slugs)).all()
