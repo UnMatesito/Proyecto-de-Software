@@ -1,14 +1,14 @@
 <template>
-    <h2 class="font-semibold text-3xl">Listado de sitios históricos</h2>
-    <p>Aqui puedes buscar el sitio que justo necesitas.</p>
-    <aside class="p-3">
+    <h2 class="font-semibold text-3xl text-proyecto-primary">Listado de sitios históricos</h2>
+    <p class="text-proyecto-accent">Aqui puedes buscar el sitio que justo necesitas.</p>
+    <aside class="p-3 ">
       <Filter :page="pagination.page" :tags="tags" :provinces="provinces" @disableMap="changeMapSate"></Filter>
       <Map styleContent="height:400px;  width: 100%" :marks="marks" :isDisable="disableMap" @changeMapSate="changeMapSate"></Map>
     </aside>
 
-    <section class="grid md:grid-cols-4 gap-3 p-3">
+    <section class="grid grid-cols-1  md:grid-cols-3 lg:grid-cols-4 gap-3 p-3">
       <Card
-      class="max-w-[315px]"
+      class="  md:max-w-[250px]"
       v-for="site in sites"
       :key="`${site.id}-${site.name}`"
       :name="site.name"
