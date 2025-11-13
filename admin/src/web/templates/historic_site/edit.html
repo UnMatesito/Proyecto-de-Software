@@ -8,12 +8,13 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <style>
-    #map { height: 60vh;
-            max-width: 800px;
-            width: 100%; 
-            border-radius: 6px;
-            border: 1px solid #c0bfbf;
-        }
+    #map {
+        height: 60vh;
+        max-width: 800px;
+        width: 100%;
+        border-radius: 6px;
+        border: 1px solid #c0bfbf;
+    }
 </style>
 {% endblock %}
 
@@ -23,12 +24,266 @@
 
 {% block content %}
 <div class="flex items-center flex-col p-4">
-    {{ form_site(lon=lon, 
-        lat=lat, 
-        lon_view=lon, 
-        lat_view=lat, 
-        site_name=site_name, 
-        site=site, 
-        form=form) }}
+
+    <!-- Galería de imágenes existentes -->
+    {% if images %}
+    <div class="w-full max-w-4xl mb-6 bg-white shadow-lg rounded-lg border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xl font-semibold">
+                Imágenes del sitio
+                <span class="text-sm font-normal text-gray-600">({{ images|length }}/10)</span>
+            </h2>
+            <p class="text-sm text-gray-500 flex items-center gap-2">
+                <i class="fa-solid fa-up-down-left-right"></i>
+                Arrastrá las imágenes para reordenar. La primera será la portada.
+            </p>
+        </div>
+
+        <div
+            class="flex flex-col gap-4"
+            data-image-gallery
+            data-reorder-url="{{ url_for('site_bp.reorder_images', site_id=site.id) }}"
+        >
+            {% for image in images %}
+            <div
+                class="relative flex flex-col md:flex-row gap-4 p-4 rounded-lg border-2 {{ 'border-green-500' if loop.first else 'border-gray-300' }} shadow-sm bg-white cursor-grab active:cursor-grabbing"
+                draggable="true"
+                data-image-id="{{ image.id }}"
+            >
+                <div class="relative w-full md:w-56 h-48 rounded-md overflow-hidden">
+                    <img
+                        src="{{ image.public_url }}"
+                        alt="{{ image.title or 'Imagen del sitio' }}"
+                        class="w-full h-full object-cover transition duration-200"
+                    >
+
+                    <span
+                        class="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded font-semibold shadow {{ '' if loop.first else 'hidden' }}"
+                        data-cover-badge
+                    >
+                        Portada
+                    </span>
+
+                    <span
+                        class="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded"
+                        data-image-position
+                    >
+                        #{{ (image.order if image.order is not none else loop.index0) + 1 }}
+                    </span>
+                </div>
+
+                <div class="flex-1 flex flex-col gap-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fa-solid fa-grip-lines"></i>
+                            Arrastrá para reordenar
+                        </span>
+
+                        <div class="flex items-center gap-2">
+                            <form method="POST"
+                                  action="{{ url_for('site_bp.set_image_cover', image_id=image.id) }}"
+                                  class="{{ 'invisible' if loop.first else '' }}">
+                                <button
+                                    type="submit"
+                                    class="flex items-center gap-1 bg-white/90 hover:bg-white text-gray-700 hover:text-gray-900 rounded-full px-3 py-1 text-xs font-semibold shadow"
+                                    title="Hacer portada"
+                                >
+                                    <i class="fa-solid fa-star"></i>
+                                    Portada
+                                </button>
+                            </form>
+
+                            <form method="POST"
+                                  action="{{ url_for('site_bp.delete_image', image_id=image.id) }}"
+                                  onsubmit="return confirm('¿Eliminar esta imagen?');">
+                                <button
+                                    type="submit"
+                                    class="bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow"
+                                    title="Eliminar imagen"
+                                >
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <p class="text-sm font-semibold text-gray-900">{{ image.title }}</p>
+                        {% if image.description %}
+                        <p class="text-sm text-gray-600">{{ image.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if images|length >= 10 %}
+        <p class="text-amber-600 text-sm mt-3 font-medium">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            Has alcanzado el límite de 10 imágenes. Elimina alguna para agregar más.
+        </p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+{{ form_site(lon=lon,
+        lat=lat,
+        lon_view=lon,
+        lat_view=lat,
+        site_name=site_name,
+        site=site,
+        form=form,
+        image_form=image_form,
+        existing_images_count=images|length) }}
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const gallery = document.querySelector('[data-image-gallery]');
+        if (!gallery) {
+            return;
+        }
+
+        const reorderUrl = gallery.dataset.reorderUrl;
+        const csrfInput = document.querySelector('input[name="csrf_token"]');
+        const csrfToken = csrfInput ? csrfInput.value : null;
+        let draggedCard = null;
+        let lastPersistedOrder = null;
+
+        const getCurrentOrder = () => Array
+            .from(gallery.querySelectorAll('[data-image-id]'))
+            .map((card) => Number(card.dataset.imageId));
+
+        const refreshBadges = () => {
+            const cards = Array.from(gallery.querySelectorAll('[data-image-id]'));
+            cards.forEach((card, index) => {
+                const badge = card.querySelector('[data-cover-badge]');
+                const position = card.querySelector('[data-image-position]');
+
+                card.classList.toggle('border-green-500', index === 0);
+                card.classList.toggle('border-gray-300', index !== 0);
+
+                if (badge) {
+                    badge.classList.toggle('hidden', index !== 0);
+                }
+
+                if (position) {
+                    position.textContent = `#${index + 1}`;
+                }
+            });
+        };
+
+        const persistOrder = async () => {
+            if (!reorderUrl) {
+                return;
+            }
+
+            const currentOrder = getCurrentOrder();
+            const serialized = JSON.stringify(currentOrder);
+
+            if (serialized === lastPersistedOrder) {
+                return;
+            }
+
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfToken) {
+                headers['X-CSRFToken'] = csrfToken;
+            }
+
+            try {
+                const response = await fetch(reorderUrl, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ ordered_image_ids: currentOrder }),
+                });
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data.error || 'No se pudo guardar el nuevo orden de imágenes.');
+                }
+
+                lastPersistedOrder = serialized;
+            } catch (error) {
+                console.error(error);
+                alert(error.message || 'No se pudo guardar el nuevo orden de imágenes.');
+            }
+        };
+
+        gallery.addEventListener('dragstart', (event) => {
+            const card = event.target.closest('[data-image-id]');
+            if (!card) {
+                return;
+            }
+
+            if (event.target.closest('button')) {
+                event.preventDefault();
+                return;
+            }
+
+            draggedCard = card;
+            card.classList.add('opacity-60');
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', '');
+        });
+
+        gallery.addEventListener('dragend', () => {
+            if (!draggedCard) {
+                return;
+            }
+
+            draggedCard.classList.remove('opacity-60');
+            draggedCard = null;
+        });
+
+        gallery.addEventListener('dragover', (event) => {
+            if (!draggedCard) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const card = event.target.closest('[data-image-id]');
+            if (!card || card === draggedCard) {
+                if (!card) {
+                    const lastCard = gallery.querySelector('[data-image-id]:last-child');
+                    if (lastCard && lastCard !== draggedCard) {
+                        gallery.appendChild(draggedCard);
+                    }
+                }
+                return;
+            }
+
+            const bounding = card.getBoundingClientRect();
+            const horizontal = bounding.width >= bounding.height;
+            const shouldPlaceAfter = horizontal
+                ? event.clientX > bounding.left + bounding.width / 2
+                : event.clientY > bounding.top + bounding.height / 2;
+
+            if (shouldPlaceAfter) {
+                if (card.nextSibling !== draggedCard) {
+                    gallery.insertBefore(draggedCard, card.nextSibling);
+                }
+            } else if (card !== draggedCard.nextSibling) {
+                gallery.insertBefore(draggedCard, card);
+            }
+        });
+
+        gallery.addEventListener('drop', async (event) => {
+            if (!draggedCard) {
+                return;
+            }
+
+            event.preventDefault();
+
+            draggedCard.classList.remove('opacity-60');
+            draggedCard = null;
+
+            refreshBadges();
+            await persistOrder();
+        });
+
+        refreshBadges();
+        lastPersistedOrder = JSON.stringify(getCurrentOrder());
+    });
+</script>
 {% endblock %}

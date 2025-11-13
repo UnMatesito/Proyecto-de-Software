@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", function() {
   function toggleSystemAdmin() {
     //Funcion para deshabilitar checkbox en caso de no ser admin
     const selectedText = roleSelect.options[roleSelect.selectedIndex].text;
-    console.log(selectedText)
+
     if (selectedText !== "Administrador") {
       sysAdminCheck.checked = false;
       sysAdminCheck.disabled = true;

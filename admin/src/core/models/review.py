@@ -53,6 +53,9 @@ class Review(db.Model):
         CheckConstraint(
             "rating >= 1 AND rating <= 5", name="check_rating_range"
         ),  # La calificación debe estar entre 1 y 5
+        db.Index(
+            "idx_historic_site_rating", "rating"
+        ),  # Índice para optimizar consultas por calificación
     )
 
     # Validaciones
