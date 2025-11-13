@@ -32,7 +32,7 @@
                 </div>        
             </div>
             <div class="flex flex-col gap-2">
-                <div v-on:click="tags" class="w-96 p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <div v-if="authStore.isAuthenticated" v-on:click="tags" class="w-96 p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                     <input id="bordered-checkbox-1" v-model="favoriteValue" type="checkbox" value="" name="bordered-checkbox" class=" text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                     <label for="bordered-checkbox-1" class="w-full  ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Favoritos</label>
                 </div>
@@ -54,7 +54,7 @@
                                     ...(provinceValue != 'Provincia') && {province: provinceValue},
                                     ...(cityValue != 'Ciudad') && {city: cityValue},
                                     ...(tagsValue.length > 0) && {tags: tagsValue.join()},
-                                    ...{page: rout.query.page || 1},
+                                    ...{page: 1},
                                     ...{favorites: favoriteValue},
                                     ...(orderByValue != 'Ordenar por') && {order_by: orderByValue},
                                     ...({lat: rout.query.lat}),
@@ -77,16 +77,17 @@
     import api from '@/api/axios'
     import { ref, watch, nextTick, onMounted, defineEmits } from 'vue'
     import { useRoute } from 'vue-router'
+    import { useAuthStore } from '@/stores/auth'
+
+    const authStore = useAuthStore()
     const emit = defineEmits(['disableMap'])
     const cityValue = ref("Ciudad")
     const nameValue = ref("")
     const descrpitionValue = ref("")
     const tagsValue = ref([])
     const favoriteValue = ref(false)
-    const order_by = ref("latest")
     const orderByValue = ref("Ordenar por")
     const provinceValue = ref("Provincia")
-    const order = ref("")
     const cities = ref([])
     const rout = useRoute()
     const props = defineProps(["provinces", "states", "page", "tags"])
@@ -112,23 +113,24 @@
 
 
     function initMultiSelect() {
-    new MultiSelectTag('tags', {
-        rounded: true,
-        shadow: true,
-        placeholder: 'Seleccionar tags',
-        onChange(selected) {
-        tagsValue.value = selected.map(s => s.label)
-        console.log('Tags seleccionados:', tagsValue.value)
+        new MultiSelectTag('tags', {
+            rounded: true,
+            shadow: true,
+            placeholder: 'Seleccionar tags',
+            onChange(selected) {
+                tagsValue.value = selected.map((e) => (e.id))
+                console.log('Tags seleccionados:', tagsValue.value)
+            }
+        })
+
+        const inputTag = document.getElementById('tag-input')
+
+        if (inputTag) {
+            inputTag.className = 'w-full'
+            inputTag.setAttribute('readonly', '')
         }
-    })
 
-    const inputTag = document.getElementById('tag-input')
-    if (inputTag) {
-        inputTag.className = 'w-full'
-        inputTag.setAttribute('readonly', '')
-    }
-
-    const dropdown = document.getElementById('dropdown')
+        const dropdown = document.getElementById('dropdown')
         if (dropdown) dropdown.style.zIndex = '1200'
     }
 
@@ -144,7 +146,6 @@
 
     const desibleMapClick = () => {
         emit('disableMap', true)
-        console.log("dolasd")
     }
 
 </script>

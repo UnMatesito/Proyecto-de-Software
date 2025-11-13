@@ -39,6 +39,7 @@
   import Pagination from '@/components/Pagination.vue'
   import Filter from '@/components/Filter.vue'
   import Map from '@/components/Map.vue'
+  
   const apiMessage = ref('')
   const sites = ref({})
   const pagination = ref({})
@@ -57,7 +58,7 @@
       sites.value = response.data
       pagination.value = response.meta
       marks.value = []
-      console.log(response.meta)
+      console.log(response)
       sites.value.forEach(site => {
         marks.value.push({name: site.name, lat: site.lat, lon: site.lon})
       });
