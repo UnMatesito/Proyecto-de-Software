@@ -12,15 +12,18 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Interceptor para agregar el header CSRF automáticamente
-api.interceptors.request.use((config) => {
-  const csrfToken = getCookie("csrf_access_token");
-  if (csrfToken) {
-    config.headers["X-CSRF-TOKEN"] = csrfToken;
-  }
-  return config;
+
+api.interceptors.request.use(config => {
+    const csrfToken = getCookie("csrf_access_token");
+    
+    if (csrfToken && ['post', 'put', 'delete', 'patch'].includes(config.method.toLowerCase())) {
+        config.headers['X-CSRF-TOKEN'] = csrfToken;
+    }
+    return config;
+
 }, (error) => {
-  return Promise.reject(error);
+    return Promise.reject(error);
 });
+
 
 export default api;
