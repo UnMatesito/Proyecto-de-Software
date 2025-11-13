@@ -5,12 +5,13 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <style>
-    #map { height: 60vh;
-            max-width: 800px;
-            width: 100%; 
-            border-radius: 6px;
-            border: 1px solid #c0bfbf;
-        }
+    #map {
+        height: 60vh;
+        max-width: 800px;
+        width: 100%;
+        border-radius: 6px;
+        border: 1px solid #c0bfbf;
+    }
 </style>
 {% endblock %}
 
@@ -22,6 +23,6 @@
 
 {% block content %}
 <div class="flex items-center flex-col p-4">
-    {{ form_site(form=form) }}
+    {{ form_site(form=form, image_form=image_form) }}
 </div>
 {% endblock %}

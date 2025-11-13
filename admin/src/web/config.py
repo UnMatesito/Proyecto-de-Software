@@ -8,7 +8,9 @@ load_dotenv()
 
 class Config:
     TESTING = False
-    SECRET_KEY = os.getenv("SECRET_KEY", "8339d73af563bd9c5a87d19110b1c25997b2c078ad8351bec1aca62c20d74b93")
+    SECRET_KEY = os.getenv(
+        "SECRET_KEY", "8339d73af563bd9c5a87d19110b1c25997b2c078ad8351bec1aca62c20d74b93"
+    )
     SESSION_TYPE = os.getenv("SESSION_TYPE", "filesystem")
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
@@ -25,22 +27,41 @@ class Config:
     MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "supersecretjwtkey")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    JWT_TOKEN_LOCATION = ["cookies"]
+    JWT_COOKIE_CSRF_PROTECT = True
+    JWT_COOKIE_SECURE = True
+    JWT_SKIP_OPTIONS_REQUESTS = True
+    JWT_COOKIE_SAMESITE = "None"
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+    GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+    GOOGLE_REDIRECT_URI = os.environ.get(
+        "GOOGLE_REDIRECT_URI", "http://localhost:5000/api/auth/google/callback"
+    )
+    CORS_ORIGINS = [
+        "https://grupo09.proyecto2025.linti.unlp.edu.ar",
+    ]
 
 
 class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
     MINIO_SECURE = True
-    pass
 
 
 class DevelopmentConfig(Config):
-    DEBUG_TB_INTERCEPT_REDIRECTS = (
-        False  # Para evitar que el debugbar se detenga en los redirects
-    )
+    DEBUG_TB_INTERCEPT_REDIRECTS = False
     SESSION_COOKIE_SECURE = False
     MINIO_SECURE = False
-    pass
+    JWT_COOKIE_SECURE = False
+    JWT_COOKIE_SAMESITE = "Lax"
+    JWT_COOKIE_CSRF_PROTECT = False
+    CORS_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+    ]
 
 
 class TestingConfig(Config):

@@ -5,6 +5,7 @@ from geoalchemy2.shape import to_shape
 from sqlalchemy import event, inspect
 
 from core.models.historic_site import HistoricSite
+from core.models.site_image import SiteImage
 from core.services.event_type_service import get_event_type_by_name
 from core.services.site_history_service import create_site_history
 
@@ -48,15 +49,23 @@ def log_update_history(mapper, connection, target):
         delattr(target, "_skip_next_audit")
         return
 
-    user_id = get_current_user_id()
-    if not user_id:
-        raise ValueError("User ID no encontrado en la sesión.")
-
     instance_state = inspect(target)
     changed_attributes = _get_changed_attributes(instance_state)
 
     if not changed_attributes:
         return
+
+    favorite_only_change = all(
+        attr in {"favorited_by", "favorited_by_collection"}
+        for attr in changed_attributes
+    )
+
+    if favorite_only_change:
+        return
+
+    user_id = get_current_user_id()
+    if not user_id:
+        raise ValueError("User ID no encontrado en la sesión.")
 
     # Manejo de casos especiales
     if "tags" in changed_attributes:
@@ -83,6 +92,121 @@ def log_update_history(mapper, connection, target):
 
     # Edición general
     _handle_general_edit(instance_state, target, user_id, changed_attributes)
+
+
+def _get_site_from_image(target):
+    """Obtiene el sitio asociado a una imagen, intentando distintos métodos."""
+    site = getattr(target, "historic_site", None)
+    if site:
+        return site
+
+    state = inspect(target)
+    session = getattr(state, "session", None)
+    if session:
+        return session.get(HistoricSite, target.historic_site_id)
+
+    try:
+        return HistoricSite.query.get(target.historic_site_id)
+    except Exception:
+        return None
+
+
+def _format_image_label(target):
+    """Genera una representación legible de la imagen."""
+    if target.title:
+        return f'"{target.title}"'
+    return f"con URL {target.public_url}"
+
+
+@event.listens_for(SiteImage, "after_insert")
+def log_image_added(mapper, connection, target):
+    """Registra la creación de una imagen asociada a un sitio."""
+
+    user_id = get_current_user_id()
+    if not user_id:
+        raise ValueError("User ID no encontrado en la sesión.")
+
+    site = _get_site_from_image(target)
+    if not site:
+        return
+
+    desc = f'Se agregó la imagen {_format_image_label(target)} al sitio "{site.name}".'
+    _create_history_entry(site, user_id, "Cambio de imágenes", desc)
+
+
+@event.listens_for(SiteImage, "after_update")
+def log_image_updates(mapper, connection, target):
+    """Registra cambios relevantes en una imagen."""
+
+    user_id = get_current_user_id()
+    if not user_id:
+        raise ValueError("User ID no encontrado en la sesión.")
+
+    site = _get_site_from_image(target)
+    if not site:
+        return
+
+    state = inspect(target)
+    messages = []
+
+    if state.attrs.order.history.has_changes():
+        old_order = (
+            state.attrs.order.history.deleted[0]
+            if state.attrs.order.history.deleted
+            else None
+        )
+        new_order = (
+            state.attrs.order.history.added[0]
+            if state.attrs.order.history.added
+            else None
+        )
+        old_text = old_order if old_order is not None else "sin orden"
+        new_text = new_order if new_order is not None else "sin orden"
+        messages.append(
+            f'Se cambió el orden de la imagen {_format_image_label(target)} en el sitio "{site.name}": {old_text} → {new_text}.'
+        )
+
+    if state.attrs.is_cover.history.has_changes():
+        old_cover = (
+            state.attrs.is_cover.history.deleted[0]
+            if state.attrs.is_cover.history.deleted
+            else None
+        )
+        new_cover = (
+            state.attrs.is_cover.history.added[0]
+            if state.attrs.is_cover.history.added
+            else None
+        )
+
+        if new_cover is True:
+            messages.append(
+                f'La imagen {_format_image_label(target)} fue establecida como portada del sitio "{site.name}".'
+            )
+        elif old_cover is True and new_cover is False:
+            messages.append(
+                f'La imagen {_format_image_label(target)} dejó de ser la portada del sitio "{site.name}".'
+            )
+
+    for message in messages:
+        _create_history_entry(site, user_id, "Cambio de imágenes", message)
+
+
+@event.listens_for(SiteImage, "before_delete")
+def log_image_removed(mapper, connection, target):
+    """Registra la eliminación de una imagen."""
+
+    user_id = get_current_user_id()
+    if not user_id:
+        raise ValueError("User ID no encontrado en la sesión.")
+
+    site = _get_site_from_image(target)
+    if not site:
+        return
+
+    desc = (
+        f'Se eliminó la imagen {_format_image_label(target)} del sitio "{site.name}".'
+    )
+    _create_history_entry(site, user_id, "Cambio de imágenes", desc)
 
 
 def _get_changed_attributes(instance_state):
@@ -205,14 +329,20 @@ def _handle_province_change(instance_state, target, user_id):
 # Funciones para desactivar/reactivar listeners de auditoría (necesarios para seeds)
 
 
+AUDIT_LISTENERS = [
+    (HistoricSite, "after_insert", log_creation_history),
+    (HistoricSite, "after_update", log_update_history),
+    (SiteImage, "after_insert", log_image_added),
+    (SiteImage, "after_update", log_image_updates),
+    (SiteImage, "before_delete", log_image_removed),
+]
+
+
 def disable_audit_listeners():
     """Desactiva temporalmente los listeners de auditoría."""
-    for listener in [log_creation_history, log_update_history]:
+    for model, event_name, listener in AUDIT_LISTENERS:
         try:
-            event_name = (
-                "after_insert" if listener == log_creation_history else "after_update"
-            )
-            event.remove(HistoricSite, event_name, listener)
+            event.remove(model, event_name, listener)
         except Exception:
             pass
     print("Listeners de auditoría desactivados temporalmente.")
@@ -220,12 +350,17 @@ def disable_audit_listeners():
 
 def enable_audit_listeners():
     """Restaura los listeners de auditoría."""
-    try:
-        event.listen(HistoricSite, "after_insert", log_creation_history)
-        event.listen(HistoricSite, "after_update", log_update_history)
+    restored_all = True
+    for model, event_name, listener in AUDIT_LISTENERS:
+        try:
+            event.listen(model, event_name, listener)
+        except Exception as e:
+            restored_all = False
+            print(
+                f"No se pudieron restaurar los listeners de auditoría ({listener.__name__}): {e}"
+            )
+    if restored_all:
         print("Listeners de auditoría restaurados.")
-    except Exception as e:
-        print(f"No se pudieron restaurar los listeners de auditoría: {e}")
 
 
 # Métodos de utilidades para formateo

@@ -198,7 +198,10 @@ def toggle_system_admin(user_id):
 
         # Evitar que un usuario se quite su propio estado de System Admin
         if current_user and current_user.id == user_id:
-            flash("No puede modificar su propio estado de Administrador del sistema", "error")
+            flash(
+                "No puede modificar su propio estado de Administrador del sistema",
+                "error",
+            )
             return redirect(url_for("user_management.manage_user", user_id=user_id))
 
         # Solo un admin del sistema puede cambiar este valor
