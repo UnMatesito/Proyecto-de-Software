@@ -36,7 +36,6 @@ def _reviews_feature_blocked_response():
 
 
 @api_bp.get("/sites/<int:site_id>/reviews")
-@jwt_required()
 def list_reviews(site_id):
     """
     GET /sites/{site_id}/reviews
@@ -180,7 +179,6 @@ def create_review(site_id):
 
 
 @api_bp.get("/sites/<int:site_id>/reviews/<int:review_id>")
-@jwt_required()
 def get_review(site_id, review_id):
     """
     GET /sites/{site_id}/reviews/{review_id}
