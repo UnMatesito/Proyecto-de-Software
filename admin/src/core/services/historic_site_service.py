@@ -468,7 +468,13 @@ def list_published_sites(
 
     # Filtro por tags - todos los tags deben coincidir
     if tags_str:
-        tag_slugs = [slug.strip() for slug in tags_str.split(",") if slug.strip()]
+        from slugify import slugify
+
+        tag_slugs = [
+            slugify(tag.strip())
+            for tag in tags_str.split(",")
+            if tag.strip()
+        ]
 
         if tag_slugs:
             existing_tags = Tag.query.filter(Tag.slug.in_(tag_slugs)).all()

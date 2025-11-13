@@ -53,9 +53,9 @@ export const useAuthStore = defineStore('auth', () => {
         return response.data;
       })
       .catch((error) => {
-        if (error.response && error.response.status === 401) {
-          // 401 es normal cuando no hay usuario autenticado
-          return null
+        if(error.response && error.response.status === 401) {
+          // No hay sesión activa
+          return null;
         }
         console.error("authStore: fetchUser() error (normal si no hay sesión):", error);
         user.value = null;

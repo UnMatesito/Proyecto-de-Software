@@ -253,9 +253,8 @@ async function removeFavorite(siteId) {
   try {
     await api.delete(`/sites/${siteId}/favorite`);
     favorites.value = favorites.value.filter(fav => fav.site_id !== siteId);
-    console.log(`✅ Sitio ${siteId} eliminado de favoritos.`);
   } catch (error) {
-    console.error('❌ Error al eliminar favorito:', error.response?.data || error.message);
+    console.error('Error al eliminar favorito:', error.response?.data || error.message);
   }
 }
 

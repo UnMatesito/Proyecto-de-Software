@@ -29,7 +29,7 @@
                         </svg>
                     </div>
                     <input type="search" v-model="descrpitionValue" id="search" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Descripción breve"  />
-                </div>        
+                </div>
             </div>
             <div class="flex flex-col gap-2">
                 <div v-on:click="tags" class="w-96 p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -48,7 +48,7 @@
             </div>
 
             <div class="flex md:flex-col">
-                <router-link :to="{query: { 
+                <router-link :to="{query: {
                                     ...(nameValue) && {name: nameValue},
                                     ...(descrpitionValue) && {description: descrpitionValue},
                                     ...(provinceValue != 'Provincia') && {province: provinceValue},
@@ -61,7 +61,7 @@
                                     ...({lon: rout.query.lon}),
                                     ...({radius: rout.query.radius})
                                     }}" class="text-white bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Filtrar</router-link>
-                <router-link @click="desibleMapClick" :to="{query: {}}" class="text-white  bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Restaurar</router-link>
+                <router-link @click="disableMapClick" :to="{query: {}}" class="text-white  bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Restaurar</router-link>
             </div>
         </div>
         <div>
@@ -96,7 +96,7 @@
         () => props.tags,
         async (newTags) => {
             if (newTags && newTags.length > 0) {
-            await nextTick() 
+            await nextTick()
             destroyMultiSelect()
             initMultiSelect()
             }
@@ -113,12 +113,11 @@
 
     function initMultiSelect() {
     new MultiSelectTag('tags', {
-        rounded: true,
-        shadow: true,
-        placeholder: 'Seleccionar tags',
-        onChange(selected) {
-        tagsValue.value = selected.map(s => s.label)
-        console.log('Tags seleccionados:', tagsValue.value)
+          rounded: true,
+          shadow: true,
+          placeholder: 'Seleccionar tags',
+          onChange(selected) {
+          tagsValue.value = selected.map(s => s.label)
         }
     })
 
@@ -142,9 +141,8 @@
         }
     }
 
-    const desibleMapClick = () => {
+    const disableMapClick = () => {
         emit('disableMap', true)
-        console.log("dolasd")
     }
 
 </script>
