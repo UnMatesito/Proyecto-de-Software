@@ -24,7 +24,7 @@
     </div>
   </div>
   <div :style="props.styleContent">
-    <l-map @click="onMapClick"   @mousemove="onMouseMove" :zoom="props.zoom" :center="props.center" :class="'border rounded-xl'">
+    <l-map @click="onMapClick" @mousemove="onMouseMove" :zoom="props.zoom" :center="props.center" :class="'border rounded-xl'">
       <l-tile-layer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       ></l-tile-layer>
@@ -110,8 +110,6 @@
 
     const emit = defineEmits("changeMapSate") 
     
-    
-
     const calculateNewRadius = (r) => {
       return r * 1000
     }

@@ -39,7 +39,7 @@
   import Card from '@/components/Card.vue'
   import Pagination from '@/components/Pagination.vue'
   import Filter from '@/components/Filter.vue'
-  import Map from '@/components/Map.vue'
+  import Map from '@/components/MapFilter.vue'
   
   const apiMessage = ref('')
   const sites = ref({})

@@ -63,10 +63,7 @@
         <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
             <h3 class="text-3xl text-proyecto-accent">Locación</h3>
             <div id="map">
-                <Map v-if="detalle.name" 
-                styleContent="height:400px;  width: 100%" 
-                :marks="[{name: detalle.name, lat: detalle.lat, long: detalle.long}]" 
-                :center="[detalle.lat, detalle.long]"></Map>
+
             </div>
         </div>
         <section class="w-full max-w-[1200px] flex flex-col gap-3 mt-3" >
@@ -93,7 +90,6 @@
     import api from '@/api/axios'
     import Review from '@/components/Review.vue'
     import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
-    import Map from '@/components/Map.vue'
     import { useRoute } from 'vue-router';
     const route  = useRoute()
     const detalle = ref({})
