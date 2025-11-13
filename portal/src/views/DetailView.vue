@@ -11,9 +11,9 @@
                         {{ detalle.name }}
                     </h2>
                     <div class="flex gap-1 items-center  border-b-2 pb-2">
-                        <Stars :rating="detalle.rating" :class="'w-32'"></Stars>
+                        <Stars :rating="detalle.average_rating || 0" :class="'w-32'"></Stars>
                         <span class="text-lg font-semibold text-yellow-500">
-                            ({{ detalle.count_rating || 0}})
+                            ({{ detalle.review_count || 0 }})
                         </span>
                     </div>
 
@@ -35,7 +35,7 @@
                             <span>
                                 {{ detalle.state_of_conservation }}
                             </span>
-                            <p class="font-semibold">Año de inagaruación</p>
+                            <p class="font-semibold">Año de inauguración</p>
                             <span class="">
                                 {{ detalle.inauguration_year }}
                             </span>
@@ -69,16 +69,17 @@
                 :center="[detalle.lat, detalle.lon]"></Map>
             </div>
         </div>
-        <section class="w-full max-w-[1200px] flex flex-col gap-3 mt-3" >
+        <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3" >
             <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
             <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto"> </ButtonPrimary>
             <Review v-for="r in reviews"
+            :key="r.id"
             :user_name="r.user_name"
             :user_email="r.user_email"
             :text="r.comment"
             :created_at="r.inserted_at"
             :rating="r.rating"/>
-            <p v-if="detalle.page > 1" @click="fetchReviews()" class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out">Ver más reseñas...</p>
+            <p v-if="page > 1" @click="fetchReviews()" class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out">Ver más reseñas...</p>
         </section>
     </div>
 </template>
@@ -113,11 +114,13 @@
     }
     const fetchReviews = async () => {
         try {
-            const response = await api.get(`${route.path}/reviews`)
-            reviews.value = response.data.data
+            const response = await api.get(`${route.path}/reviews`, {
+                params: { page: page.value }
+            })
+            reviews.value = [...reviews.value, ...response.data.data]
             page.value++
-        } catch {
-
+        } catch (error) {
+            console.error('Error al cargar reseñas:', error)
         }
     }
     onMounted(()=> {
@@ -127,10 +130,10 @@
 
     const scrollToMap = () => {
         const map = document.getElementById('map');
-        map.scrollIntoView({ behavior: "smooth" });
+        map?.scrollIntoView({ behavior: "smooth" });
     }
     const scrollToReviews = () => {
-        const reviews = document.getElementById('reviews');
-        reviews.scrollIntoView({ behavior: "smooth" });
+        const reviewsSection = document.getElementById('reviews');
+        reviewsSection?.scrollIntoView({ behavior: "smooth" });
     }
 </script>
