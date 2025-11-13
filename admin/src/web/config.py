@@ -34,7 +34,7 @@ class Config:
     JWT_COOKIE_SAMESITE = "None"
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+    FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://grupo09.proyecto2025.linti.unlp.edu.ar/")
     GOOGLE_REDIRECT_URI = os.environ.get(
         "GOOGLE_REDIRECT_URI", "https://admin-grupo09.proyecto2025.linti.unlp.edu.ar/api/auth/google/callback"
     )
@@ -62,6 +62,7 @@ class DevelopmentConfig(Config):
         "http://localhost:5174",
         "http://127.0.0.1:5174",
     ]
+    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
 
 
 class TestingConfig(Config):
