@@ -493,6 +493,7 @@ def list_published_sites(
 
     # Búsqueda geoespacial
     if lat is not None and lon is not None and radius is not None:
+        print(lat)
         radius_meters = float(radius) * 1000
         ref_point = WKTElement(f"POINT({lon} {lat})", srid=4326)
 

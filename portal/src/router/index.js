@@ -50,6 +50,11 @@ const router = createRouter({
       component: () => import('../views/SitesView.vue'),
     },
     {
+      path: '/sites/:site_id',
+      name: 'siteDetail',
+      component: () => import('../views/DetailView.vue')
+    },
+    {
       path: '/profile',
       name: 'profile',
       component: ProfileView,

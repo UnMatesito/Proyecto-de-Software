@@ -36,15 +36,20 @@ class ReviewResponseSchema(Schema):
     site_id = fields.Int(attribute="historic_site_id")
     rating = fields.Int()
     comment = fields.Str(attribute="content")
-    inserted_at = fields.Method("get_inserted_at")
-    updated_at = fields.Method("get_updated_at")
+    inserted_at = fields.DateTime(attribute="created_at")
+    updated_at = fields.DateTime(attribute="updated_at")
+    user_email = fields.Method("get_user_email")
+    user_name = fields.Method("get_user_name")
+    user_avatar = fields.Method("get_user_avatar")
 
-    def get_inserted_at(self, obj):
-        return obj.created_at.isoformat() + "Z" if obj.created_at else None
+    def get_user_email(self, obj):
+        return obj.user.email
 
-    def get_updated_at(self, obj):
-        return obj.updated_at.isoformat() + "Z" if obj.updated_at else None
+    def get_user_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}".strip()
 
+    def get_user_avatar(self, obj):
+        return obj.user.avatar_url
 
 class MyReviewQuerySchema(Schema):
     """Valida los parámetros de consulta para las reseñas del perfil del usuario."""

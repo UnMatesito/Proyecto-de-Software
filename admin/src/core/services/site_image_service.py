@@ -24,7 +24,6 @@ def create_site_image(
         validate=True,
         public=True,  # URL pública sin vencimiento
     )
-
     # Crear registro en BD
     normalized_title = (title or "").strip()
 
