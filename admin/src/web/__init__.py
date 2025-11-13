@@ -2,7 +2,6 @@ from authlib.integrations.flask_client import OAuth
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-from isort.identify import imports
 
 from core.database import db
 from core.storage import storage
