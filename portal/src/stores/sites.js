@@ -17,27 +17,60 @@ export const useSitesStore = defineStore('sites', () => {
       isLoading.value = true;
       error.value = null;
 
-      ongoingRequest = api
-        .get('/sites')
-        .then(({ data }) => {
-          sites.value = data?.data ?? [];
+      ongoingRequest = (async () => {
+        try {
+          let allSites = [];
+          let currentPage = 1;
+          let totalPages = 1;
+
+          do {
+            const { data } = await api.get('/sites', {
+              params: {
+                page: currentPage,
+                per_page: 20
+              }
+            });
+
+            const newSites = data?.data ?? [];
+            allSites = [...allSites, ...newSites];
+            
+            totalPages = data?.meta?.total_pages ?? 1;
+            currentPage++;
+          } while (currentPage <= totalPages);
+
+          sites.value = allSites;
           return sites.value;
-        })
-        .catch((err) => {
+        } catch (err) {
           error.value = err;
           throw err;
-        })
-        .finally(() => {
+        } finally {
           isLoading.value = false;
           ongoingRequest = null;
-        });
+        }
+      })();
     }
 
     return ongoingRequest;
   }
 
-  function getTopSites(limit = 10) {
-    return sites.value.slice(0, limit);
+  function getRecentlyAddedSites(limit = 10) {
+    return [...sites.value]
+      .sort((a, b) => new Date(b.inserted_at) - new Date(a.inserted_at))
+      .slice(0, limit);
+  }
+
+  function getTopScoredSites(limit = 10) {
+    return [...sites.value]
+      .sort((a, b) => {
+        const ratingA = a.average_rating ?? 0;
+        const ratingB = b.average_rating ?? 0;
+        return ratingB - ratingA;
+      })
+      .slice(0, limit);
+  }
+
+  function getUserFavoriteSites(userFavorites) {
+    return sites.value.filter(site => userFavorites.includes(site.id));
   }
 
   return {
@@ -45,6 +78,8 @@ export const useSitesStore = defineStore('sites', () => {
     isLoading,
     error,
     fetchSites,
-    getTopSites,
+    getRecentlyAddedSites,
+    getTopScoredSites,
+    getUserFavoriteSites
   };
 });

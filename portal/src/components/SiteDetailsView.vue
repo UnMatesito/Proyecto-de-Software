@@ -1,19 +1,31 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import api from '@/api/axios.js';
 import IconLocation from '@/components/icons/IconLocation.vue';
 import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue';
 import Stars from '@/components/Stars.vue';
 import IconFavorite from '@/components/icons/IconFavorite.vue';
+import { useAuthStore } from '@/stores/auth.js';
+import { useFavoritesStore } from '@/stores/favorites.js';
+
 
 const route = useRoute();
 const dataSite = ref({ images: [], tags: [] });
+
+const authStore = useAuthStore();
+const favoritesStore = useFavoritesStore();
+const { isAuthenticated } = storeToRefs(authStore);
 const activeIndex = ref(0);
 
 const images = computed(() => dataSite.value.images || []);
 const currentImage = computed(() => images.value[activeIndex.value] || null);
 const hasImages = computed(() => images.value.length > 0);
+
+const isFavorite = computed(() => {
+  return favoritesStore.isFavorite(dataSite.value.id);
+});
 
 const fetchSiteDetails = async (siteID) => {
   try {
@@ -24,9 +36,22 @@ const fetchSiteDetails = async (siteID) => {
   }
 };
 
-onMounted(() => {
+const toggleFavorite = async () => {
+  try {
+    await favoritesStore.toggleFavorite(dataSite.value.id);
+  } catch (error) {
+    console.error('Error al modificar favoritos:', error);
+  }
+};
+
+onMounted(async () => {
   const siteId = route.params.site_id;
-  if (siteId) fetchSiteDetails(siteId);
+  if (siteId) {
+    await fetchSiteDetails(siteId);
+    if (isAuthenticated.value) {
+      await favoritesStore.fetchFavorites();
+    }
+  }
 });
 
 // Select cover image if available
@@ -117,8 +142,14 @@ const setActive = (idx) => { activeIndex.value = idx; };
           <IconLocation class="h-5 fill-proyecto-primary" />
           <p>{{ dataSite.city }}, {{ dataSite.province }}</p>
         </div>
-        <button class="flex-row flex items-center gap-x-2 bg-gray-100/60 px-2 py-1 rounded-full mr-5 hover:text-red-500 hover:fill-red-500 hover:ring-2 hover:ring-red-500 transition">
-          <IconFavorite class="h-5" />Agregar a Favoritos
+        <button 
+          v-if="isAuthenticated" 
+          @click="toggleFavorite" 
+          class="flex-row flex items-center gap-x-2 bg-gray-100/60 px-2 py-1 rounded-full mr-5 hover:text-red-500 hover:fill-red-500 hover:ring-2 hover:ring-red-500 transition" 
+          :class="{ 'text-red-500 fill-red-500 ring-2 ring-red-500': isFavorite }"
+        >
+          <IconFavorite class="h-5" />
+          {{ isFavorite ? "Quitar de Favoritos" : "Agregar a Favoritos" }}
         </button>
       </div>
 
