@@ -49,7 +49,6 @@ export const useAuthStore = defineStore('auth', () => {
     // Crear la request
     ongoingFetchUser = api.get('/me')
       .then((response) => {
-        console.log("Usuario recibido:", response.data);
         saveUser(response.data);
         return response.data;
       })
