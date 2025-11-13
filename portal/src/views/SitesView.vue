@@ -8,6 +8,7 @@
 
     <section class="grid md:grid-cols-4 gap-3 p-3">
       <Card
+      class="max-w-[315px]"
       v-for="site in sites"
       :key="`${site.id}-${site.name}`"
       :name="site.name"
