@@ -24,18 +24,6 @@ session = Session()
 oauth = OAuth()
 jwt = JWTManager()
 
-#### Para arreglar imports
-import os, sys
-
-# Obtiene /admin/src/
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Agrega ese path al inicio del sys.path
-if BASE_DIR not in sys.path:
-    sys.path.insert(0, BASE_DIR)
-
-####
-
 def create_app(env="development", static_folder="../../static"):
     app = Flask(__name__, static_folder=static_folder)
     app.config.from_object(get_current_config(env))

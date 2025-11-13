@@ -12,7 +12,11 @@ from flask_jwt_extended import (
 
 from core.models.user import User
 from core.services import user_service
-from web import oauth
+import os
+if os.getenv("FLASK_ENV") == "development":
+    from web import oauth
+else:
+    from src.web import oauth
 
 from . import api_bp
 
