@@ -11,7 +11,7 @@
 
     <div class="min-h-screen shadow-md">
       <!-- Header/Navbar -->
-      <header class="bg-white shadow-sm sticky top-0 w-full z-50">
+      <header class="bg-white shadow-sm sticky top-0 w-full max-z-index-header">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div>
             <div class="flex justify-between h-16 items-center">
@@ -257,5 +257,9 @@ function loginWithGoogle() {
   color: #721c24;
   cursor: pointer;
   padding: 0 0.5rem;
+}
+
+.max-z-index-header {
+  z-index: 1300;
 }
 </style>

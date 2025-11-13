@@ -17,7 +17,7 @@ const handleToggle = (faqId) => {
 
 <template>
   <section
-    class="relative z-20 overflow-hidden max-w-3xl bg-white dark:bg-dark "
+    class="relative z-20 overflow-hidden max-w-3xl rounded-xl bg-white dark:bg-dark "
   >
     <div class=" w-full">
 

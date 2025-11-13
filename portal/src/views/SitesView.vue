@@ -1,13 +1,14 @@
 <template>
-    <h2 class="font-semibold text-3xl">Listado de sitios históricos</h2>
-    <p>Aqui puedes buscar el sitio que justo necesitas.</p>
-    <aside class="p-3">
+    <h2 class="font-semibold text-3xl text-proyecto-primary">Listado de sitios históricos</h2>
+    <p class="text-proyecto-accent">Aqui puedes buscar el sitio que justo necesitas.</p>
+    <aside class="p-3 ">
       <Filter :page="pagination.page" :tags="tags" :provinces="provinces" @disableMap="changeMapState"></Filter>
       <Map styleContent="height:400px;  width: 100%" :marks="marks" :isDisable="disableMap" @changeMapState="changeMapState"></Map>
     </aside>
 
-    <section class="grid md:grid-cols-4 gap-3 p-3">
+    <section class="grid grid-cols-1  md:grid-cols-3 lg:grid-cols-4 gap-3 p-3">
       <Card
+      class=" md:w-[270px]"
       v-for="site in sites"
       :key="`${site.id}-${site.name}`"
       :name="site.name"
@@ -24,6 +25,7 @@
     </section>
 
     <Pagination
+      class="md:justify-center mb-3"
       :page="pagination.page"
       :pageSize=25
       :totalPages="pagination.total_pages"
@@ -38,7 +40,8 @@
   import Card from '@/components/Card.vue'
   import Pagination from '@/components/Pagination.vue'
   import Filter from '@/components/Filter.vue'
-  import Map from '@/components/Map.vue'
+  import Map from '@/components/MapFilter.vue'
+  
   const apiMessage = ref('')
   const sites = ref({})
   const pagination = ref({})

@@ -32,14 +32,18 @@
         </div>
 
         <!-- Stars más pequeño y menos padding en mobile -->
-        <div class="w-full py-1 sm:py-2 flex justify-center">
-          <Stars :rating="rating" class="scale-75 sm:scale-100" :class="'w-36'"></Stars>
+        <div class="w-full sm:py-2 flex items-center justify-between">
+            <span class=" rounded-full  text-xs text-proyecto-primary  ml-3">
+                <i class="fa-regular fa-clock"></i>
+                10/2/2024
+            </span>
+            <Stars :rating="rating" class="scale-75 sm:scale-100" :class="'w-28 mr-3'"></Stars>
         </div>
 
         <!-- Padding reducido en mobile -->
-        <div class="p-2 sm:p-4 flex flex-col gap-1 sm:gap-2">
+        <div class="p-2 sm:p-2 flex flex-col gap-1 sm:gap-2">
             <!-- Título más compacto -->
-            <div class="flex gap-1 sm:gap-1.5 items-start items-center">
+            <div class="flex gap-1 sm:gap-1.5 items-center">
                 <IconBuild class="fill-slate-400 w-3.5 h-3.5 sm:w-4 sm:h-4"></IconBuild>
                 <h3 class="font-semibold text-xs sm:text-base line-clamp-2 leading-tight sm:leading-normal">
                     {{ props.name }}
@@ -54,7 +58,7 @@
                 <p class="text-sm">{{ `${props.province}, ${props.city}` }}</p>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-3 mt-0.5 sm:mt-0 justify-items-center">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-3 mt-0.5 sm:mt-0 ">
                 <div class="text-center sm:text-left">
                     <span class="text-proyecto-primary/80 text-[10px] sm:text-xs font-semibold block leading-tight">Estado</span>
                     <p class="text-gray-700 text-[10px] sm:text-sm font-semibold leading-tight">{{ props.state_of_conservation }}</p>
@@ -63,11 +67,11 @@
                     <span class="text-proyecto-primary/80 text-[10px] sm:text-xs font-semibold block leading-tight">Año</span>
                     <p class="text-gray-700 text-[10px] sm:text-sm font-semibold leading-tight">{{ props.inauguration_year }}</p>
                 </div>
-                <div class="text-center sm:text-left col-span-2 sm:col-span-1">
+                <div class="text-center sm:text-left  sm:col-span-1">
                     <span class="text-proyecto-primary/80 text-[10px] sm:text-xs font-semibold block leading-tight">Categoría</span>
-                    <p class="text-gray-700 text-[10px] sm:text-sm font-semibold leading-tight">{{ props.category }}</p>
+                    <p class="text-gray-700 text-[10px] sm:text-xs font-semibold leading-tight">{{ props.category }}</p>
                 </div>
-            </div>
+            </div>  
 
             <!-- Tags más compactos en mobile -->
             <div class="flex gap-1 sm:gap-2 text-blue-700 flex-wrap border-t-2 pt-1 sm:pt-2 pb-0.5 sm:pb-1">
