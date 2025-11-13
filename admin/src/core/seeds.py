@@ -1029,8 +1029,9 @@ def seed_reviews():
     from faker import Faker
 
     from core.audit import disable_audit_listeners, enable_audit_listeners
-    from core.models import HistoricSite, Review, User
+    from core.models import Review, User
     from core.models.review import ReviewStatus
+    from core.services.historic_site_service import get_published_historic_sites
 
     print("Generando reseñas aleatorias...")
 
@@ -1041,7 +1042,13 @@ def seed_reviews():
 
     # Obtenemos usuarios públicos (no administradores)
     public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
-    sites = HistoricSite.query.all()
+
+    sites = get_published_historic_sites()
+
+    if not sites:
+        print("No hay sitios publicados para generar reseñas.")
+        enable_audit_listeners()
+        return
 
     reviews = []
     used_pairs = set()  # para evitar duplicar (user_id, site_id)

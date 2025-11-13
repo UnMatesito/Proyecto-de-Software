@@ -49,11 +49,14 @@ export const useAuthStore = defineStore('auth', () => {
     // Crear la request
     ongoingFetchUser = api.get('/me')
       .then((response) => {
-        console.log("Usuario recibido:", response.data);
         saveUser(response.data);
         return response.data;
       })
       .catch((error) => {
+        if (error.response && error.response.status === 401) {
+          // 401 es normal cuando no hay usuario autenticado
+          return null
+        }
         console.error("authStore: fetchUser() error (normal si no hay sesión):", error);
         user.value = null;
         localStorage.removeItem('user_data');

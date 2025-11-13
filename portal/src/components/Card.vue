@@ -4,7 +4,7 @@
     import IconBuild from './icons/IconBuild.vue'
     import Stars from './Stars.vue'
 
-    const props = defineProps(["id", "name", "province", "city", "tags", "state_of_conservation", "inauguration_year", "category", "average_rating" , "imagen", "isFavorite", "is-authenticated", "hideFavoriteButton"])
+    const props = defineProps(["id", "name", "province", "city", "tags", "state_of_conservation", "inauguration_year", "category", "imagen", "isFavorite", "is-authenticated", "rating", "hideFavoriteButton"])
 
     const emit = defineEmits(['toggle-favorite'])
 
@@ -27,25 +27,32 @@
             <IconFavorite class="w-3.5 h-3.5 sm:w-5 sm:h-5 block"></IconFavorite>
         </button>
 
+        <!-- Imagen más compacta en mobile: 4:3 en mobile, 16:9 en desktop -->
         <div class="relative w-full aspect-[4/3] sm:aspect-video">
             <img class="absolute inset-0 w-full h-full object-cover" :src="urlImg" :alt="alt">
         </div>
 
+        <!-- Stars más pequeño y menos padding en mobile -->
         <div class="w-full py-1 sm:py-2 flex justify-center">
           <Stars rating="1" class="scale-75 sm:scale-100"></Stars>
         </div>
 
+        <!-- Padding reducido en mobile -->
         <div class="p-2 sm:p-4 flex flex-col gap-1 sm:gap-2">
+            <!-- Título más compacto -->
             <div class="flex gap-1 sm:gap-1.5 items-start items-center">
                 <IconBuild class="fill-slate-400 w-3.5 h-3.5 sm:w-4 sm:h-4"></IconBuild>
                 <h3 class="font-semibold text-xs sm:text-base line-clamp-2 leading-tight sm:leading-normal">
                     {{ props.name }}
                 </h3>
+                <router-link v-if="id"  class="absolute w-full h-full z-10 top-0" :to="{name:'siteDetail', params:{site_id: id}}">
+                </router-link>
             </div>
-
-            <div class="flex flex-row gap-1 sm:gap-1.5 items-center">
-                <IconLocation class="fill-slate-400 w-3.5 h-3.5 sm:w-4 sm:h-4"></IconLocation>
-                <p class="text-[10px] sm:text-sm leading-tight">{{ `${props.province}, ${props.city}` }}</p>
+            <div class="flex flex-row gap-1 items-center">
+                <span class="font-sans flex items-center5 justify-between gap-1">
+                    <IconLocation class="fill-red-700 w-4 h-4"></IconLocation>
+                </span>
+                <p class="text-sm">{{ `${props.province}, ${props.city}` }}</p>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-3 mt-0.5 sm:mt-0 justify-items-center">
