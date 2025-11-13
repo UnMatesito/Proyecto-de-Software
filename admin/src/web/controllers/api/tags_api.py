@@ -1,6 +1,9 @@
 from flask import jsonify
+
 from core.services import tag_service
+
 from . import api_bp
+
 
 @api_bp.get("/tags")
 def list_tags():
@@ -20,9 +23,14 @@ def list_tags():
         ]
         return jsonify({"data": data}), 200
     except Exception:
-        return jsonify({
-            "error": {
-                "code": "server_error",
-                "message": "An unexpected error occurred"
-            }
-        }), 500
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "server_error",
+                        "message": "An unexpected error occurred",
+                    }
+                }
+            ),
+            500,
+        )

@@ -1,23 +1,22 @@
-from flask import Flask
-
 from authlib.integrations.flask_client import OAuth
-import os
-from core.storage import storage
-from core.database import db
-from core.utils.bcrypt import bcrypt
-from flask_session import Session
+from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
-from .config import get_current_config
+from core.database import db
+from core.storage import storage
+from core.utils.bcrypt import bcrypt
+from flask_session import Session
 
+from .config import get_current_config
 from .handlers import error
 from .utils.auth import (
+    get_current_user,
     get_user_role_name,
     has_permission,
     is_authenticated,
     is_system_admin,
-    is_validated_site, get_current_user,
+    is_validated_site,
 )
 from .utils.hooks import hook_admin_maintenance
 
@@ -42,30 +41,38 @@ def create_app(env="development", static_folder="../../static"):
     CORS(
         app,
         resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},
-        supports_credentials=True
+        supports_credentials=True,
     )
 
     jwt.init_app(app)
     oauth.init_app(app)
 
     oauth.register(
-        name='google',
-        client_id=app.config.get('GOOGLE_CLIENT_ID'),
-        client_secret=app.config.get('GOOGLE_CLIENT_SECRET'),
-        authorize_url='https://accounts.google.com/o/oauth2/v2/auth?prompt=select_account&',
-        access_token_url='https://oauth2.googleapis.com/token',
-        client_kwargs={'scope': 'openid email profile'},
-        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration'
+        name="google",
+        client_id=app.config.get("GOOGLE_CLIENT_ID"),
+        client_secret=app.config.get("GOOGLE_CLIENT_SECRET"),
+        authorize_url="https://accounts.google.com/o/oauth2/v2/auth?prompt=select_account&",
+        access_token_url="https://oauth2.googleapis.com/token",
+        client_kwargs={"scope": "openid email profile"},
+        server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     )
-
-    from .controllers import (
-        auth_bp, city_bp, feature_flag_bp, main_bp, site_bp,
-        site_history_bp, tag_bp, user_bp, user_management_bp
-    )
-    from .controllers.api import api_bp
 
     # Registrar listeners de auditoría
     from core import audit
+
+    from .controllers import (
+        auth_bp,
+        city_bp,
+        feature_flag_bp,
+        main_bp,
+        review_bp,
+        site_bp,
+        site_history_bp,
+        tag_bp,
+        user_bp,
+        user_management_bp,
+    )
+    from .controllers.api import api_bp
 
     # Hooks
     app.before_request(hook_admin_maintenance)
@@ -80,6 +87,7 @@ def create_app(env="development", static_folder="../../static"):
     app.register_blueprint(site_bp)
     app.register_blueprint(city_bp)
     app.register_blueprint(site_history_bp)
+    app.register_blueprint(review_bp)
 
     # Blueprints API
     app.register_blueprint(api_bp, url_prefix="/api")

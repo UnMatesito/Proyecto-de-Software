@@ -1,17 +1,19 @@
-from core.database import db
-from core.models import SiteImage, HistoricSite
-from core.storage import storage
-from werkzeug.datastructures import FileStorage
 from typing import List, Optional, Sequence
+
+from werkzeug.datastructures import FileStorage
+
+from core.database import db
+from core.models import HistoricSite, SiteImage
+from core.storage import storage
 
 
 def create_site_image(
-        historic_site_id: int,
-        file: FileStorage,
-        order: int,
-        is_cover: bool = False,
-        title: str = None,
-        description: Optional[str] = None
+    historic_site_id: int,
+    file: FileStorage,
+    order: int,
+    is_cover: bool = False,
+    title: str = None,
+    description: Optional[str] = None,
 ) -> SiteImage:
     """Crea una imagen para un sitio histórico"""
 
@@ -20,7 +22,7 @@ def create_site_image(
         file_storage=file,
         folder=f"sites/{historic_site_id}",
         validate=True,
-        public=True  # URL pública sin vencimiento
+        public=True,  # URL pública sin vencimiento
     )
 
     # Crear registro en BD
@@ -32,26 +34,25 @@ def create_site_image(
     normalized_description = (description or "").strip() or None
     image = SiteImage(
         historic_site_id=historic_site_id,
-        public_url=result['url'],
+        public_url=result["url"],
         title=normalized_title,
         description=normalized_description,
         is_cover=is_cover,
-        order=order
+        order=order,
     )
 
     db.session.add(image)
     db.session.commit()
 
-
     return image
 
 
 def create_multiple_images(
-        historic_site_id: int,
-        files: List[FileStorage],
-        set_first_as_cover: bool = True,
-        titles: Sequence[str] = None,
-        descriptions: Optional[Sequence[str]] = None,
+    historic_site_id: int,
+    files: List[FileStorage],
+    set_first_as_cover: bool = True,
+    titles: Sequence[str] = None,
+    descriptions: Optional[Sequence[str]] = None,
 ) -> List[SiteImage]:
     """Crea múltiples imágenes para un sitio histórico"""
 
@@ -64,7 +65,7 @@ def create_multiple_images(
     images = []
     for index, file in enumerate(files):
         if file and file.filename:  # Verificar que el archivo existe
-            is_cover = (index == 0 and set_first_as_cover)
+            is_cover = index == 0 and set_first_as_cover
             title_value = None
             if titles is not None:
                 title_value = titles[index].strip() if titles[index] is not None else ""
@@ -91,8 +92,7 @@ def _resequence_site_images(historic_site_id: int) -> None:
     """Normaliza el orden y portada de las imágenes restantes."""
 
     remaining_images = (
-        SiteImage.query
-        .filter_by(historic_site_id=historic_site_id)
+        SiteImage.query.filter_by(historic_site_id=historic_site_id)
         .order_by(SiteImage.order.asc(), SiteImage.id.asc())
         .all()
     )
@@ -157,8 +157,7 @@ def set_cover_image(image_id: int, historic_site_id: int) -> SiteImage:
 
     # Quitar portada actual
     current_cover = SiteImage.query.filter_by(
-        historic_site_id=historic_site_id,
-        is_cover=True
+        historic_site_id=historic_site_id, is_cover=True
     ).first()
 
     if current_cover:

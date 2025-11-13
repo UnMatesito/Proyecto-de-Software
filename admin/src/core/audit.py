@@ -49,15 +49,23 @@ def log_update_history(mapper, connection, target):
         delattr(target, "_skip_next_audit")
         return
 
-    user_id = get_current_user_id()
-    if not user_id:
-        raise ValueError("User ID no encontrado en la sesión.")
-
     instance_state = inspect(target)
     changed_attributes = _get_changed_attributes(instance_state)
 
     if not changed_attributes:
         return
+
+    favorite_only_change = all(
+        attr in {"favorited_by", "favorited_by_collection"}
+        for attr in changed_attributes
+    )
+
+    if favorite_only_change:
+        return
+
+    user_id = get_current_user_id()
+    if not user_id:
+        raise ValueError("User ID no encontrado en la sesión.")
 
     # Manejo de casos especiales
     if "tags" in changed_attributes:
@@ -84,6 +92,7 @@ def log_update_history(mapper, connection, target):
 
     # Edición general
     _handle_general_edit(instance_state, target, user_id, changed_attributes)
+
 
 def _get_site_from_image(target):
     """Obtiene el sitio asociado a una imagen, intentando distintos métodos."""
@@ -121,9 +130,7 @@ def log_image_added(mapper, connection, target):
     if not site:
         return
 
-    desc = (
-        f"Se agregó la imagen {_format_image_label(target)} al sitio \"{site.name}\"."
-    )
+    desc = f'Se agregó la imagen {_format_image_label(target)} al sitio "{site.name}".'
     _create_history_entry(site, user_id, "Cambio de imágenes", desc)
 
 
@@ -143,25 +150,41 @@ def log_image_updates(mapper, connection, target):
     messages = []
 
     if state.attrs.order.history.has_changes():
-        old_order = state.attrs.order.history.deleted[0] if state.attrs.order.history.deleted else None
-        new_order = state.attrs.order.history.added[0] if state.attrs.order.history.added else None
+        old_order = (
+            state.attrs.order.history.deleted[0]
+            if state.attrs.order.history.deleted
+            else None
+        )
+        new_order = (
+            state.attrs.order.history.added[0]
+            if state.attrs.order.history.added
+            else None
+        )
         old_text = old_order if old_order is not None else "sin orden"
         new_text = new_order if new_order is not None else "sin orden"
         messages.append(
-            f"Se cambió el orden de la imagen {_format_image_label(target)} en el sitio \"{site.name}\": {old_text} → {new_text}."
+            f'Se cambió el orden de la imagen {_format_image_label(target)} en el sitio "{site.name}": {old_text} → {new_text}.'
         )
 
     if state.attrs.is_cover.history.has_changes():
-        old_cover = state.attrs.is_cover.history.deleted[0] if state.attrs.is_cover.history.deleted else None
-        new_cover = state.attrs.is_cover.history.added[0] if state.attrs.is_cover.history.added else None
+        old_cover = (
+            state.attrs.is_cover.history.deleted[0]
+            if state.attrs.is_cover.history.deleted
+            else None
+        )
+        new_cover = (
+            state.attrs.is_cover.history.added[0]
+            if state.attrs.is_cover.history.added
+            else None
+        )
 
         if new_cover is True:
             messages.append(
-                f"La imagen {_format_image_label(target)} fue establecida como portada del sitio \"{site.name}\"."
+                f'La imagen {_format_image_label(target)} fue establecida como portada del sitio "{site.name}".'
             )
         elif old_cover is True and new_cover is False:
             messages.append(
-                f"La imagen {_format_image_label(target)} dejó de ser la portada del sitio \"{site.name}\"."
+                f'La imagen {_format_image_label(target)} dejó de ser la portada del sitio "{site.name}".'
             )
 
     for message in messages:
@@ -181,7 +204,7 @@ def log_image_removed(mapper, connection, target):
         return
 
     desc = (
-        f"Se eliminó la imagen {_format_image_label(target)} del sitio \"{site.name}\"."
+        f'Se eliminó la imagen {_format_image_label(target)} del sitio "{site.name}".'
     )
     _create_history_entry(site, user_id, "Cambio de imágenes", desc)
 

@@ -1,14 +1,16 @@
+import enum
 from datetime import datetime, timezone
 
 from sqlalchemy import CheckConstraint, event
 
 from core.database import db
-import enum
+
 
 class ReviewStatus(enum.Enum):
     PENDIENTE = "Pendiente"
     APROBADA = "Aprobada"
     RECHAZADA = "Rechazada"
+
 
 class Review(db.Model):
     __tablename__ = "review"
@@ -19,30 +21,41 @@ class Review(db.Model):
     status = db.Column(
         db.Enum(ReviewStatus, name="review_status_enum", native_enum=False),
         default=ReviewStatus.PENDIENTE,
-        nullable=False
+        nullable=False,
     )
     rejected_reason = db.Column(db.String(200), nullable=True)
 
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(
-        db.DateTime, default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc)
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
     )
 
     # Relaciones
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
     user = db.relationship("User", backref="reviews")
 
     historic_site_id = db.Column(
-        db.Integer, db.ForeignKey("historic_site.id", ondelete="CASCADE"), nullable=False
+        db.Integer,
+        db.ForeignKey("historic_site.id", ondelete="CASCADE"),
+        nullable=False,
     )
-    site = db.relationship("HistoricSite", back_populates="reviews")
+    historic_site = db.relationship("HistoricSite", back_populates="reviews")
 
     # Restricciones
     __table_args__ = (
-        db.UniqueConstraint("user_id", "historic_site_id", name="unique_user_review"), # Un usuario solo puede dejar una reseña por sitio histórico
-        CheckConstraint("rating >= 1 AND rating <= 5", name="check_rating_range"), # La calificación debe estar entre 1 y 5
-        db.Index("idx_historic_site_rating", "rating"), # Índice para optimizar consultas por calificación
+        db.UniqueConstraint(
+            "user_id", "historic_site_id", name="unique_user_review"
+        ),  # Un usuario solo puede dejar una reseña por sitio histórico
+        CheckConstraint(
+            "rating >= 1 AND rating <= 5", name="check_rating_range"
+        ),  # La calificación debe estar entre 1 y 5
+        db.Index(
+            "idx_historic_site_rating", "rating"
+        ),  # Índice para optimizar consultas por calificación
     )
 
     # Validaciones
@@ -64,24 +77,22 @@ class Review(db.Model):
         self.rejected_reason = reason[:200] if reason else None
 
     def is_pending(self):
-        return self.status == "Pendiente"
+        return self.status.value == "Pendiente"
 
     def is_approved(self):
-        return self.status == "Aprobada"
+        return self.status.value == "Aprobada"
 
     def is_rejected(self):
-        return self.status == "Rechazada"
+        return self.status.value == "Rechazada"
 
     def __repr__(self):
         return f"<Review {self.id} - {self.status}>"
 
-# Event listener
-# TODO: Evaluar esto
-from sqlalchemy import event
 
 @event.listens_for(Review, "after_insert")
 def add_site_rating(mapper, connection, target):
     from core.models import HistoricSite
+
     if target.status == ReviewStatus.APROBADA:
         session = db.object_session(target)
         site = session.get(HistoricSite, target.historic_site_id)
@@ -92,6 +103,7 @@ def add_site_rating(mapper, connection, target):
 @event.listens_for(Review, "after_update")
 def update_site_rating(mapper, connection, target):
     from core.models import HistoricSite
+
     session = db.object_session(target)
     site = session.get(HistoricSite, target.historic_site_id)
     if not site:
@@ -112,14 +124,18 @@ def update_site_rating(mapper, connection, target):
         site.add_rating(target.rating)
 
     # Caso 3: pasó de Aprobada a Rechazada o Pendiente
-    elif status_history.has_changes() and status_history.deleted and \
-            status_history.deleted[0] == ReviewStatus.APROBADA:
+    elif (
+        status_history.has_changes()
+        and status_history.deleted
+        and status_history.deleted[0] == ReviewStatus.APROBADA
+    ):
         site.remove_rating(target.rating)
 
 
 @event.listens_for(Review, "after_delete")
 def remove_site_rating(mapper, connection, target):
     from core.models import HistoricSite
+
     if target.status == ReviewStatus.APROBADA:
         session = db.object_session(target)
         site = session.get(HistoricSite, target.historic_site_id)

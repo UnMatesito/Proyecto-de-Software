@@ -1,13 +1,15 @@
-from flask import request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
+from flask import jsonify, request
+from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
-from marshmallow import ValidationError
 from geoalchemy2.functions import ST_X, ST_Y
-from core.services import historic_site_service
+from marshmallow import ValidationError
+
 from core.database import db
-from . import api_bp
-from web.schemas import SiteQuerySchema, SiteCreateSchema
+from core.services import historic_site_service
+from web.schemas import SiteCreateSchema, SiteQuerySchema
 from web.utils.format_marshmallow_validation_errors import format_validation_errors
+
+from . import api_bp
 
 
 def _serialize_site(site):
@@ -42,7 +44,9 @@ def _serialize_site(site):
         "review_count": site.rating_count,
         "average_rating": site.average_rating,
         "city": site.city.name if site.city else None,
-        "province": site.city.province.name if site.city and site.city.province else None,
+        "province": (
+            site.city.province.name if site.city and site.city.province else None
+        ),
         "lat": float(lat_value) if lat_value is not None else None,
         "lon": float(lon_value) if lon_value is not None else None,
         "tags": [t.slug for t in site.tags],
@@ -69,13 +73,18 @@ def list_sites():
         try:
             params = schema.load(request.args)
         except ValidationError as err:
-            return jsonify({
-                "error": {
-                    "code": "invalid_query",
-                    "message": "Parameter validation failed",
-                    "details": err.messages,
-                }
-            }), 400
+            return (
+                jsonify(
+                    {
+                        "error": {
+                            "code": "invalid_query",
+                            "message": "Parameter validation failed",
+                            "details": err.messages,
+                        }
+                    }
+                ),
+                400,
+            )
 
         favorites_only = params.get("favorites", False)
         user_id = None
@@ -85,20 +94,30 @@ def list_sites():
                 verify_jwt_in_request()
                 user_id = get_jwt_identity()
             except NoAuthorizationError:
-                return jsonify({
-                    "error": {
-                        "code": "authorization_required",
-                        "message": "Authentication is required to filter by favorites",
-                    }
-                }), 401
+                return (
+                    jsonify(
+                        {
+                            "error": {
+                                "code": "authorization_required",
+                                "message": "Authentication is required to filter by favorites",
+                            }
+                        }
+                    ),
+                    401,
+                )
 
             if not user_id:
-                return jsonify({
-                    "error": {
-                        "code": "authorization_required",
-                        "message": "Authentication is required to filter by favorites",
-                    }
-                }), 401
+                return (
+                    jsonify(
+                        {
+                            "error": {
+                                "code": "authorization_required",
+                                "message": "Authentication is required to filter by favorites",
+                            }
+                        }
+                    ),
+                    401,
+                )
 
         # Delegar al servicio con todos los filtros combinables
         result = historic_site_service.list_published_sites(
@@ -119,27 +138,37 @@ def list_sites():
         # Formatear respuesta de salida
         data = [_serialize_site(site) for site in result["items"]]
 
-        return jsonify({
-            "data": data,
-            "meta": {
-                "page": result["current_page"],
-                "per_page": result["per_page"],
-                "total": result["total"],
-                "total_pages": result["pages"],
-            },
-        }), 200
+        return (
+            jsonify(
+                {
+                    "data": data,
+                    "meta": {
+                        "page": result["current_page"],
+                        "per_page": result["per_page"],
+                        "total": result["total"],
+                        "total_pages": result["pages"],
+                    },
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         print(f"Error in list_sites: {str(e)}")
         import traceback
 
         traceback.print_exc()
-        return jsonify({
-            "error": {
-                "code": "server_error",
-                "message": "An unexpected error occurred",
-            }
-        }), 500
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "server_error",
+                        "message": "An unexpected error occurred",
+                    }
+                }
+            ),
+            500,
+        )
 
 
 @api_bp.get("/sites/<int:site_id>")
@@ -153,23 +182,33 @@ def get_site(site_id):
         return jsonify(_serialize_site(site)), 200
 
     except ValueError:
-        return jsonify({
-            "error": {
-                "code": "not_found",
-                "message": "Site not found",
-            }
-        }), 404
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "not_found",
+                        "message": "Site not found",
+                    }
+                }
+            ),
+            404,
+        )
     except Exception as e:
         print(f"Error in get_site: {str(e)}")
         import traceback
 
         traceback.print_exc()
-        return jsonify({
-            "error": {
-                "code": "server_error",
-                "message": "An unexpected error occurred",
-            }
-        }), 500
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "server_error",
+                        "message": "An unexpected error occurred",
+                    }
+                }
+            ),
+            500,
+        )
 
 
 @api_bp.post("/sites")
@@ -212,22 +251,32 @@ def create_site():
         return jsonify(response_data), 201
 
     except ValueError as e:
-        return jsonify({
-            "error": {
-                "code": "invalid_data",
-                "message": "Invalid input data",
-                "details": {"error": [str(e)]},
-            }
-        }), 400
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "invalid_data",
+                        "message": "Invalid input data",
+                        "details": {"error": [str(e)]},
+                    }
+                }
+            ),
+            400,
+        )
     except Exception as e:
         db.session.rollback()
         print(f"Error in create_site: {str(e)}")
         import traceback
 
         traceback.print_exc()
-        return jsonify({
-            "error": {
-                "code": "server_error",
-                "message": "An unexpected error occurred",
-            }
-        }), 500
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "server_error",
+                        "message": "An unexpected error occurred",
+                    }
+                }
+            ),
+            500,
+        )

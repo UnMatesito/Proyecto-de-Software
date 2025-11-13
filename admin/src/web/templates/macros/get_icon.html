@@ -1,0 +1,14 @@
+{# Macro para iconos de botones #}
+{% macro get_icon(icon_name) %}
+  {% if icon_name == 'edit' %}
+    <i class="fa-solid fa-pen-to-square lg:mr-1"></i>
+  {% elif icon_name == 'delete' %}
+    <i class="fa-solid fa-trash lg:mr-1"></i>
+  {% elif icon_name == 'view' %}
+    <i class="fa-solid fa-eye lg:mr-1"></i>
+  {% elif icon_name == 'restore' %}
+    <i class="fa-solid fa-arrow-rotate-right lg:mr-1"></i>
+  {% elif icon_name == 'validate' %}
+    <i class="fa-solid fa-check lg:mr-1"></i>
+  {% endif %}
+{% endmacro %}

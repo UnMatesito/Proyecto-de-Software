@@ -1,29 +1,33 @@
 """
 Schemas de validación para la API usando Marshmallow
 """
-from .sites_schemas import (
-    SiteQuerySchema,
-    SiteCreateSchema,
-    SiteResponseSchema,
-    SiteListResponseSchema
-)
 
-from .favorites_schemas import (
-    FavoriteQuerySchema
-)
-
+from .favorites_schemas import FavoriteQuerySchema
 from .reviews_schemas import (
+    MyReviewQuerySchema,
+    MyReviewResponseSchema,
+    ReviewCreateSchema,
     ReviewQuerySchema,
     ReviewResponseSchema,
-    ReviewCreateSchema
 )
+from .sites_schemas import (
+    HistoricSiteShortSchema,
+    SiteCreateSchema,
+    SiteListResponseSchema,
+    SiteQuerySchema,
+    SiteResponseSchema,
+)
+
 __all__ = [
-    'SiteQuerySchema',
-    'SiteCreateSchema',
-    'SiteResponseSchema',
-    'SiteListResponseSchema',
-    'FavoriteQuerySchema',
-    'ReviewQuerySchema',
-    'ReviewResponseSchema',
-    'ReviewCreateSchema'
+    "SiteQuerySchema",
+    "SiteCreateSchema",
+    "SiteResponseSchema",
+    "SiteListResponseSchema",
+    "FavoriteQuerySchema",
+    "ReviewQuerySchema",
+    "ReviewResponseSchema",
+    "ReviewCreateSchema",
+    "MyReviewQuerySchema",
+    "MyReviewResponseSchema",
+    "HistoricSiteShortSchema",
 ]

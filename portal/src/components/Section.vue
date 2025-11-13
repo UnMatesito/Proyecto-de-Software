@@ -1,75 +1,69 @@
 <script setup>
-
+import { computed, onMounted, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 import Card from "@/components/Card.vue";
-import api from "@/api/axios.js";
-import {onMounted, ref} from "vue";
 import { useAuthStore } from '@/stores/auth.js';
+import { useSitesStore } from '@/stores/sites.js';
+import { useFavoritesStore } from '@/stores/favorites.js';
 
-const sites = ref([]);
-const favorites = ref([]);
-const apiMessage = ref('');
-
-const authStore = useAuthStore();
-
-const props = defineProps({
+defineProps({
     title: {
       type: String,
       required: true
     }
   });
 
-  const fetchSites = async () => {
-      try {
-        const { data } = await api.get("/sites")
-        sites.value = data.data.slice(0, 10)
-      } catch (error) {
-        apiMessage.value = '❌ No se pudo conectar con la API'
-        console.error(error)
-      }
-  };
+const authStore = useAuthStore();
+const sitesStore = useSitesStore();
+const favoritesStore = useFavoritesStore();
+const { isAuthenticated } = storeToRefs(authStore);
 
-  const fetchFavorites = async () => {
-    // Solo intentar cargar favoritos si está autenticado
-    if (!authStore.isAuthenticated) {
-      favorites.value = [];
-      return;
+const apiMessage = ref('');
+
+const sites = computed(() => sitesStore.getTopSites(10));
+
+const isFavorite = (siteId) => {
+  return favoritesStore.isFavorite(siteId);
+};
+
+const toggleFavorite = async (siteId) => {
+  try {
+    await favoritesStore.toggleFavorite(siteId);
+  } catch (error) {
+    console.error('Error al modificar favoritos:', error);
+  }
+};
+
+const fetchSites = async () => {
+  try {
+    await sitesStore.fetchSites();
+  } catch (error) {
+    apiMessage.value = '❌ No se pudo conectar con la API';
+    console.error(error);
+  }
+};
+
+const fetchFavorites = async () => {
+  try {
+    await favoritesStore.fetchFavorites();
+  } catch (error) {
+    console.error('Error al obtener favoritos:', error);
+  }
+};
+
+onMounted(async () => {
+  await fetchSites();
+  await fetchFavorites();
+});
+
+watch(
+  () => isAuthenticated.value,
+  async (loggedIn) => {
+    if (loggedIn) {
+      await fetchFavorites();
     }
-
-    try {
-      const { data } = await api.get("/me/favorites");
-      favorites.value = data.data.map(site => site.id);
-      console.log('Favoritos del usuario:', favorites.value);
-    } catch (error) {
-      favorites.value = [];
-      console.error('Error al obtener favoritos:', error);
-    }
-  };
-
-  const isFavorite = (siteId) => {
-    return favorites.value.includes(siteId)
-  };
-
-  const toggleFavorite = async (siteId) => {
-    try {
-      if (isFavorite(siteId)) {
-        await api.delete(`/sites/${siteId}/favorite`)
-        favorites.value = favorites.value.filter(id => id !== siteId)
-        console.log(`Sitio ${siteId} eliminado de favoritos`)
-      } else {
-        await api.put(`/sites/${siteId}/favorite`)
-        favorites.value.push(siteId)
-        console.log(`Sitio ${siteId} agregado a favoritos`)
-      }
-      console.log('Favoritos actuales:', favorites.value)
-    } catch (error) {
-      console.error('Error al modificar favoritos:', error)
-    }
-  };
-
-  onMounted(async () => {
-    await fetchSites()
-    await fetchFavorites()
-  })
+  }
+);
 </script>
 
 <template>
@@ -77,6 +71,9 @@ const props = defineProps({
     <div class="flex flex-row justify-between items-center mb-4">
         <h2 class="text-2xl sm:text-4xl text-proyecto-primary font-semibold">{{ title }}</h2>
         <a href="#" class="text-sm sm:text-md font-semibold hover:bg-proyecto-primary hover:text-white rounded-full px-2.5 sm:px-4 py-1 sm:py-2 transition-colors duration-400">Ver Todos <i class="fa-solid fa-chevron-right ml-1"></i></a>
+    </div>
+    <div v-if="apiMessage" class="mb-4 rounded-md bg-red-100 px-4 py-2 text-sm text-red-700">
+      {{ apiMessage }}
     </div>
     <ul v-if="sites.length" class="flex gap-3 sm:gap-4 overflow-x-auto scroll-smooth pb-4 scrollbar-hide lg:px-2">
       <li v-for="site in sites" :key="site.id" class="flex-none w-40 sm:w-48 md:w-56 lg:w-64">
@@ -91,7 +88,7 @@ const props = defineProps({
             :category="site.category"
             :imagen="site.imagen"
             :is-favorite="isFavorite(site.id)"
-            :is-authenticated="authStore.isAuthenticated"
+            :is-authenticated="isAuthenticated"
             @toggle-favorite="toggleFavorite"
         ></Card>
       </li>
