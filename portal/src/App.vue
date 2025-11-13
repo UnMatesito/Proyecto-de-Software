@@ -223,7 +223,7 @@ onMounted(async () => {
 
 function loginWithGoogle() {
   const currentPath = router.currentRoute.value.fullPath
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const apiUrl = import.meta.env.VITE_API_URL || 'https://admin-grupo09.proyecto2025.linti.unlp.edu.ar/api';
   window.location.href = `${apiUrl}/auth/google/login?next=${encodeURIComponent(currentPath)}`;
 }
 </script>

@@ -36,7 +36,7 @@ class Config:
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
     GOOGLE_REDIRECT_URI = os.environ.get(
-        "GOOGLE_REDIRECT_URI", "http://localhost:5000/api/auth/google/callback"
+        "GOOGLE_REDIRECT_URI", "https://admin-grupo09.proyecto2025.linti.unlp.edu.ar/api/auth/google/callback"
     )
     CORS_ORIGINS = [
         "https://grupo09.proyecto2025.linti.unlp.edu.ar",

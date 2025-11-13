@@ -48,7 +48,7 @@ class Storage:
         access_key = app.config.get("MINIO_ACCESS_KEY", "minioadmin")
         secret_key = app.config.get("MINIO_SECRET_KEY", "minioadmin")
         self._secure = app.config.get("MINIO_SECURE", False)
-        self._bucket_name = app.config.get("MINIO_BUCKET", "proyecto")
+        self._bucket_name = app.config.get("MINIO_BUCKET", "grupo09")
         self._logger = app.logger
 
         # Limpiar el endpoint
