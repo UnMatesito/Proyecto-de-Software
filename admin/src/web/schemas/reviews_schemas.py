@@ -49,7 +49,9 @@ class ReviewResponseSchema(Schema):
         return f"{obj.user.first_name} {obj.user.last_name}".strip()
 
     def get_user_avatar(self, obj):
-        return obj.user.avatar or f"https://ui-avatars.com/api/?name={obj.user.first_name}"
+        return (
+            obj.user.avatar or f"https://ui-avatars.com/api/?name={obj.user.first_name}"
+        )
 
 
 class MyReviewQuerySchema(Schema):

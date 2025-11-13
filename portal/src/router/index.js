@@ -27,11 +27,6 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/mantenimiento',
-      name: 'maintenance',
-      component: MaintenanceView,
-    },
-    {
       path: '/about',
       name: 'about',
       // route level code-splitting
@@ -69,7 +64,6 @@ let ongoingRequest = null
 
 const ensurePortalAvailability = async (forceRefresh = false) => {
   const now = Date.now()
-
   if (
     !forceRefresh &&
     maintenanceState.lastChecked &&
@@ -105,17 +99,15 @@ const ensurePortalAvailability = async (forceRefresh = false) => {
 
 router.beforeEach(async (to, from, next) => {
   const forceRefresh = maintenanceState.isActive
-  const portalInMaintenance = await ensurePortalAvailability(forceRefresh)
-
-  if (portalInMaintenance && to.name !== 'maintenance') {
-    return next({ name: 'maintenance' })
-  }
-
-  if (!portalInMaintenance && to.name === 'maintenance') {
-    return next({ name: 'home' })
-  }
-
+  await ensurePortalAvailability(forceRefresh)
   return next()
 })
 
+router.beforeResolve(async (to, from, next) => {
+  await ensurePortalAvailability(true)
+  next()
+})
+
 export default router
+
+export { ensurePortalAvailability }
