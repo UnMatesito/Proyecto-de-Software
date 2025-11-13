@@ -1,6 +1,6 @@
 <template>
   <div class="border p-2 my-2 bg-white rounded-md">
-    <div class="flex justify-between">
+    <div class="flex justify-between mb-2">
       <h4 class="font-semibold text-proyecto-text ">
       Radio de búsqueda: {{ !isDisable ? actualRadius / 1000 + " km" : '' }}
       </h4>
