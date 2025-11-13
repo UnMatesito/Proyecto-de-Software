@@ -4,7 +4,7 @@
     import IconBuild from './icons/IconBuild.vue'
     import Stars from './Stars.vue'
 
-    const props = defineProps(["id", "name", "province", "city", "tags", "state_of_conservation", "inauguration_year", "category", "imagen", "isFavorite", "is-authenticated"])
+    const props = defineProps(["id", "name", "province", "city", "tags", "state_of_conservation", "inauguration_year", "category", "imagen", "isFavorite", "is-authenticated", "rating"])
 
     const emit = defineEmits(['toggle-favorite'])
 
@@ -34,7 +34,7 @@
 
         <!-- Stars más pequeño y menos padding en mobile -->
         <div class="w-full py-1 sm:py-2 flex justify-center">
-          <Stars rating="1" class="scale-75 sm:scale-100" :class="'w-36'"></Stars>
+          <Stars :rating="rating" class="scale-75 sm:scale-100" :class="'w-36'"></Stars>
         </div>
 
         <!-- Padding reducido en mobile -->

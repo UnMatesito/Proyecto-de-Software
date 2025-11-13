@@ -130,8 +130,6 @@ from .review_service import (
     reject_review,
     get_review_by_id,
 )
-"""
-# SiteImage services
 from .site_image_service import (
     create_site_image,
     create_multiple_images,
@@ -142,7 +140,7 @@ from .site_image_service import (
     delete_site_image,
     reorder_site_images,
 )
-"""
+
 
 __all__ = [
     # Category services

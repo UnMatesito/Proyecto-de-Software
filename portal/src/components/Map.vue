@@ -2,16 +2,13 @@
   <div class="border p-2 my-2 bg-white rounded-md">
     <div class="flex justify-between">
       <h4 class="font-semibold text-proyecto-text ">
-      Radio de búsqueda: {{ actualRadius / 1000 + " km" }}
+      Radio de búsqueda: {{ !isDisable ? actualRadius / 1000 + " km" : '' }}
       </h4>
-      <ToggleButton />
-
     </div>
 
-    <div class="flex justify-between items-center">
+    <div class="flex justify-between items-center flex-wrap gap-2">
 
-      <div class="flex gap-2 mt-2">
-        
+      <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
         <ButtonPrimary 
         v-for="value in radius" 
         :text="value + ' km'"  
@@ -19,14 +16,12 @@
         :class="actualRadius == value*1000 ? 'bg-proyecto-accent' : ''" />
       </div>
       <div class="flex flex-col items-end">
-        <ButtonPrimary v-if="showButton" 
+        <ButtonPrimary v-if="showButton && !isDisable" 
         :text="'Actualizar radio de búsqueda'" 
         @click="updateRadiusPath" 
         :icon_left="'fa-solid fa-rotate mr-2'" />
       </div>
     </div>
-
-
   </div>
   <div :style="props.styleContent">
     <l-map @click="onMapClick"   @mousemove="onMouseMove" :zoom="props.zoom" :center="props.center" :class="'border rounded-xl'">
@@ -49,13 +44,13 @@
         </l-popup>
       </l-marker>
 
-      <l-marker v-if="actualRadius "  
+      <l-marker v-if="actualRadius && !isDisable"  
       :lat-lng="radiusCenter"
       :icon="customIconRed">
       </l-marker>
 
       <l-circle 
-      v-if="actualRadius || route.path.lat"
+      v-if="actualRadius && !isDisable"
       :lat-lng="radiusCenter" 
       :radius="actualRadius" 
       color="orange">
@@ -65,14 +60,14 @@
 </template>
 
 <script setup>
-    import { ref } from 'vue'
+    import { ref, defineEmits} from 'vue'
     import L from "leaflet";
     import "leaflet/dist/leaflet.css";
-    import { LMap, LTileLayer, LMarker, LPopup, LControl, LCircle } from "@vue-leaflet/vue-leaflet";
+    import { LMap, LTileLayer, LMarker, LPopup, LControl, LCircle,  } from "@vue-leaflet/vue-leaflet";
     import { useRoute, useRouter } from 'vue-router';
     import ButtonPrimary from "./buttons/ButtonPrimary.vue"
-    import ToggleButton from './buttons/ToggleButton.vue';
 
+    console.log("HOLA")
     const showButton = ref(false)
     const radiusCenter = ref({lat: -34.92098577515593, lng: -57.95459747314454})
     const radius = [5, 10, 30, 50, 100]
@@ -109,14 +104,22 @@
         marks : { default: [] },
         name : { default: "site name" },
         styleContent: { default: "" },
-        index: { default: true }
+        index: { default: true },
+        isDisable: {default: false}
     })
+
+    const emit = defineEmits("changeMapSate") 
+    
+    
 
     const calculateNewRadius = (r) => {
       return r * 1000
     }
+
     const onMapClick = (e) => {
       radiusCenter.value = e.latlng
+      if (props.isDisable)
+        emit("changeMapSate", false)
       if (!actualRadius.value)
         actualRadius.value = 5*1000;
       showButton.value = true;
@@ -128,11 +131,12 @@
 
     const onRadiusClick = (r) => {
       actualRadius.value = calculateNewRadius(r);
+      if (props.isDisable)
+        emit("changeMapSate", false)
       showButton.value = true;
     }
 
     const updateRadiusPath = () => {
-      console.log(radiusCenter.value)
       router.push({
         path: route.path,
         query: { 

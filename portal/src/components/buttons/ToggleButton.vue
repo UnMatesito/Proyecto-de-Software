@@ -3,7 +3,8 @@
   <label class="relative inline-flex cursor-pointer">
     <input @click="active = !active" id="switch" type="checkbox" class="peer sr-only" />
     <label for="switch" class="hidden"></label>
-    <div class="peer h-6 w-11 rounded-full border 
+    <div class="
+    peer h-6 w-11 rounded-full border 
     bg-red-400 
     after:absolute 
     after:left-[2px] 

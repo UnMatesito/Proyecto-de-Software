@@ -11,15 +11,6 @@ from flask_jwt_extended import JWTManager
 
 from .config import get_current_config
 from .controllers import (
-    auth_bp,
-    city_bp,
-    feature_flag_bp,
-    main_bp,
-    site_bp,
-    site_history_bp,
-    tag_bp,
-    user_bp,
-    user_management_bp,
     review_bp
 )
 

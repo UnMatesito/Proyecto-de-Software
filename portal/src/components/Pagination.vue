@@ -1,56 +1,155 @@
 
 <script setup>
-import router from '@/router';
-import IconArrowLeft from './icons/IconArrowLeft.vue';
-    import IconArrowRight from './icons/IconArrowRight.vue';
-    import { ref, watch} from 'vue'
-    import { useRoute } from 'vue-router'
-    const route = useRoute()
-    const props = defineProps(["page", "per_page", "total", "pages" , "fetchSites"])
-    const pageToShow = props.pages <= 4 ? props.pages : [1, 2, 3, 4, "...", props.pages]
-    const query = ref({})
-    const classContentHover =  [
-                'hover:bg-proyecto-primary',
-                'hover:text-white', 
-                'transition-all', 
-                'duration-200', 
-                'ease-in-out',
-                'cursor-pointer'
+import { computed } from 'vue';
 
-                ] 
-    const classContentSelected = [
-                'bg-proyecto-primary',
-                'text-white', 
-                'cursor-pointer'
-    ]
+const props = defineProps({
+  page: {
+    type: Number,
+    default: 1,
+  },
+  totalPages: {
+    type: Number,
+    default: 1,
+  },
+  pageSize: {
+    type: Number,
+    default: null,
+  },
+  pageSizeOptions: {
+    type: Array,
+    default: () => [],
+  },
+  pageSizeLabel: {
+    type: String,
+    default: 'Reseñas por página',
+  },
+});
 
+const emit = defineEmits(['page-change', 'page-size-change']);
+
+const normalizedTotalPages = computed(() => {
+  return props.totalPages && props.totalPages > 0 ? props.totalPages : 1;
+});
+
+const pagesToDisplay = computed(() => {
+  const total = normalizedTotalPages.value;
+  const current = props.page >= 1 ? props.page : 1;
+
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, index) => ({
+      type: 'page',
+      value: index + 1,
+      key: `page-${index + 1}`,
+    }));
+  }
+
+  const pages = [{ type: 'page', value: 1, key: 'page-1' }];
+  let start = Math.max(2, current - 1);
+  let end = Math.min(total - 1, current + 1);
+
+  if (start > 2) {
+    pages.push({ type: 'ellipsis', key: 'ellipsis-start' });
+  }
+
+  for (let page = start; page <= end; page += 1) {
+    pages.push({ type: 'page', value: page, key: `page-${page}` });
+  }
+
+  if (end < total - 1) {
+    pages.push({ type: 'ellipsis', key: 'ellipsis-end' });
+  }
+
+  pages.push({ type: 'page', value: total, key: `page-${total}` });
+
+  return pages;
+});
+
+const showPageSizeSelector = computed(
+  () => Array.isArray(props.pageSizeOptions) && props.pageSizeOptions.length > 0,
+);
+
+function emitPageChange(newPage) {
+  if (newPage === props.page || newPage < 1 || newPage > normalizedTotalPages.value) {
+    return;
+  }
+  emit('page-change', newPage);
+}
+
+function goToPrevious() {
+  emitPageChange(props.page - 1);
+}
+
+function goToNext() {
+  emitPageChange(props.page + 1);
+}
+
+function onPageSizeChange(event) {
+  const newSize = Number(event.target.value);
+  if (!Number.isNaN(newSize)) {
+    emit('page-size-change', newSize);
+  }
+}
 </script>
 
 <template>
-    <nav class="flex items-center gap-2">
-        <div v-if="page > 1" class="w-10 h-10 border-2  rounded-md p-1 fill-gray-500 cursor-pointer hover:bg-proyecto-primary hover:fill-white transition-all duration-300 ease-in-out ">
-            <IconArrowLeft></IconArrowLeft>
-        </div>
-        <router-link v-for="value in pageToShow" 
-            :to="value != '...' ? {query: { ...route.query, page:value }} : {query: { ...route.query}}"
-            v-on="value != '...' ? {click: fetchSites} : {}"
-            class="
-            w-10 h-10 
-            border-2 
-            rounded-md 
-            text-center 
-            flex 
-            justify-center 
-            items-center 
-            text-grey-700"
-            :class="
-                value !== '...' ? classContentHover : '',
-                value == page ? classContentSelected : ''
-            ">
-            {{ value }}
-        </router-link>
-        <div v-if="page < pages" class="w-10 h-10 border-2  rounded-md p-1 fill-gray-600 cursor-pointer hover:bg-proyecto-primary hover:fill-white transition-all duration-300 ease-in-out ">
-            <IconArrowRight></IconArrowRight>
-        </div>
-    </nav>
+  <div class="flex w-full flex-col gap-4  sm:items-center sm:justify-between">
+    <div v-if="showPageSizeSelector" class="flex items-center gap-2 text-sm text-gray-600">
+      <label class="font-medium text-gray-700">{{ pageSizeLabel }}</label>
+      <select
+        :value="pageSize"
+        class="rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-proyecto-primary focus:outline-none"
+        @change="onPageSizeChange"
+      >
+        <option
+          v-for="option in pageSizeOptions"
+          :key="`page-size-${option}`"
+          :value="option"
+        >
+          {{ option }}
+        </option>
+      </select>
+    </div>
+
+    <div class="flex items-center justify-center gap-1">
+      <button
+        type="button"
+        class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+        :disabled="page <= 1"
+        @click="goToPrevious"
+      >
+        Anterior
+      </button>
+
+      <template v-for="item in pagesToDisplay" :key="item.key">
+        <button
+          v-if="item.type === 'page'"
+          type="button"
+          class="rounded-md border px-3 py-2 text-sm font-medium transition"
+          :class="[
+            item.value === page
+              ? 'border-proyecto-primary bg-proyecto-primary text-white'
+              : 'border-gray-300 text-gray-600 hover:bg-gray-100',
+          ]"
+          @click="emitPageChange(item.value)"
+        >
+          {{ item.value }}
+        </button>
+        <span
+          v-else
+          class="px-3 py-2 text-sm font-medium text-gray-400"
+        >
+          …
+        </span>
+      </template>
+
+      <button
+        type="button"
+        class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+        :disabled="page >= normalizedTotalPages"
+        @click="goToNext"
+      >
+        Siguiente
+      </button>
+    </div>
+  </div>
 </template>

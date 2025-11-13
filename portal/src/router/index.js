@@ -55,6 +55,8 @@ const router = createRouter({
       path: '/sites/:site_id',
       name: 'siteDetail',
       component: () => import('../views/DetailView.vue')
+    },
+    {
       path: '/auth/callback', 
       name: 'authCallback',
       component: AuthView,
