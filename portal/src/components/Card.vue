@@ -14,7 +14,6 @@
     const alt = props.imagen || props.name
 
     const toggleFavorite = (siteId) => {
-      console.log(siteId)
       emit('toggle-favorite', siteId)
     }
 </script>

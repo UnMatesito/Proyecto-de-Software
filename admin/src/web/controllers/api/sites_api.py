@@ -49,7 +49,7 @@ def _serialize_site(site):
         ),
         "lat": float(lat_value) if lat_value is not None else None,
         "lon": float(lon_value) if lon_value is not None else None,
-        "tags": [t.slug for t in site.tags],
+        "tags": [t.name for t in site.tags],
         "state_of_conservation": (
             site.conservation_state.state if site.conservation_state else None
         ),
