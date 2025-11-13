@@ -1,5 +1,5 @@
 {% from "macros/button.html" import button %}
-{% macro form_site(lon=None, lat=None, site_name=None, form=None, lat_view=-34.9205, lon_view=-57.9536, site = None) %}
+{% macro form_site(lon=None, lat=None, site_name=None, form=None, image_form=None, lat_view=-34.9205, lon_view=-57.9536, site = None, existing_images_count=None) %}
 <div class="max-w-2xl mx-auto mt-6 space-y-6">
 
  <!-- Boton para volver a sites -->
@@ -13,14 +13,14 @@
         {% endif %}
     </div>
     <div class="p-6 bg-white w-160 shadow-lg rounded-lg border border-gray-200">
-        <form method="POST" class="space-y-5 flex gap-3 flex-col ">
+        <form method="POST" enctype="multipart/form-data" class="space-y-5 flex gap-3 flex-col ">
             {{ form.hidden_tag() }}
             <div class="flex flex-col lg:flex-row gap-6 justify-center">
                 <div>
                     <div>
                         {{ form.name.label(class="block font-medium text-gray-700 mb-1") }}
                         {{ form.name(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200")}}
-                        
+
                         {% for error in form.name.errors %}
                             <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
@@ -49,7 +49,7 @@
                             <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
-                    
+
                     <div>
                         {{ form.conservation_state.label(class="block font-medium text-gray-700 mb-1") }}
                         <select id="{{ form.conservation_state.id }}" name="{{ form.conservation_state.name }}" required
@@ -94,7 +94,7 @@
                             <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
-                    
+
                     <div>
                         {{ form.inauguration_year.label(class="block font-medium text-gray-700 mb-1") }}
                         {{ form.inauguration_year(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
@@ -110,7 +110,7 @@
                             <p class="text-red-500 text-sm mt-1">{{ error }}</p>
                         {% endfor %}
                     </div>
-                    
+
                     <div>
                         {{ form.full_description.label(class="block font-medium text-gray-700 mb-1") }}
                         {{ form.full_description(class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200") }}
@@ -137,6 +137,48 @@
                 {% endfor %}
             </div>
 
+            <!-- Campo de imágenes -->
+            {% if existing_images_count is none %}
+                {% set existing_images_count = site.images|length if site and site.images else 0 %}
+            {% endif %}
+            <div class="border-t pt-4">
+                <label for="images" class="block font-medium text-gray-700 mb-2">
+                    Imágenes del sitio (máximo 10)
+                    <span id="image-counter" class="text-sm text-gray-500">- Actualmente: {{ existing_images_count }}/10</span>
+                </label>
+                {% if image_form %}
+                    {{ image_form.existing_images(value=existing_images_count, id="existing_images") }}
+                {% endif %}
+                <input
+                    type="file"
+                    name="images"
+                    id="images"
+                    multiple
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200"
+                    data-current-images="{{ existing_images_count }}"
+                    {% if existing_images_count >= 10 %}disabled{% endif %}
+                >
+                <p class="text-sm text-gray-500 mt-1">
+                    Formatos permitidos: JPG, JPEG, PNG, WEBP. Podés arrastrar verticalmente las tarjetas para reordenar las imágenes;
+                    la primera se utilizará como portada automáticamente. El título es obligatorio y la descripción opcional.
+                </p>
+                {% if image_form %}
+                    {% for error in image_form.images.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                    {% endfor %}
+                    {% for error in image_form.image_titles.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                    {% endfor %}
+                    {% for error in image_form.image_descriptions.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Preview de imágenes -->
+                <div id="image-preview" class="mt-3 flex flex-col gap-3"></div>
+            </div>
+
             <div class="w-md ">
                 {{ form.submit(class="w-full text-white bg-proyecto-primary hover:bg-blue-800 focus:ring-4 focus:ring-proyecto-primary/20 font-semibold rounded-lg text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center inline-flex items-center" ) }}
             </div>
@@ -144,7 +186,7 @@
     </div>
 </div>
 
-<div class="flex items-center justify-center flex-col mt-2 gap-2 " style=" height: 70vh; max-width: 900px; width: 70%;"> 
+<div class="flex items-center justify-center flex-col mt-2 gap-2 " style=" height: 70vh; max-width: 900px; width: 70%;">
     <h3 class="block font-semibold text-gray-700 mb-1">Seleccione la ubicación en el mapa!</h3>
     {% if form.longitude.errors or form.latitude.errors  %}
         <p class="text-red-500 text-sm mt-1">La ubicación es obligatoria</p>
@@ -158,19 +200,20 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
 
-
+        // Multi-select para tags
         new MultiSelectTag('tags', {
-        rounded: true,   
-        shadow: true,
-        placeholder: "Seleccionar tags",
-        onChange: function(selected) {
-            console.log("Seleccionados:", selected);
-        }
+            rounded: true,
+            shadow: true,
+            placeholder: "Seleccionar tags",
+            onChange: function(selected) {
+                console.log("Seleccionados:", selected);
+            }
         });
 
         document.getElementById("tag-input").className = "w-full"
         document.getElementById("dropdown").setAttribute('style', 'z-index:1200');
 
+        // Mapa de Leaflet
         lonInput = document.getElementById("longitude")
         latIpunt = document.getElementById("latitude")
 
@@ -178,7 +221,8 @@
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         }).addTo(map);
-        var mark            
+
+        var mark
         var formName = document.getElementById("name").value
         var formLon = document.getElementById("longitude").value
         var formLat = document.getElementById("latitude").value
@@ -187,7 +231,7 @@
             mark = L.marker([parseFloat(formLat), parseFloat(formLon)]).addTo(map)
                 .bindPopup(`${formName}  <br> Latitud: ${parseFloat(formLat).toFixed(4)} <br> Longitud: ${parseFloat(formLon).toFixed(4)}`)
                 .openPopup();
-        } 
+        }
 
         var lat_lng_popup = L.popup();
 
@@ -200,12 +244,12 @@
                             "<br>Longitude: " + e.latlng.lng.toFixed(4))
                 .openOn(map);
             lonInput.value = e.latlng.lng
-            latIpunt.value = e.latlng.lat  
+            latIpunt.value = e.latlng.lat
         }
 
         map.on('click', latLngPop);
 
-        //Obtener la ciudades de la prov seleccionada
+        // Obtener las ciudades de la provincia seleccionada
         document.getElementById("province").addEventListener("change", function() {
             const provinceId = this.value;
             fetch(`/cities/${provinceId}`)
@@ -221,7 +265,397 @@
                     });
                 })
         });
+
+        // Gestor de previsualización y reordenamiento de imágenes
+        const imageInput = document.getElementById('images');
+        const previewContainer = document.getElementById('image-preview');
+        const counterElement = document.getElementById('image-counter');
+        const maxImages = 10;
+        const existingImagesCount = imageInput ? parseInt(imageInput.dataset.currentImages || '0', 10) : 0;
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        let selectedEntries = [];
+        let previewUrls = [];
+
+        const getDefaultTitle = (file) => {
+            if (!file || !file.name) {
+                return '';
+            }
+
+            const parts = file.name.split('.');
+            if (parts.length === 1) {
+                return file.name;
+            }
+
+            parts.pop();
+            return parts.join('.') || file.name;
+        };
+
+        const syncInputFiles = () => {
+            if (!imageInput) {
+                return;
+            }
+
+            const dataTransfer = new DataTransfer();
+            selectedEntries.forEach((entry) => dataTransfer.items.add(entry.file));
+            imageInput.files = dataTransfer.files;
+        };
+
+        const updateInputState = () => {
+            if (!imageInput) {
+                return;
+            }
+
+            const total = existingImagesCount + selectedEntries.length;
+            const limitReached = total >= maxImages;
+
+            imageInput.dataset.limitReached = limitReached ? 'true' : 'false';
+            imageInput.classList.toggle('cursor-not-allowed', limitReached);
+            imageInput.classList.toggle('bg-gray-100', limitReached);
+
+            if (counterElement) {
+                counterElement.textContent = `- Actualmente: ${total}/${maxImages}`;
+            }
+        };
+
+        const createActionButton = (action, iconClass, title, disabled = false) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.action = action;
+            button.title = title;
+            button.className = `rounded-full w-8 h-8 flex items-center justify-center shadow ${disabled ? 'opacity-40 cursor-not-allowed pointer-events-none bg-white/80 text-gray-400' : 'bg-white/90 hover:bg-white text-gray-700 hover:text-gray-900'}`;
+            const icon = document.createElement('i');
+            icon.className = iconClass;
+            button.appendChild(icon);
+            return button;
+        };
+
+        const renderPreview = () => {
+            if (!previewContainer) {
+                return;
+            }
+
+            previewUrls.forEach((url) => URL.revokeObjectURL(url));
+            previewUrls = [];
+
+            previewContainer.innerHTML = '';
+
+            selectedEntries.forEach((entry, index) => {
+                const objectUrl = URL.createObjectURL(entry.file);
+                previewUrls.push(objectUrl);
+
+                const previewItem = document.createElement('div');
+                previewItem.className = 'relative flex flex-col md:flex-row gap-4 p-4 border border-gray-200 rounded-lg shadow-sm bg-white cursor-grab active:cursor-grabbing';
+                previewItem.dataset.index = index;
+                previewItem.setAttribute('draggable', 'true');
+
+                const imageWrapper = document.createElement('div');
+                imageWrapper.className = 'relative w-full md:w-56 h-48 bg-gray-100 rounded-md overflow-hidden';
+                const imageElement = document.createElement('img');
+                imageElement.alt = `Preview ${index + 1}`;
+                imageElement.src = objectUrl;
+                imageElement.className = 'w-full h-full object-cover transition duration-200';
+                imageWrapper.appendChild(imageElement);
+
+                if (existingImagesCount === 0 && index === 0) {
+                    const coverBadge = document.createElement('span');
+                    coverBadge.className = 'absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded font-semibold shadow';
+                    coverBadge.textContent = 'Portada';
+                    imageWrapper.appendChild(coverBadge);
+                }
+
+                const orderBadge = document.createElement('span');
+                orderBadge.className = 'absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded';
+                orderBadge.textContent = `#${existingImagesCount + index + 1}`;
+                imageWrapper.appendChild(orderBadge);
+
+                previewItem.appendChild(imageWrapper);
+
+                const content = document.createElement('div');
+                content.className = 'flex-1 flex flex-col gap-3';
+
+                const headerRow = document.createElement('div');
+                headerRow.className = 'flex flex-wrap items-center justify-between gap-2';
+
+                const dragHint = document.createElement('span');
+                dragHint.className = 'text-xs text-gray-500 flex items-center gap-1';
+                dragHint.innerHTML = '<i class="fa-solid fa-grip-lines"></i> Arrastrá para reordenar';
+                headerRow.appendChild(dragHint);
+
+                const actionGroup = document.createElement('div');
+                actionGroup.className = 'flex items-center gap-2';
+                const moveUpButton = createActionButton('move-up', 'fa-solid fa-arrow-up', 'Mover antes', index === 0);
+                const moveDownButton = createActionButton('move-down', 'fa-solid fa-arrow-down', 'Mover después', index === selectedEntries.length - 1);
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.dataset.action = 'remove';
+                removeButton.title = 'Eliminar imagen';
+                removeButton.className = 'bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow';
+                const removeIcon = document.createElement('i');
+                removeIcon.className = 'fa-solid fa-trash';
+                removeButton.appendChild(removeIcon);
+
+                actionGroup.appendChild(moveUpButton);
+                actionGroup.appendChild(moveDownButton);
+                actionGroup.appendChild(removeButton);
+                headerRow.appendChild(actionGroup);
+
+                content.appendChild(headerRow);
+
+                const titleWrapper = document.createElement('div');
+                const titleLabel = document.createElement('label');
+                titleLabel.className = 'block text-sm font-medium text-gray-700';
+                titleLabel.textContent = 'Título de la imagen';
+                const titleInput = document.createElement('input');
+                titleInput.type = 'text';
+                titleInput.name = 'image_titles';
+                titleInput.required = true;
+                titleInput.value = entry.title || '';
+                titleInput.placeholder = 'Ingresá un título descriptivo';
+                titleInput.className = 'mt-1 w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200';
+                titleInput.addEventListener('input', () => {
+                    entry.title = titleInput.value;
+                });
+                titleWrapper.appendChild(titleLabel);
+                titleWrapper.appendChild(titleInput);
+
+                const descriptionWrapper = document.createElement('div');
+                const descriptionLabel = document.createElement('label');
+                descriptionLabel.className = 'block text-sm font-medium text-gray-700';
+                descriptionLabel.textContent = 'Descripción (opcional)';
+                const descriptionInput = document.createElement('textarea');
+                descriptionInput.name = 'image_descriptions';
+                descriptionInput.placeholder = 'Agregá detalles de la imagen (opcional)';
+                descriptionInput.className = 'mt-1 w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 resize-y';
+                descriptionInput.style.minHeight = '80px';
+                descriptionInput.value = entry.description || '';
+                descriptionInput.addEventListener('input', () => {
+                    entry.description = descriptionInput.value;
+                });
+                descriptionWrapper.appendChild(descriptionLabel);
+                descriptionWrapper.appendChild(descriptionInput);
+
+                content.appendChild(titleWrapper);
+                content.appendChild(descriptionWrapper);
+
+                previewItem.appendChild(content);
+                previewContainer.appendChild(previewItem);
+            });
+
+            updateInputState();
+            syncInputFiles();
+        };
+
+        if (previewContainer) {
+            previewContainer.addEventListener('click', (event) => {
+                const actionButton = event.target.closest('[data-action]');
+                if (!actionButton) {
+                    return;
+                }
+
+                const previewItem = actionButton.closest('[data-index]');
+                if (!previewItem) {
+                    return;
+                }
+
+                const index = parseInt(previewItem.dataset.index, 10);
+                if (Number.isNaN(index)) {
+                    return;
+                }
+
+                const action = actionButton.dataset.action;
+
+                if (action === 'remove') {
+                    selectedEntries.splice(index, 1);
+                    renderPreview();
+                    return;
+                }
+
+                if (action === 'move-up' && index > 0) {
+                    const [entry] = selectedEntries.splice(index, 1);
+                    selectedEntries.splice(index - 1, 0, entry);
+                    renderPreview();
+                    return;
+                }
+
+                if (action === 'move-down' && index < selectedEntries.length - 1) {
+                    const [entry] = selectedEntries.splice(index, 1);
+                    selectedEntries.splice(index + 1, 0, entry);
+                    renderPreview();
+                }
+            });
+        }
+
+        const addFiles = (files) => {
+            if (!files.length) {
+                return;
+            }
+
+            let availableSlots = Math.max(0, maxImages - existingImagesCount - selectedEntries.length);
+
+            if (availableSlots <= 0) {
+                alert('Ya alcanzaste el máximo de imágenes permitidas. Eliminá alguna existente para agregar nuevas.');
+                updateInputState();
+                syncInputFiles();
+                return;
+            }
+
+            let skippedByLimit = 0;
+
+            files.forEach((file) => {
+                if (!validTypes.includes(file.type)) {
+                    alert(`${file.name} no es un formato válido. Solo se permiten JPG, JPEG, PNG y WEBP.`);
+                    return;
+                }
+
+                if (file.size > maxSize) {
+                    alert(`${file.name} es demasiado grande. Tamaño máximo: 5MB`);
+                    return;
+                }
+
+                if (availableSlots <= 0) {
+                    skippedByLimit += 1;
+                    return;
+                }
+
+                selectedEntries.push({
+                    file,
+                    title: getDefaultTitle(file),
+                    description: '',
+                });
+                availableSlots -= 1;
+            });
+
+            if (skippedByLimit > 0) {
+                alert('Alcanzaste la cantidad máxima de imágenes nuevas disponibles. Eliminá alguna para subir más archivos.');
+            }
+
+            renderPreview();
+        };
+
+        let draggedIndex = null;
+
+        const reorderSelectedEntries = (targetIndex, dropAfter) => {
+            if (draggedIndex === null || targetIndex === draggedIndex) {
+                renderPreview();
+                return;
+            }
+
+            const updated = [...selectedEntries];
+            const [moved] = updated.splice(draggedIndex, 1);
+
+            const adjustedTarget = targetIndex - (draggedIndex < targetIndex ? 1 : 0);
+            let insertIndex = dropAfter ? adjustedTarget + 1 : adjustedTarget;
+
+            if (insertIndex < 0) {
+                insertIndex = 0;
+            }
+
+            if (insertIndex > updated.length) {
+                insertIndex = updated.length;
+            }
+
+            updated.splice(insertIndex, 0, moved);
+            selectedEntries = updated;
+            renderPreview();
+        };
+
+        if (imageInput) {
+            imageInput.addEventListener('change', (event) => {
+                const files = Array.from(event.target.files || []);
+                if (!files.length) {
+                    return;
+                }
+
+                addFiles(files);
+                event.target.value = '';
+                syncInputFiles();
+            });
+        }
+
+        if (previewContainer) {
+            previewContainer.addEventListener('dragstart', (event) => {
+                const previewItem = event.target.closest('[data-index]');
+                if (!previewItem) {
+                    return;
+                }
+
+                if (event.target.closest('button')) {
+                    event.preventDefault();
+                    return;
+                }
+
+                draggedIndex = Number(previewItem.dataset.index);
+                previewItem.classList.add('opacity-60');
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', '');
+            });
+
+            previewContainer.addEventListener('dragend', (event) => {
+                const previewItem = event.target.closest('[data-index]');
+                if (previewItem) {
+                    previewItem.classList.remove('opacity-60');
+                }
+                draggedIndex = null;
+            });
+
+            previewContainer.addEventListener('dragover', (event) => {
+                if (draggedIndex === null) {
+                    return;
+                }
+                event.preventDefault();
+            });
+
+            previewContainer.addEventListener('drop', (event) => {
+                if (draggedIndex === null) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                const targetItem = event.target.closest('[data-index]');
+                if (!targetItem) {
+                    const updated = [...selectedEntries];
+                    const [moved] = updated.splice(draggedIndex, 1);
+                    updated.push(moved);
+                    selectedEntries = updated;
+                    draggedIndex = null;
+                    renderPreview();
+                    return;
+                }
+
+                const targetIndex = Number(targetItem.dataset.index);
+                if (Number.isNaN(targetIndex)) {
+                    draggedIndex = null;
+                    renderPreview();
+                    return;
+                }
+
+                const rect = targetItem.getBoundingClientRect();
+                const dropAfter = event.clientY > rect.top + rect.height / 2;
+
+                reorderSelectedEntries(targetIndex, dropAfter);
+                draggedIndex = null;
+            });
+        }
+
+        updateInputState();
+
+        window.addEventListener('beforeunload', () => {
+            previewUrls.forEach((url) => URL.revokeObjectURL(url));
+            previewUrls = [];
+        });
     });
-      
+
 </script>
+
+<style>
+    #image-preview img {
+        transition: transform 0.2s;
+    }
+
+    #image-preview .relative:hover img {
+        transform: scale(1.05);
+    }
+</style>
 {% endmacro %}

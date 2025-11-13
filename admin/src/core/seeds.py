@@ -27,10 +27,16 @@ def run(env="production"):
 
     # Solo si estamos en development
     if env == "development":
-        seed_editor()
-        seed_users()
+        seed_aditional_public_users()
+        seed_aditional_editors()
+        seed_aditional_admins()
+        seed_aditional_moderators()
         seed_historic_sites()
+        seed_aditional_historic_sites()
+        seed_aditional_validated_historic_sites()
         seed_site_tags()
+        seed_favorites()
+        seed_reviews()
 
     print("Seed finalizado")
 
@@ -50,6 +56,7 @@ def seed_permissions():
         ("user_show", "Ver detalle de usuario"),
         ("user_block", "Bloquear/desbloquear usuario"),
         ("user_assign_role", "Asignar roles"),
+        ("user_change_password", "Cambiar contraseña de usuario"),
     ]
 
     # Permisos para módulo de ciudades
@@ -86,6 +93,7 @@ def seed_permissions():
 
     # Permisos para validación de propuestas (Etapa 2)
     proposal_permissions = [
+        ("proposal_new", "Proponer nuevo sitio histórico"),
         ("proposal_index", "Listar propuestas"),
         ("proposal_show", "Ver propuesta"),
         ("proposal_approve", "Aprobar propuesta"),
@@ -98,6 +106,15 @@ def seed_permissions():
         ("review_show", "Ver reseña"),
         ("review_approve", "Aprobar reseña"),
         ("review_reject", "Rechazar reseña"),
+        ("review_new", "Crear reseña"),
+        ("review_update", "Actualizar reseña"),
+        ("review_destroy", "Eliminar reseña"),
+    ]
+
+    favorite_permissions = [
+        ("favorite_index", "Listar sitios favoritos"),
+        ("favorite_new", "Agregar sitio a favoritos"),
+        ("favorite_destroy", "Eliminar sitio de favoritos"),
     ]
 
     all_permissions = (
@@ -108,6 +125,7 @@ def seed_permissions():
         + proposal_permissions
         + review_permissions
         + city_permissions
+        + favorite_permissions
     )
 
     # Transformar la lista de tuplas en la lista de dicts que espera create_multiple_permissions
@@ -138,6 +156,14 @@ def seed_roles():
     all_permissions = Permission.query.all()
 
     roles_permissions = {
+        "Moderador": [
+            # Reseñas
+            "review_index",
+            "review_show",
+            "review_approve",
+            "review_reject",
+            "review_destroy",
+        ],
         "Editor": [
             # Sitios
             "site_index",
@@ -161,6 +187,7 @@ def seed_roles():
             "review_show",
             "review_approve",
             "review_reject",
+            "review_destroy",
             # Ciudades
             "city_index",
         ],
@@ -205,8 +232,14 @@ def seed_roles():
         "Usuario público": [
             # Reseñas
             "review_new",
+            "review_update",
+            "review_destroy",
             # Sitios
             "proposal_new",
+            # Favoritos
+            "favorite_index",
+            "favorite_new",
+            "favorite_destroy",
         ],
     }
 
@@ -232,9 +265,9 @@ def seed_event_types():
         "Edición",
         "Eliminación",
         "Restauración",
-        "Cambio de estado",  # cambio de visibilidad
+        "Cambio de estado",  # Cambio de visibilidad
         "Cambio de tags",
-        # "Cambio de imágenes",  para etapa 2
+        "Cambio de imágenes",
     ]
 
     for event_name in event_types:
@@ -272,35 +305,6 @@ def seed_system_admin():
     )
 
     db.session.add(admin_user)
-    db.session.commit()
-
-
-def seed_editor():
-    """
-    Crea un usuario editor
-    Este usuario permite probar la administración de sitios y tags.
-    - Email: editor_editor@hotmail.com
-    - Contraseña: editor123
-    """
-    from core.models import User
-    from core.services import role_service as RoleService
-
-    print("Creando usuario editor...")
-
-    # Obtener rol Editor
-    editor_role = RoleService.get_role_by_name("Editor")
-
-    # Crear usuario editor
-    editor_user = User(
-        password="editor123",
-        email="editor_editor@hotmail.com",
-        first_name="EditorNomb",
-        last_name="EditorApe",
-        system_admin=False,
-        role_id=editor_role.id,
-    )
-
-    db.session.add(editor_user)
     db.session.commit()
 
 
@@ -422,8 +426,11 @@ def seed_provinces_and_cities():
         ("Santa Cruz", ["Río Gallegos", "Caleta Olivia"]),
         ("Santa Fe", ["Santa Fe", "Rosario"]),
         ("Santiago del Estero", ["Santiago del Estero", "La Banda"]),
-        ("Tierra del Fuego, Antártida e Islas del Atlántico Sur", ["Ushuaia", "Río Grande"]),
-        ("Tucumán", ["San Miguel de Tucumán", "Tafí Viejo"])
+        (
+            "Tierra del Fuego, Antártida e Islas del Atlántico Sur",
+            ["Ushuaia", "Río Grande"],
+        ),
+        ("Tucumán", ["San Miguel de Tucumán", "Tafí Viejo"]),
     ]
 
     # Crear todo en una sola transacción
@@ -431,13 +438,13 @@ def seed_provinces_and_cities():
         province = Province(name=province_name)
         db.session.add(province)
         db.session.flush()  # Para obtener el ID sin hacer commit
-        
+
         for city_name in city_names:
             city = City(name=city_name, province=province)
             db.session.add(city)
 
     db.session.commit()
-    
+
 
 def seed_consevation_states():
     """Crea los estados de conservación posibles para los sitios históricos"""
@@ -445,6 +452,7 @@ def seed_consevation_states():
 
     print("Creando estados de conservacion...")
     states = [
+        ConservationState(state="Excelente"),
         ConservationState(state="Bueno"),
         ConservationState(state="Regular"),
         ConservationState(state="Malo"),
@@ -458,7 +466,7 @@ def seed_categories():
     """Crea las categorías iniciales de los sitios históricos"""
     from core.models import Category
 
-    print("Cargando categorias...")
+    print("Creando categorias...")
 
     categories = [
         Category(name="Arquitectura"),
@@ -771,74 +779,355 @@ def seed_site_tags():
     enable_audit_listeners()
 
 
-def seed_users():
-    """Crea usuarios adicionales usando Faker"""
+def seed_aditional_public_users():
+    """Crea usuarios públicos adicionales (portal)"""
+    import uuid
+
     from faker import Faker
 
     from core.models import User
     from core.services import role_service as RoleService
 
-    print("Creando usuarios con Faker...")
+    print("Creando usuarios públicos adicionales...")
+    fake = Faker("es_AR")
 
-    fake = Faker("es_AR")  # localización Argentina
+    role_public = RoleService.get_role_by_name("Usuario público")
 
-    # Traer roles ya creados
-    roles = {
-        "publico": RoleService.get_role_by_name("Usuario público"),
-        "editor": RoleService.get_role_by_name("Editor"),
-        "admin": RoleService.get_role_by_name("Administrador"),
-    }
-
-    cant_usuarios_publicos = 30
-    cant_usuarios_editores = 10
-    cant_usuarios_administradores = 5
-
-    usuarios = []
-
-    # Usuarios públicos
-    print("Creando usuarios públicos")
-    for _ in range(cant_usuarios_publicos):
-        usuarios.append(
-            User(
-                email=fake.unique.email(),
-                first_name=fake.first_name(),
-                last_name=fake.last_name(),
-                password="password123",
-                role_id=roles["publico"].id,
-                system_admin=False,
-            )
+    usuarios = [
+        User(
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            password="password123",
+            role_id=role_public.id,
+            system_admin=False,
         )
-
-    # Editores
-    print("Creando editores")
-    for _ in range(cant_usuarios_editores):
-        usuarios.append(
-            User(
-                email=fake.unique.email(),
-                first_name=fake.first_name(),
-                last_name=fake.last_name(),
-                password="editor123",
-                role_id=roles["editor"].id,
-                system_admin=False,
-            )
-        )
-
-    # Administradores no system admin
-    print("Creando administradores")
-    for _ in range(cant_usuarios_administradores):
-        usuarios.append(
-            User(
-                email=fake.unique.email(),
-                first_name=fake.first_name(),
-                last_name=fake.last_name(),
-                password="admin123",
-                role_id=roles["admin"].id,
-                system_admin=False,
-            )
-        )
-
-    # Insertar en DB
-    from core.database import db
+        for _ in range(50)
+    ]
 
     db.session.add_all(usuarios)
     db.session.commit()
+
+
+def seed_aditional_editors():
+    """Crea usuarios editores adicionales"""
+    import uuid
+
+    from faker import Faker
+
+    from core.models import User
+    from core.services import role_service as RoleService
+
+    print("Creando usuarios editores adicionales...")
+    fake = Faker("es_AR")
+
+    role_editor = RoleService.get_role_by_name("Editor")
+
+    usuarios = [
+        User(
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            password="editor123",
+            role_id=role_editor.id,
+            system_admin=False,
+        )
+        for _ in range(30)
+    ]
+
+    db.session.add_all(usuarios)
+    db.session.commit()
+
+
+def seed_aditional_admins():
+    """Crea usuarios administradores adicionales (no system admin)"""
+    import uuid
+
+    from faker import Faker
+
+    from core.models import User
+    from core.services import role_service as RoleService
+
+    print("Creando usuarios administradores adicionales...")
+    fake = Faker("es_AR")
+
+    role_admin = RoleService.get_role_by_name("Administrador")
+
+    usuarios = [
+        User(
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            password="admin123",
+            role_id=role_admin.id,
+            system_admin=False,
+        )
+        for _ in range(20)
+    ]
+
+    db.session.add_all(usuarios)
+    db.session.commit()
+
+
+def seed_aditional_moderators():
+    """Crea usuarios moderadores adicionales"""
+    import uuid
+
+    from faker import Faker
+
+    from core.models import User
+    from core.services import role_service as RoleService
+
+    print("Creando usuarios moderadores adicionales...")
+    fake = Faker("es_AR")
+
+    role_moderator = RoleService.get_role_by_name("Moderador")
+
+    usuarios = [
+        User(
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            password="moderador123",
+            role_id=role_moderator.id,
+            system_admin=False,
+        )
+        for _ in range(50)
+    ]
+
+    db.session.add_all(usuarios)
+    db.session.commit()
+
+
+def seed_aditional_historic_sites():
+    """
+    Crea sitios históricos adicionales con Faker para desarrollo.
+    Genera ubicaciones aleatorias dentro de provincias existentes.
+    """
+    from datetime import datetime, timezone
+    from random import choice, randint, uniform
+
+    from faker import Faker
+    from geoalchemy2.elements import WKTElement
+
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import Category, City, ConservationState, HistoricSite, User
+
+    print("Creando sitios históricos adicionales con Faker...")
+
+    fake = Faker("es_AR")
+    disable_audit_listeners()
+
+    cities = City.query.all()
+    categories = Category.query.all()
+    states = ConservationState.query.all()
+    users = User.query.filter_by(system_admin=False).all()
+
+    if not (cities and categories and states and users):
+        print("No hay datos base suficientes para generar sitios adicionales.")
+        return
+
+    sitios = []
+    for _ in range(100):
+        city = choice(cities)
+        category = choice(categories)
+        state = choice(states)
+        user = choice(users)
+
+        # Coordenadas aleatorias dentro del rango general de Argentina
+        lon = round(uniform(-73, -53), 6)
+        lat = round(uniform(-55, -21), 6)
+
+        sitios.append(
+            HistoricSite(
+                name=f"Sitio histórico {fake.city()}",
+                brief_description=fake.sentence(nb_words=10)[:50],
+                full_description=fake.paragraph(nb_sentences=4),
+                inauguration_year=randint(1600, 2020),
+                created_at=datetime.now(timezone.utc),
+                is_visible=False,
+                pending_validation=True,
+                city_id=city.id,
+                category_id=category.id,
+                conservation_state_id=state.id,
+                proposed_by=user.id,
+                location=WKTElement(f"POINT({lon} {lat})", srid=4326),
+            )
+        )
+
+    db.session.add_all(sitios)
+    db.session.commit()
+    enable_audit_listeners()
+
+
+def seed_aditional_validated_historic_sites():
+    """
+    Crea sitios históricos adicionales validados, con Faker para desarrollo.
+    Genera ubicaciones aleatorias dentro de provincias existentes.
+    """
+    from datetime import datetime, timezone
+    from random import choice, randint, uniform
+
+    from faker import Faker
+    from geoalchemy2.elements import WKTElement
+
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import Category, City, ConservationState, HistoricSite, User
+
+    print("Creando sitios históricos validados con Faker...")
+
+    fake = Faker("es_AR")
+    disable_audit_listeners()
+
+    cities = City.query.all()
+    categories = Category.query.all()
+    states = ConservationState.query.all()
+    users = User.query.filter_by(system_admin=False).all()
+
+    if not (cities and categories and states and users):
+        print("No hay datos base suficientes para generar sitios validados.")
+        return
+
+    sitios = []
+    for _ in range(100):
+        city = choice(cities)
+        category = choice(categories)
+        state = choice(states)
+        user = choice(users)
+
+        # Coordenadas aleatorias dentro del rango general de Argentina
+        lon = round(uniform(-73, -53), 6)
+        lat = round(uniform(-55, -21), 6)
+
+        sitios.append(
+            HistoricSite(
+                name=f"Sitio validado {fake.city()}",
+                brief_description=fake.sentence(nb_words=10)[:50],
+                full_description=fake.paragraph(nb_sentences=4),
+                inauguration_year=randint(1600, 2020),
+                created_at=datetime.now(timezone.utc),
+                is_visible=True,
+                pending_validation=False,
+                city_id=city.id,
+                category_id=category.id,
+                conservation_state_id=state.id,
+                proposed_by=user.id,
+                location=WKTElement(f"POINT({lon} {lat})", srid=4326),
+            )
+        )
+
+    db.session.add_all(sitios)
+    db.session.commit()
+    enable_audit_listeners()
+
+
+def seed_reviews():
+    """Genera reseñas (reviews) aleatorias para los sitios históricos."""
+    import random
+    from datetime import datetime, timezone
+
+    from faker import Faker
+
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import HistoricSite, Review, User
+    from core.models.review import ReviewStatus
+
+    print("Generando reseñas aleatorias...")
+
+    fake = Faker("es_AR")
+
+    # Deshabilitar auditoría temporalmente
+    disable_audit_listeners()
+
+    # Obtenemos usuarios públicos (no administradores)
+    public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
+    sites = HistoricSite.query.all()
+
+    reviews = []
+    used_pairs = set()  # para evitar duplicar (user_id, site_id)
+
+    for user in random.sample(
+        public_users, min(len(public_users), 30)
+    ):  # hasta 30 usuarios dejan reseñas
+        reviewed_sites = random.sample(
+            sites, random.randint(2, 5)
+        )  # cada uno deja entre 2 y 5 reseñas
+        for site in reviewed_sites:
+            pair = (user.id, site.id)
+            if pair in used_pairs:
+                continue  # ya reseñó ese sitio
+
+            used_pairs.add(pair)
+
+            status = random.choices(
+                [ReviewStatus.PENDIENTE, ReviewStatus.APROBADA, ReviewStatus.RECHAZADA],
+                weights=[0.2, 0.6, 0.2],
+                k=1,
+            )[0]
+
+            rejected_reason = None
+            if status == ReviewStatus.RECHAZADA:
+                rejected_reason = random.choice(
+                    [
+                        "Lenguaje inapropiado",
+                        "Contenido irrelevante",
+                        "No cumple las normas del sitio",
+                    ]
+                )
+
+            review = Review(
+                rating=random.randint(1, 5),
+                content=fake.paragraph(nb_sentences=random.randint(2, 5)),
+                status=status,
+                rejected_reason=rejected_reason,
+                user_id=user.id,
+                historic_site_id=site.id,
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
+            )
+
+            reviews.append(review)
+
+    db.session.add_all(reviews)
+    db.session.commit()
+
+    enable_audit_listeners()
+
+
+def seed_favorites():
+    """Asocia aleatoriamente sitios históricos a usuarios públicos como favoritos."""
+    from random import randint, sample
+
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import HistoricSite, User
+
+    print("Agregando favoritos de usuarios...")
+
+    # Deshabilitar registros de auditoría temporalmente
+    disable_audit_listeners()
+
+    # Solo usuarios públicos
+    public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
+    sites = HistoricSite.query.all()
+
+    if not public_users or not sites:
+        print("No hay usuarios o sitios para generar favoritos.")
+        return
+
+    count = 0
+    for user in public_users:
+        # Cada usuario marcará entre 2 y 5 sitios como favoritos
+        num_favorites = randint(2, 5)
+        chosen_sites = sample(sites, min(num_favorites, len(sites)))
+
+        for site in chosen_sites:
+            if site not in user.favorite_sites:
+                user.favorite_sites.append(site)
+                count += 1
+
+    from core.database import db
+
+    db.session.commit()
+
+    # Rehabilitar listeners de auditoría
+    enable_audit_listeners()

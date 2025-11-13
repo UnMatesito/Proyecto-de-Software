@@ -25,7 +25,7 @@ class CreateSiteForm(FlaskForm):
         "Nombre del sitio",
         validators=[
             DataRequired(message="El nombre del sitio es obligatorio"),
-            Length(max=255, message="El nombre debe tener a lo sumo 255 caracteres")
+            Length(max=255, message="El nombre debe tener a lo sumo 255 caracteres"),
         ],
     )
 
@@ -33,8 +33,8 @@ class CreateSiteForm(FlaskForm):
         "Descripción breve del sitio",
         validators=[
             DataRequired(message="La descripción breve del sitio es obligatoria"),
-            Length(max=50,  message="La descripción debe tener a lo sumo 50 caracteres")
-        ]
+            Length(max=50, message="La descripción debe tener a lo sumo 50 caracteres"),
+        ],
     )
 
     full_description = StringField(
