@@ -1,18 +1,38 @@
 from flask import jsonify, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 
 from core.database import db
 from core.models import Review
-from core.services import review_service, historic_site_service
-from core.utils.search import search_with_pagination
-from web.schemas import (
-    ReviewCreateSchema,
-    ReviewQuerySchema,
-    ReviewResponseSchema,
+from core.services import (
+    get_feature_flag_by_name,
+    historic_site_service,
+    review_service,
 )
+from core.utils.search import search_with_pagination
+from web.schemas import ReviewCreateSchema, ReviewQuerySchema, ReviewResponseSchema
 from web.utils.format_marshmallow_validation_errors import format_validation_errors
+
 from . import api_bp
+
+
+def _reviews_feature_blocked_response():
+    flag = get_feature_flag_by_name("reviews_enabled")
+
+    if flag and not flag.is_enabled:
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "feature_disabled",
+                        "message": flag.maintenance_message or "Reviews are disabled",
+                    }
+                }
+            ),
+            503,
+        )
+
+    return None
 
 
 @api_bp.get("/sites/<int:site_id>/reviews")
@@ -35,7 +55,7 @@ def list_reviews(site_id):
     try:
         params = schema.load(request.args)
     except ValidationError as err:
-        return jsonify(format_validation_errors(err)), 400
+        return jsonify(format_validation_errors(err.messages)), 400
 
     try:
         # Buscar reseñas con paginación y filtros
@@ -72,11 +92,25 @@ def create_review(site_id):
     Crea una nueva reseña para un sitio histórico.
     """
     user_id = get_jwt_identity()
+
+    # Verificar si la funcionalidad de creación de reseñas está habilitada
+    blocked_response = _reviews_feature_blocked_response()
+    if blocked_response:
+        return blocked_response
+
+    try:
+        site = historic_site_service.get_published_site_by_id(site_id)
+    except ValueError:
+        return jsonify({
+            "error": {"code": "not_found", "message": "Site not found or not visible"}
+        }), 404
+
+
     schema = ReviewCreateSchema()
     try:
         data = schema.load(request.get_json() or {})
     except ValidationError as err:
-        return jsonify(format_validation_errors(err)), 400
+        return jsonify(format_validation_errors(err.messages)), 400
 
     try:
         review = review_service.create_review(

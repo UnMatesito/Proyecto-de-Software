@@ -1,4 +1,5 @@
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import joinedload
 
 from core.database import db
 from core.models.review import Review, ReviewStatus
@@ -142,3 +143,32 @@ def get_paginated_reviews(
 def get_review_by_id(review_id):
     """Obtiene una review por su id."""
     return Review.query.get(review_id)
+
+
+def get_user_reviews(user_id: int, page: int = 1, per_page: int = 25, sort: str = "date_desc"):
+    """Obtiene las reseñas de un usuario con la paginación solicitada."""
+
+    try:
+        per_page = int(per_page)
+    except (TypeError, ValueError):
+        per_page = 25
+
+    if per_page not in {25, 50, 100}:
+        per_page = 25
+
+    if page is None or page < 1:
+        page = 1
+
+    sort = sort or "date_desc"
+
+    query = (
+        Review.query.options(joinedload(Review.historic_site))
+        .filter_by(user_id=user_id)
+    )
+
+    if sort == "date_asc":
+        query = query.order_by(Review.created_at.asc())
+    else:
+        query = query.order_by(Review.created_at.desc())
+
+    return query.paginate(page=page, per_page=per_page, error_out=False)

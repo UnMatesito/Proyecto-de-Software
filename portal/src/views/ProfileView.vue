@@ -1,12 +1,12 @@
 <template>
-  <div class="container mx-auto px-4 py-8 max-w-4xl">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">Mi Perfil</h1>
+  <div class="container mx-auto max-w-4xl px-4 py-8">
+    <h1 class="mb-6 text-3xl font-bold text-gray-800">Mi Perfil</h1>
 
-    <div v-if="user" class="bg-white p-6 rounded-lg shadow-md mb-8 flex items-center space-x-4">
+    <div v-if="user" class="mb-8 flex items-center space-x-4 rounded-lg bg-white p-6 shadow-md">
       <img
         :src="user.avatar || 'https://via.placeholder.com/150'"
         alt="Avatar"
-        class="w-20 h-20 rounded-full border-2 border-gray-300 object-cover"
+        class="h-20 w-20 rounded-full border-2 border-gray-300 object-cover"
         referrerpolicy="no-referrer"
       >
       <div>
@@ -14,7 +14,7 @@
         <p class="text-gray-500">{{ user.email }}</p>
       </div>
     </div>
-    <div v-else class="bg-white p-6 rounded-lg shadow-md mb-8 text-center text-gray-500">
+    <div v-else class="mb-8 rounded-lg bg-white p-6 text-center text-gray-500 shadow-md">
       Cargando información del usuario...
     </div>
 
@@ -23,10 +23,10 @@
         <button
           @click="activeTab = 'reviews'"
           :class="[
-            'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm',
+            'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium',
             activeTab === 'reviews'
               ? 'border-proyecto-primary text-proyecto-primary'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
           ]"
         >
           Mis Reseñas
@@ -34,10 +34,10 @@
         <button
           @click="activeTab = 'favorites'"
           :class="[
-            'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm',
+            'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium',
             activeTab === 'favorites'
               ? 'border-proyecto-primary text-proyecto-primary'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
           ]"
         >
           Mis Sitios Favoritos
@@ -46,156 +46,237 @@
     </div>
 
     <div>
-      <div v-if="loading" class="text-center py-10">
+      <div v-if="loading" class="py-10 text-center">
         <p class="text-gray-500">Cargando...</p>
       </div>
-      
+
       <div v-else>
-        <div v-show="activeTab === 'reviews'">
-          <h3 class="text-xl font-semibold mb-4 text-gray-700">Mis Reseñas</h3>
-          
-          <div class="flex space-x-4 mb-4">
-            <select
-              v-model="reviewsSortOrder"
-              @change="handleReviewPageChange(1)"
-              class="border-gray-300 rounded-md shadow-sm"
-            >
-              <option value="date_desc">Más Recientes</option>
-              <option value="date_asc">Más Antiguos</option>
-            </select>
+        <!-- REVIEWS TAB -->
+        <section v-show="activeTab === 'reviews'">
+          <h3 class="mb-4 text-xl font-semibold text-gray-700">Mis Reseñas</h3>
+
+          <div class="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div class="flex items-center gap-2">
+              <label for="reviews-sort" class="text-sm font-medium text-gray-700">Ordenar por</label>
+              <select
+                id="reviews-sort"
+                v-model="reviewsSortOrder"
+                class="rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-proyecto-primary focus:outline-none"
+                @change="handleReviewSortChange"
+              >
+                <option value="date_desc">Más Recientes</option>
+                <option value="date_asc">Más Antiguos</option>
+              </select>
+            </div>
           </div>
-          
-          <div v-if="reviewsLoading" class="text-center py-5">Cargando reseñas...</div>
-          
+
+          <div v-if="reviewsLoading" class="py-5 text-center">Cargando reseñas...</div>
+
           <div v-else>
-            <ul v-if="reviews.length > 0" class="space-y-4">
-              <li v-for="review in reviews" :key="review.id" class="bg-white p-4 rounded-lg shadow">
-                <p><strong>Sitio:</strong> {{ review.site.name }}</p>
-                <div class="flex items-center">
-                  <strong class="mr-2">Calificación:</strong>
+            <div v-if="reviews.length > 0" class="space-y-4">
+              <article
+                v-for="review in reviews"
+                :key="review.id"
+                class="rounded-lg bg-white p-4 shadow"
+              >
+                <p class="text-sm text-gray-500">
+                  {{ new Date(review.inserted_at || review.created_at).toLocaleDateString() }}
+                </p>
+                <h4 class="mt-1 text-lg font-semibold text-gray-800">
+                  {{ review.site?.name || review.name }}
+                </h4>
+                <div class="mt-2 flex items-center gap-2">
+                  <span class="font-semibold text-gray-700">Calificación:</span>
                   <RatingStars :rating="review.rating" />
                 </div>
-                <p><strong>Fecha:</strong> {{ new Date(review.inserted_at).toLocaleDateString() }}</p>
-                <p class="mt-2 text-gray-600">{{ review.comment }}</p>
-              </li>
-            </ul>
+                <p class="mt-3 text-gray-600">{{ review.comment || review.comment_excerpt }}</p>
+              </article>
+            </div>
             <p v-else class="text-gray-500 italic">Aún no escribiste reseñas.</p>
-            
-            <div class="flex justify-center mt-6">
+
+            <div class="mt-6">
               <Pagination
                 :page="reviewsPage"
-                :pages="reviewsTotalPages"
-                @page-changed="handleReviewPageChange"
-                class="mt-6"
+                :total-pages="reviewsTotalPages"
+                :page-size="reviewsPerPage"
+                :page-size-options="reviewPageSizeOptions"
+                @page-change="handleReviewPageChange"
+                @page-size-change="handleReviewPageSizeChange"
               />
             </div>
           </div>
-        </div>
+        </section>
 
-        <div v-show="activeTab === 'favorites'">
-            <h3 class="text-xl font-semibold mb-4 text-gray-700">Mis Sitios Favoritos</h3>
-            
-            <div v-if="favoritesLoading" class="text-center py-5">Cargando favoritos...</div>
-            
-            <div v-else>
-              <ul v-if="favorites.length > 0" class="space-y-4">
-                <li v-for="fav in favorites" :key="fav.site_id" class="bg-white p-4 rounded-lg shadow flex justify-between items-center">
-                  <div>
-                    <p class="font-medium">{{ fav.name }}</p>
-                    <p class="text-sm text-gray-500">{{ fav.city }}</p>
-                  </div>
-                  <a :href="`/sites/${fav.site_id}`" class="text-proyecto-primary hover:underline text-sm">Ver sitio</a>
-                </li>
-              </ul>
-              <p v-else class="text-gray-500 italic">Aún no marcaste ningún sitio como favorito.</p>
+        <!-- FAVORITES TAB -->
+        <section v-show="activeTab === 'favorites'">
+          <h3 class="mb-4 text-xl font-semibold text-gray-700">Mis Sitios Favoritos</h3>
 
-            <div class="flex justify-center mt-6">
+          <div v-if="favoritesLoading" class="py-5 text-center">Cargando favoritos...</div>
+
+          <div v-else>
+            <div v-if="favorites.length > 0" class="space-y-4">
+              <article
+                v-for="fav in favorites"
+                :key="fav.site_id"
+                class="flex items-center justify-between rounded-lg bg-white p-4 shadow"
+              >
+                <div>
+                  <p class="font-medium text-gray-800">{{ fav.name }}</p>
+                  <p class="text-sm text-gray-500">{{ fav.city }}</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <a
+                    :href="`/sites/${fav.site_id}`"
+                    class="text-sm text-proyecto-primary hover:underline"
+                  >
+                    Ver sitio
+                  </a>
+                  <button
+                    @click="removeFavorite(fav.site_id)"
+                    class="rounded-lg bg-red-500 px-3 py-1.5 text-sm text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  >
+                    Quitar
+                  </button>
+                </div>
+              </article>
+            </div>
+            <p v-else class="text-gray-500 italic">Aún no marcaste ningún sitio como favorito.</p>
+
+            <div v-if="favorites.length > 0 && favoritesTotalPages > 1" class="mt-6">
               <Pagination
                 :page="favoritesPage"
-                :pages="favoritesTotalPages"
-                @page-changed="handleFavoritePageChange"
-                class="mt-6"
+                :total-pages="favoritesTotalPages"
+                @page-change="handleFavoritePageChange"
               />
             </div>
-            </div>
-        </div>
+          </div>
+        </section>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import RatingStars from '@/components/Stars.vue';
-import { useAuthStore } from '@/stores/auth';
-import api from '../api/axios.js';
+import { computed, onMounted, ref } from 'vue';
 import Pagination from '@/components/Pagination.vue';
+import RatingStars from '@/components/Stars.vue';
+import api from '../api/axios.js';
+import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
 const user = authStore.user;
 
 const activeTab = ref('reviews');
-const loading = ref(true);
 
+// Reviews state
 const reviews = ref([]);
 const reviewsPage = ref(1);
 const reviewsTotalPages = ref(1);
+const reviewsPerPage = ref(25);
 const reviewsLoading = ref(true);
 const reviewsSortOrder = ref('date_desc');
+const reviewPageSizeOptions = Object.freeze([25, 50, 100]);
 
+// Favorites state
 const favorites = ref([]);
 const favoritesPage = ref(1);
 const favoritesTotalPages = ref(1);
 const favoritesLoading = ref(true);
 
+// Combined loading state
+const loading = computed(() => reviewsLoading.value && favoritesLoading.value);
 
-async function fetchListData(listType, page = 1) {
-  const isLoadingRef = listType === 'reviews' ? reviewsLoading : favoritesLoading;
-  const itemsRef = listType === 'reviews' ? reviews : favorites;
-  const pageRef = listType === 'reviews' ? reviewsPage : favoritesPage;
-  const totalPagesRef = listType === 'reviews' ? reviewsTotalPages : favoritesTotalPages;
+// Fetch reviews
+async function fetchReviews(page = 1) {
+  reviewsLoading.value = true;
 
-  isLoadingRef.value = true;
-  
   try {
-    const endpoint = listType === 'reviews' ? '/me/reviews' : '/me/favorites';
-    
-    const params = { page: page };
-    
-    if (listType === 'reviews') {
-        params.sort = reviewsSortOrder.value;
-    }
+    const response = await api.get('/me/reviews', {
+      params: {
+        page,
+        per_page: reviewsPerPage.value,
+        sort: reviewsSortOrder.value,
+      },
+    });
 
-    const response = await api.get(endpoint, { params });
-    
-    itemsRef.value = response.data.data;
-    pageRef.value = response.data.meta.page;
-    totalPagesRef.value = response.data.meta.pages;
-
+    reviews.value = response.data?.data ?? [];
+    reviewsPage.value = response.data?.meta?.page ?? page;
+    reviewsTotalPages.value = response.data?.meta?.total_pages ?? 1;
   } catch (error) {
-    console.error(`Error real al cargar ${listType}:`, error);
-    itemsRef.value = [];
-    pageRef.value = 1;
-    totalPagesRef.value = 0;
-
+    console.error('Error al cargar reseñas:', error);
+    reviews.value = [];
+    reviewsPage.value = 1;
+    reviewsTotalPages.value = 1;
   } finally {
-    isLoadingRef.value = false;
-    if (!reviewsLoading.value && !favoritesLoading.value) {
-      loading.value = false;
-    }
+    reviewsLoading.value = false;
   }
 }
 
-onMounted(() => {
-  fetchListData('reviews', 1);
-  fetchListData('favorites', 1);
-});
+// Fetch favorites
+async function fetchFavorites(page = 1) {
+  favoritesLoading.value = true;
 
+  try {
+    const response = await api.get('/me/favorites', {
+      params: { page },
+    });
+
+    const favoritesData = response.data?.data ?? [];
+    const meta = response.data?.meta ?? {};
+
+    favorites.value = favoritesData.map(site => ({
+      site_id: site.id,
+      name: site.name,
+      city: site.city,
+    }));
+
+    favoritesPage.value = meta.page ?? page;
+    favoritesTotalPages.value = meta.total_pages ?? 1;
+  } catch (error) {
+    console.error('Error al cargar favoritos:', error);
+    favorites.value = [];
+    favoritesPage.value = 1;
+    favoritesTotalPages.value = 1;
+  } finally {
+    favoritesLoading.value = false;
+  }
+}
+
+// Remove favorite
+async function removeFavorite(siteId) {
+  try {
+    await api.delete(`/sites/${siteId}/favorite`);
+    favorites.value = favorites.value.filter(fav => fav.site_id !== siteId);
+    console.log(`✅ Sitio ${siteId} eliminado de favoritos.`);
+  } catch (error) {
+    console.error('❌ Error al eliminar favorito:', error.response?.data || error.message);
+  }
+}
+
+// Event handlers
 function handleReviewPageChange(newPage) {
-  fetchListData('reviews', newPage);
+  fetchReviews(newPage);
+}
+
+function handleReviewPageSizeChange(newSize) {
+  if (reviewsPerPage.value === newSize) {
+    return;
+  }
+  reviewsPerPage.value = newSize;
+  fetchReviews(1);
+}
+
+function handleReviewSortChange() {
+  fetchReviews(1);
 }
 
 function handleFavoritePageChange(newPage) {
-  fetchListData('favorites', newPage);
+  fetchFavorites(newPage);
 }
+
+// Initialize on mount
+onMounted(() => {
+  fetchReviews(1);
+  fetchFavorites(1);
+});
 </script>

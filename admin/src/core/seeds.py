@@ -27,11 +27,13 @@ def run(env="production"):
 
     # Solo si estamos en development
     if env == "development":
+        seed_aditional_public_users()
         seed_aditional_editors()
         seed_aditional_admins()
         seed_aditional_moderators()
         seed_historic_sites()
         seed_aditional_historic_sites()
+        seed_aditional_validated_historic_sites()
         seed_site_tags()
         seed_favorites()
         seed_reviews()
@@ -263,9 +265,9 @@ def seed_event_types():
         "Edición",
         "Eliminación",
         "Restauración",
-        "Cambio de estado",  # cambio de visibilidad
+        "Cambio de estado",  # Cambio de visibilidad
         "Cambio de tags",
-        # "Cambio de imágenes",  para etapa 2
+        "Cambio de imágenes",
     ]
 
     for event_name in event_types:
@@ -460,7 +462,7 @@ def seed_categories():
     """Crea las categorías iniciales de los sitios históricos"""
     from core.models import Category
 
-    print("Cargando categorias...")
+    print("Creando categorias...")
 
     categories = [
         Category(name="Arquitectura"),
@@ -772,9 +774,41 @@ def seed_site_tags():
     # Rehabilitar listeners de auditoría
     enable_audit_listeners()
 
+def seed_aditional_public_users():
+    """Crea usuarios públicos adicionales (portal)"""
+    import uuid
+
+    from faker import Faker
+
+    from core.models import User
+    from core.services import role_service as RoleService
+
+    print("Creando usuarios públicos adicionales...")
+    fake = Faker("es_AR")
+
+    role_public = RoleService.get_role_by_name("Usuario público")
+
+    usuarios = [
+        User(
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            password="password123",
+            role_id=role_public.id,
+            system_admin=False,
+        )
+        for _ in range(50)
+    ]
+
+    db.session.add_all(usuarios)
+    db.session.commit()
+
 def seed_aditional_editors():
     """Crea usuarios editores adicionales"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
 
@@ -785,7 +819,7 @@ def seed_aditional_editors():
 
     usuarios = [
         User(
-            email=fake.unique.email(),
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
             first_name=fake.first_name(),
             last_name=fake.last_name(),
             password="editor123",
@@ -801,7 +835,10 @@ def seed_aditional_editors():
 
 def seed_aditional_admins():
     """Crea usuarios administradores adicionales (no system admin)"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
 
@@ -812,7 +849,7 @@ def seed_aditional_admins():
 
     usuarios = [
         User(
-            email=fake.unique.email(),
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
             first_name=fake.first_name(),
             last_name=fake.last_name(),
             password="admin123",
@@ -828,10 +865,12 @@ def seed_aditional_admins():
 
 def seed_aditional_moderators():
     """Crea usuarios moderadores adicionales"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
-    import uuid
 
     print("Creando usuarios moderadores adicionales...")
     fake = Faker("es_AR")
@@ -858,13 +897,14 @@ def seed_aditional_historic_sites():
     Crea sitios históricos adicionales con Faker para desarrollo.
     Genera ubicaciones aleatorias dentro de provincias existentes.
     """
+    from datetime import datetime, timezone
+    from random import choice, randint, uniform
+
     from faker import Faker
     from geoalchemy2.elements import WKTElement
-    from random import choice, randint
-    from datetime import datetime, timezone
-    from core.models import HistoricSite, City, Category, ConservationState, User
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
-    from random import uniform
+    from core.models import Category, City, ConservationState, HistoricSite, User
 
     print("Creando sitios históricos adicionales con Faker...")
 
@@ -881,7 +921,7 @@ def seed_aditional_historic_sites():
         return
 
     sitios = []
-    for _ in range(20):
+    for _ in range(100):
         city = choice(cities)
         category = choice(categories)
         state = choice(states)
@@ -912,15 +952,77 @@ def seed_aditional_historic_sites():
     db.session.commit()
     enable_audit_listeners()
 
+
+def seed_aditional_validated_historic_sites():
+    """
+    Crea sitios históricos adicionales validados, con Faker para desarrollo.
+    Genera ubicaciones aleatorias dentro de provincias existentes.
+    """
+    from datetime import datetime, timezone
+    from random import choice, randint, uniform
+
+    from faker import Faker
+    from geoalchemy2.elements import WKTElement
+
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import Category, City, ConservationState, HistoricSite, User
+
+    print("Creando sitios históricos validados con Faker...")
+
+    fake = Faker("es_AR")
+    disable_audit_listeners()
+
+    cities = City.query.all()
+    categories = Category.query.all()
+    states = ConservationState.query.all()
+    users = User.query.filter_by(system_admin=False).all()
+
+    if not (cities and categories and states and users):
+        print("No hay datos base suficientes para generar sitios validados.")
+        return
+
+    sitios = []
+    for _ in range(100):
+        city = choice(cities)
+        category = choice(categories)
+        state = choice(states)
+        user = choice(users)
+
+        # Coordenadas aleatorias dentro del rango general de Argentina
+        lon = round(uniform(-73, -53), 6)
+        lat = round(uniform(-55, -21), 6)
+
+        sitios.append(
+            HistoricSite(
+                name=f"Sitio validado {fake.city()}",
+                brief_description=fake.sentence(nb_words=10)[:50],
+                full_description=fake.paragraph(nb_sentences=4),
+                inauguration_year=randint(1600, 2020),
+                created_at=datetime.now(timezone.utc),
+                is_visible=True,
+                pending_validation=False,
+                city_id=city.id,
+                category_id=category.id,
+                conservation_state_id=state.id,
+                proposed_by=user.id,
+                location=WKTElement(f"POINT({lon} {lat})", srid=4326),
+            )
+        )
+
+    db.session.add_all(sitios)
+    db.session.commit()
+    enable_audit_listeners()
+
 def seed_reviews():
     """Genera reseñas (reviews) aleatorias para los sitios históricos."""
-    from faker import Faker
     import random
-    from core.models import Review, User, HistoricSite
-    from core.models.review import ReviewStatus
-    from core.audit import disable_audit_listeners, enable_audit_listeners
     from datetime import datetime, timezone
-    from core.services import role_service as RoleService
+
+    from faker import Faker
+
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import HistoricSite, Review, User
+    from core.models.review import ReviewStatus
 
 
     print("Generando reseñas aleatorias...")
@@ -977,16 +1079,15 @@ def seed_reviews():
     db.session.commit()
 
     enable_audit_listeners()
-    print(f"✅ {len(reviews)} reseñas generadas correctamente.")
-
 
 
 
 def seed_favorites():
     """Asocia aleatoriamente sitios históricos a usuarios públicos como favoritos."""
-    from random import sample, randint
-    from core.models import User, HistoricSite
+    from random import randint, sample
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import HistoricSite, User
 
     print("Agregando favoritos de usuarios...")
 
@@ -1017,7 +1118,3 @@ def seed_favorites():
 
     # Rehabilitar listeners de auditoría
     enable_audit_listeners()
-
-
-
-

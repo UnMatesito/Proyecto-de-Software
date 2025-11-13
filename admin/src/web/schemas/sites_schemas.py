@@ -3,7 +3,15 @@ Schemas de validación para la API de Sitios Históricos usando Marshmallow
 """
 from datetime import datetime, timezone
 
-from marshmallow import Schema, fields, validates, ValidationError, validate, validates_schema
+from marshmallow import (
+    Schema,
+    ValidationError,
+    fields,
+    validate,
+    validates,
+    validates_schema,
+)
+
 from core.services import conservation_state_service
 
 
@@ -19,8 +27,9 @@ class SiteQuerySchema(Schema):
         validate=validate.OneOf(["latest", "oldest", "rating-5-1", "rating-1-5"]),
         load_default="latest"
     )
+    favorites = fields.Bool(load_default=False)
     lat = fields.Float(validate=validate.Range(min=-90, max=90))
-    long = fields.Float(validate=validate.Range(min=-180, max=180))
+    lon = fields.Float(validate=validate.Range(min=-180, max=180))
     radius = fields.Float(validate=validate.Range(min=0))
     page = fields.Int(validate=validate.Range(min=1), load_default=1)
     per_page = fields.Int(validate=validate.Range(min=1, max=100), load_default=20)
@@ -28,7 +37,7 @@ class SiteQuerySchema(Schema):
     @validates_schema
     def validate_geospatial(self, data, **kwargs):
         """Valida que si se usa búsqueda geoespacial, todos los parámetros estén presentes"""
-        geo_fields = ['lat', 'long', 'radius']
+        geo_fields = ['lat', 'lon', 'radius']
         geo_provided = [field for field in geo_fields if field in data and data[field] is not None]
 
         if geo_provided and len(geo_provided) != 3:
@@ -67,11 +76,6 @@ class SiteCreateSchema(Schema):
         validate=validate.Length(min=1),
         error_messages={"required": "This field is required"}
     )
-    country = fields.Str(
-        required=True,
-        validate=validate.Length(equal=2),
-        error_messages={"required": "This field is required"}
-    )
     lat = fields.Float(
         required=True,
         validate=validate.Range(min=-90, max=90),
@@ -80,7 +84,7 @@ class SiteCreateSchema(Schema):
             "invalid": "Must be a valid latitude between -90 and 90"
         }
     )
-    long = fields.Float(
+    lon = fields.Float(
         required=True,
         validate=validate.Range(min=-180, max=180),
         error_messages={
@@ -134,8 +138,8 @@ class SiteCreateSchema(Schema):
     @validates('province')
     def validate_province(self, value):
         """Valida que la provincia exista"""
-        from core.models import Province
         from core.database import db
+        from core.models import Province
 
         if not value or not value.strip():
             raise ValidationError("Province name cannot be empty")
@@ -150,8 +154,8 @@ class SiteCreateSchema(Schema):
     @validates_schema
     def validate_city_in_province(self, data, **kwargs):
         """Valida que la ciudad exista en la provincia especificada"""
-        from core.models import Province, City
         from core.database import db
+        from core.models import City, Province
 
         city_name = data.get('city')
         province_name = data.get('province')
@@ -190,6 +194,19 @@ class SiteCreateSchema(Schema):
             if not isinstance(tag, str) or not tag.strip():
                 raise ValidationError("All tags must be non-empty strings")
 
+class SiteImageSchema(Schema):
+    """Schema para serializar imágenes de un sitio histórico"""
+
+    id = fields.Int()
+    url = fields.Str()
+    title = fields.Str(
+        required=True,
+        validate=validate.Length(min=1,max=100),
+        error_messages={"required": "Image title is required"}
+    )
+    description = fields.Str(allow_none=True, validate=validate.Length(max=255))
+    is_cover = fields.Bool()
+    order = fields.Int()
 
 class SiteResponseSchema(Schema):
     """Schema para serializar la respuesta de un sitio histórico"""
@@ -198,26 +215,35 @@ class SiteResponseSchema(Schema):
     name = fields.Str()
     short_description = fields.Str()
     description = fields.Str()
+    review_count = fields.Int()
+    average_rating = fields.Float()
     city = fields.Str()
     province = fields.Str()
-    country = fields.Str()
     lat = fields.Float()
-    long = fields.Float()
+    lon = fields.Float()
     tags = fields.List(fields.Str())
     state_of_conservation = fields.Str()
     inauguration_year = fields.Int()
     category = fields.Str(allow_none=True)
     inserted_at = fields.DateTime(format='iso')
     updated_at = fields.DateTime(format='iso')
+    images = fields.List(fields.Nested(SiteImageSchema))
     user_id = fields.Int(dump_only=True)
 
+class SiteMetaSchema(Schema):
+    """Schema para los metadatos de paginación"""
+
+    page = fields.Int()
+    per_page = fields.Int()
+    total = fields.Int()
+    total_pages = fields.Int()
 
 class SiteListResponseSchema(Schema):
     """Schema para la respuesta paginada de sitios"""
 
     data = fields.List(fields.Nested(SiteResponseSchema))
-    meta = fields.Dict()
-    
+    meta = fields.Nested(SiteMetaSchema)
+
 class HistoricSiteShortSchema(Schema):
     """Schema corto para representar un sitio histórico dentro de otra entidad."""
     id = fields.Int()

@@ -1,4 +1,5 @@
-from wtforms import BooleanField, SubmitField
+from flask_wtf.file import FileAllowed
+from wtforms import BooleanField, FileField, SubmitField
 
 from core.services import (
     get_all_categories,
@@ -14,6 +15,15 @@ from .create_site_form import CreateSiteForm
 class EditSiteForm(CreateSiteForm):
 
     is_visible = BooleanField("Visibilizar")
+
+    # Sobrescribir el campo images para NO exigirlo
+    images = FileField(
+        "Imágenes del sitio (máximo 10)",
+        validators=[
+            FileAllowed(['jpg', 'jpeg', 'png', 'webp'], 'Solo se permiten imágenes'),
+        ],
+        render_kw={'multiple': True, 'accept': 'image/*', 'max': 10}
+    )
 
     submit = SubmitField("Editar")
 

@@ -2,6 +2,7 @@ from flask import (
     Blueprint,
     Response,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -12,6 +13,7 @@ from flask import (
 from core.services import (
     assign_relations_to_historic_site,
     create_historic_site,
+    create_multiple_images,
     delete_historic_site,
     get_all_cities,
     get_all_conservation_state,
@@ -22,15 +24,17 @@ from core.services import (
     get_conservation_state_by_id,
     get_historic_site_by_id,
     get_province_by_id,
+    get_site_images,
     get_sites_filtered,
     get_tag_by_id,
     get_user_by_id,
+    reorder_site_images,
     restore_historic_site,
     update_historic_site,
     validate_historic_site,
 )
 from core.utils.export import export_sites_to_csv, get_csv_filename
-from web.forms.historic_site import CreateSiteForm, EditSiteForm
+from web.forms.historic_site import CreateSiteForm, EditSiteForm, SiteImageUploadForm
 from web.utils.auth import login_required, permission_required
 
 site_bp = Blueprint("site_bp", __name__, url_prefix="/sites")
@@ -181,11 +185,13 @@ def detail(site_id):
     try:
         site = get_historic_site_by_id(site_id)
         province = get_province_by_id(site.city.province.id)
+        images = get_site_images(site_id)
         lon = float(site.longitude)
         lat = float(site.latitude)
         return render_template(
             "historic_site/detail.html",
             site=site,
+            images=images,
             lat=lat,
             lon=lon,
             province=province,
@@ -204,7 +210,12 @@ def get_create():
 
     try:
         form = CreateSiteForm()
-        return render_template("historic_site/create.html", form=form)
+        image_form = SiteImageUploadForm(existing_images=0, require_images=True)
+        return render_template(
+            "historic_site/create.html",
+            form=form,
+            image_form=image_form,
+        )
     except Exception as e:
         flash(f"Error al cargar el formulario, error: {e}", "error")
         return redirect(url_for("site_bp.list_paginated_sites"))
@@ -214,51 +225,79 @@ def get_create():
 @login_required
 @permission_required("site_new")
 def post_create():
-    """Recibe y verifica los datos enviados por el formulario de creacion.
-    Si los datos enviados son válidos hace el alta del sitio histórico.
-    """
+    """Recibe y verifica los datos enviados por el formulario de creacion."""
     current_user = get_user_by_id(session["user_id"])
     form = CreateSiteForm()
-    if form.validate_on_submit():
-        try:
-            site = {
-                "name": form.name.data,
-                "brief_description": form.brief_description.data,
-                "full_description": form.full_description.data,
-                "inauguration_year": form.inauguration_year.data,
-                "latitude": form.latitude.data,
-                "longitude": form.longitude.data,
-            }
-            city = get_city_by_id(form.city.data)
-            category = get_category_by_id(form.category.data)
-            conservation_state = get_conservation_state_by_id(
-                form.conservation_state.data
-            )
-            tags = []
-            for tag_id in form.tags.data:
-                tags.append(get_tag_by_id(tag_id))
-            site = create_historic_site(**site)
-            assign_relations_to_historic_site(
-                historic_site=site,
-                conservation_state=conservation_state,
-                category=category,
-                city=city,
-                user=current_user,
-                tags=tags,
-            )
-            flash("Se creo correctamente el sitio", "success")
-            return redirect(url_for("site_bp.list_paginated_sites"))
-        except Exception as e:
-            flash(f"Error al crear el sitio, {e}", "error")
-            return redirect(url_for("site_bp.get_create"))
-    else:
+    image_form = SiteImageUploadForm(existing_images=0, require_images=True)
+
+    form_valid = form.validate_on_submit()
+    images_valid = image_form.validate()
+
+    if not (form_valid and images_valid):
         form.city.choices = [
             (city.id, city.name)
             for city in get_all_cities()
             if (city.province_id == form.province.data)
         ]
-        return render_template("historic_site/create.html", form=form)
+        return render_template(
+            "historic_site/create.html",
+            form=form,
+            image_form=image_form,
+        )
 
+    try:
+        site_data = {
+            "name": form.name.data,
+            "brief_description": form.brief_description.data,
+            "full_description": form.full_description.data,
+            "inauguration_year": form.inauguration_year.data,
+            "latitude": form.latitude.data,
+            "longitude": form.longitude.data,
+        }
+
+        city = get_city_by_id(form.city.data)
+        category = get_category_by_id(form.category.data)
+        conservation_state = get_conservation_state_by_id(
+            form.conservation_state.data
+        )
+        tags = []
+        for tag_id in form.tags.data:
+            tags.append(get_tag_by_id(tag_id))
+
+        # Crear el sitio
+        site = create_historic_site(**site_data)
+        assign_relations_to_historic_site(
+            historic_site=site,
+            conservation_state=conservation_state,
+            category=category,
+            city=city,
+            user=current_user,
+            tags=tags,
+        )
+
+        images = image_form.images.data
+        if images:
+            try:
+                create_multiple_images(
+                    historic_site_id=site.id,
+                    files=images,
+                    set_first_as_cover=True,
+                    titles=image_form.image_titles.data,
+                    descriptions=image_form.image_descriptions.data,
+                )
+                flash(
+                    f"Se subieron {len(images)} imágenes correctamente",
+                    "success",
+                )
+            except Exception as e:
+                flash(f"Error al subir imágenes: {e}", "warning")
+
+        flash("Se creó correctamente el sitio", "success")
+        return redirect(url_for("site_bp.list_paginated_sites"))
+
+    except Exception as e:
+        flash(f"Error al crear el sitio, {e}", "error")
+        return redirect(url_for("site_bp.get_create"))
 
 @site_bp.get("/edit/<int:site_id>")
 @login_required
@@ -269,7 +308,9 @@ def get_edit(site_id):
     try:
         site = get_historic_site_by_id(site_id=site_id)
         site_name = site.name
+        images = get_site_images(site_id)
         form = EditSiteForm(site=site)
+        image_form = SiteImageUploadForm(existing_images=len(images))
 
         # Cargo tags del sitio
         tags = site.tags
@@ -285,10 +326,12 @@ def get_edit(site_id):
         return render_template(
             "historic_site/edit.html",
             form=form,
+            image_form=image_form,
             lat=lat,
             lon=lon,
             site_name=site_name,
             site=site,
+            images=images,
         )
     except Exception as e:
         flash(f"Se produjo un error, {e}", "error")
@@ -299,44 +342,99 @@ def get_edit(site_id):
 @login_required
 @permission_required("site_update")
 def post_edit(site_id):
-    """Recibe y verifica los datos enviados por el formulario de edición.
-    Si los datos enviados son válidos hace el edit del sitio histórico.
-    """
+    """Recibe y verifica los datos enviados por el formulario de edición."""
+    site = get_historic_site_by_id(site_id=site_id)
+    existing_images = get_site_images(site_id)
     form = EditSiteForm()
-    if form.validate_on_submit():
-        try:
-            body = {
-                "historic_site_id": site_id,
-                "name": form.name.data,
-                "brief_description": form.brief_description.data,
-                "full_description": form.full_description.data,
-                "inauguration_year": form.inauguration_year.data,
-                "location": {
-                    "lat": form.latitude.data,
-                    "lon": form.longitude.data,
-                },
-                "is_visible": form.is_visible.data,
-                "city": form.city.data,
-                "conservation_state": form.conservation_state.data,
-                "category": form.category.data,
-                "tags": form.tags.data,
-            }
-            update_historic_site(body)
-            flash(f"El sitio {form.name.data} fue editado exitosamente", "success")
-            return redirect(url_for("site_bp.list_paginated_sites"))
-        except Exception as e:
-            flash(
-                f"Se produjo un error al intentar editar el sitio {form.name.data}, {e}",
-                "error",
-            )
-            return redirect(url_for("site_bp.list_paginated_sites"))
-    else:
-        for e in form.errors:
-            flash(
-                f"Se produjo un error al intentar editar el sitio {site_id}, error: {e}",
-                "error",
-            )
-        return redirect(url_for("site_bp.get_edit", site_id=site_id))
+    image_form = SiteImageUploadForm(existing_images=len(existing_images))
+
+    form_valid = form.validate_on_submit()
+    images_valid = image_form.validate()
+
+    if not (form_valid and images_valid):
+        lat = float(site.latitude)
+        lon = float(site.longitude)
+        return render_template(
+            "historic_site/edit.html",
+            form=form,
+            image_form=image_form,
+            lat=lat,
+            lon=lon,
+            site_name=site.name,
+            site=site,
+            images=existing_images,
+        )
+
+    try:
+        body = {
+            "historic_site_id": site_id,
+            "name": form.name.data,
+            "brief_description": form.brief_description.data,
+            "full_description": form.full_description.data,
+            "inauguration_year": form.inauguration_year.data,
+            "location": {
+                "lat": form.latitude.data,
+                "lon": form.longitude.data,
+            },
+            "is_visible": form.is_visible.data,
+            "city": form.city.data,
+            "conservation_state": form.conservation_state.data,
+            "category": form.category.data,
+            "tags": form.tags.data,
+        }
+
+        update_historic_site(body)
+
+        new_files = image_form.images.data
+        if new_files:
+            try:
+                from core.services.site_image_service import create_site_image
+
+                start_order = len(existing_images)
+                created = []
+
+                for index, (file, title, description) in enumerate(
+                    zip(
+                        new_files,
+                        image_form.image_titles.data,
+                        image_form.image_descriptions.data,
+                    )
+                ):
+                    if not file or not getattr(file, "filename", ""):
+                        continue
+
+                    is_cover = start_order == 0 and index == 0
+                    create_site_image(
+                        historic_site_id=site_id,
+                        file=file,
+                        order=start_order + index,
+                        is_cover=is_cover,
+                        title=title,
+                        description=description,
+                    )
+                    created.append(file.filename)
+
+                if start_order == 0:
+                    ordered_images = get_site_images(site_id)
+                    reorder_site_images(
+                        historic_site_id=site_id,
+                        ordered_image_ids=[image.id for image in ordered_images],
+                    )
+
+                if created:
+                    flash(f"Se agregaron {len(created)} imágenes", "success")
+            except Exception as e:
+                flash(f"Error al subir imágenes: {e}", "warning")
+
+        flash(f"El sitio {form.name.data} fue editado exitosamente", "success")
+        return redirect(url_for("site_bp.list_paginated_sites"))
+
+    except Exception as e:
+        flash(
+            f"Se produjo un error al intentar editar el sitio {form.name.data}, {e}",
+            "error",
+        )
+        return redirect(url_for("site_bp.list_paginated_sites"))
 
 
 @site_bp.post("/delete/<int:site_id>")
@@ -353,6 +451,123 @@ def delete(site_id):
     except Exception as e:
         flash(f"Error al intentar eliminar el sitio {site_id}, {e}", "error")
         return redirect(url_for("site_bp.list_paginated_sites"))
+
+
+@site_bp.post("/image/delete/<int:image_id>")
+@login_required
+@permission_required("site_update")
+def delete_image(image_id):
+    """Elimina una imagen específica de un sitio"""
+    try:
+        from core.models import SiteImage
+        from core.services.site_image_service import delete_site_image
+
+        image = SiteImage.query.get_or_404(image_id)
+        site_id = image.historic_site_id
+
+        delete_site_image(image_id)
+        flash("Imagen eliminada correctamente", "success")
+
+    except Exception as e:
+        flash(f"Error al eliminar imagen: {e}", "error")
+
+    return redirect(url_for("site_bp.get_edit", site_id=site_id))
+
+
+@site_bp.post("/image/reorder/<int:site_id>")
+@login_required
+@permission_required("site_update")
+def reorder_images(site_id):
+    """Actualiza el orden de las imágenes utilizando arrastrar y soltar."""
+
+    payload = request.get_json(silent=True) or {}
+    ordered_ids = payload.get("ordered_image_ids")
+
+    if not isinstance(ordered_ids, list) or not ordered_ids:
+        return jsonify({"error": "Se requiere un listado de imágenes."}), 400
+
+    try:
+        casted_ids = [int(image_id) for image_id in ordered_ids]
+    except (TypeError, ValueError):
+        return jsonify({"error": "Los identificadores de las imágenes no son válidos."}), 400
+
+    try:
+        reorder_site_images(historic_site_id=site_id, ordered_image_ids=casted_ids)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception as exc:  # pragma: no cover - fallback de error
+        return jsonify({"error": f"No se pudo actualizar el orden: {exc}"}), 500
+
+    return jsonify({"status": "ok"}), 200
+
+
+@site_bp.post("/image/<int:image_id>/cover")
+@login_required
+@permission_required("site_update")
+def set_image_cover(image_id):
+    """Establece la portada de un sitio histórico."""
+    from core.models import SiteImage
+
+    image = SiteImage.query.get_or_404(image_id)
+    site_id = image.historic_site_id
+
+    try:
+        ordered_images = get_site_images(site_id)
+        ordered_ids = [image_id] + [img.id for img in ordered_images if img.id != image_id]
+        reorder_site_images(historic_site_id=site_id, ordered_image_ids=ordered_ids)
+        flash("La portada del sitio se actualizó correctamente", "success")
+    except Exception as e:
+        flash(f"Error al actualizar la portada: {e}", "error")
+
+    return redirect(url_for("site_bp.get_edit", site_id=site_id))
+
+
+@site_bp.post("/image/<int:image_id>/move")
+@login_required
+@permission_required("site_update")
+def move_image(image_id):
+    """Reordena una imagen moviéndola una posición."""
+    from core.models import SiteImage
+
+    direction = request.form.get("direction")
+    if direction not in {"up", "down"}:
+        flash("Dirección de movimiento inválida", "error")
+        return redirect(request.referrer or url_for("site_bp.list_paginated_sites"))
+
+    image = SiteImage.query.get_or_404(image_id)
+    site_id = image.historic_site_id
+
+    try:
+        ordered_images = get_site_images(site_id)
+        positions = {img.id: index for index, img in enumerate(ordered_images)}
+        current_index = positions.get(image_id)
+
+        if current_index is None:
+            flash("No se pudo determinar la posición de la imagen", "error")
+            return redirect(url_for("site_bp.get_edit", site_id=site_id))
+
+        if direction == "up" and current_index == 0:
+            flash("La imagen ya se encuentra en la primera posición", "info")
+            return redirect(url_for("site_bp.get_edit", site_id=site_id))
+
+        if direction == "down" and current_index == len(ordered_images) - 1:
+            flash("La imagen ya se encuentra en la última posición", "info")
+            return redirect(url_for("site_bp.get_edit", site_id=site_id))
+
+        target_index = current_index - 1 if direction == "up" else current_index + 1
+        ordered_ids = [img.id for img in ordered_images]
+        ordered_ids[current_index], ordered_ids[target_index] = (
+            ordered_ids[target_index],
+            ordered_ids[current_index],
+        )
+
+        reorder_site_images(historic_site_id=site_id, ordered_image_ids=ordered_ids)
+
+        flash("El orden de las imágenes se actualizó correctamente", "success")
+    except Exception as e:
+        flash(f"Error al reordenar la imagen: {e}", "error")
+
+    return redirect(url_for("site_bp.get_edit", site_id=site_id))
 
 
 @site_bp.post("/restore/<int:site_id>")

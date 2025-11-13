@@ -32,7 +32,7 @@ class Config:
     JWT_COOKIE_SAMESITE = "None"
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-    FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5174')
+    FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
     GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', 'http://localhost:5000/api/auth/google/callback')
     CORS_ORIGINS = [
         "http://localhost:5173",
@@ -58,6 +58,8 @@ class DevelopmentConfig(Config):
     MINIO_SECURE = False
     JWT_COOKIE_SECURE = False
     JWT_COOKIE_SAMESITE = "Lax"
+    JWT_COOKIE_CSRF_PROTECT = False
+
 
     CORS_ORIGINS = [
         "http://localhost:5173",
