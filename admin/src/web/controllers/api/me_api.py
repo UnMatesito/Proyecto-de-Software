@@ -127,7 +127,7 @@ def my_favorites():
             ),
             "country": "AR",
             "lat": site.latitude,
-            "long": site.longitude,
+            "lon": site.longitude,
             "tags": [tag.name for tag in site.tags],
             "state_of_conservation": (
                 site.conservation_state.name if site.conservation_state else None
