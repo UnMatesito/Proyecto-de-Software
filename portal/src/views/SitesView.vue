@@ -8,6 +8,7 @@
     <section class="grid md:grid-cols-4 gap-3 p-3">
       <Card
         v-for="site in sites"
+          :id="site.id"
           :key="`${site.id}-${site.name}`"
           :name="site.name"
           :province="site.province"

@@ -19,6 +19,7 @@ const requireAuth = (to, from, next) => {
 };
 
 import MaintenanceView from '../views/MaintenanceView.vue'
+import SiteDetailsView from "@/components/SiteDetailsView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,7 +53,7 @@ const router = createRouter({
       component: () => import('../views/SitesView.vue'),
     },
     {
-      path: '/auth/callback', 
+      path: '/auth/callback',
       name: 'authCallback',
       component: AuthView,
     },
@@ -61,6 +62,11 @@ const router = createRouter({
       name: 'profile',
       component: ProfileView,
       beforeEnter: requireAuth,
+    },
+    {
+      path: '/sites/:site_id',
+      name: 'siteDetails',
+      component: SiteDetailsView,
     }
   ],
 })

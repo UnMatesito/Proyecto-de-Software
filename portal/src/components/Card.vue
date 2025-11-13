@@ -21,25 +21,21 @@
 
 <template>
     <!-- Gap reducido en mobile, más compacto -->
-    <a href="#" class="rounded-lg relative flex flex-col gap-0.5 sm:gap-1 overflow-hidden w-full cursor-pointer shadow-lg hover:shadow-2xl transition duration-300 ease-in-out bg-white hover:shadow-proyecto-accent/80 h-full">
-        <!-- Botón favorito más pequeño en mobile -->
-        <button v-if="props.isAuthenticated" @click.stop="toggleFavorite(props.id)" :class="{'fill-red-600': props.isFavorite, 'fill-gray-500': !props.isFavorite}" class="absolute left-1.5 top-1.5 sm:left-2 sm:top-2 bg-white/90 backdrop-blur-sm p-1 sm:p-1.5 border-0 rounded-full text-center hover:opacity-75 hover:fill-red-600 transition-all duration-400 ease-in-out z-10 shadow-md">
+    <a :href="`/sites/${props.id}`" class="rounded-lg relative flex flex-col gap-0.5 sm:gap-1 overflow-hidden w-full cursor-pointer shadow-lg hover:shadow-2xl transition duration-300 ease-in-out bg-white hover:shadow-proyecto-accent/80 h-full">
+
+        <button v-if="props.isAuthenticated" @click.prevent.stop="toggleFavorite(props.id)" :class="{'fill-red-600': props.isFavorite, 'fill-gray-500': !props.isFavorite}" class="absolute left-1.5 top-1.5 sm:left-2 sm:top-2 bg-white/90 backdrop-blur-sm p-1 sm:p-1.5 border-0 rounded-full text-center hover:opacity-75 hover:fill-red-600 transition-all duration-400 ease-in-out z-10 shadow-md">
             <IconFavorite class="w-3.5 h-3.5 sm:w-5 sm:h-5 block"></IconFavorite>
         </button>
 
-        <!-- Imagen más compacta en mobile: 4:3 en mobile, 16:9 en desktop -->
         <div class="relative w-full aspect-[4/3] sm:aspect-video">
             <img class="absolute inset-0 w-full h-full object-cover" :src="urlImg" :alt="alt">
         </div>
 
-        <!-- Stars más pequeño y menos padding en mobile -->
         <div class="w-full py-1 sm:py-2 flex justify-center">
           <Stars rating="1" class="scale-75 sm:scale-100"></Stars>
         </div>
 
-        <!-- Padding reducido en mobile -->
         <div class="p-2 sm:p-4 flex flex-col gap-1 sm:gap-2">
-            <!-- Título más compacto -->
             <div class="flex gap-1 sm:gap-1.5 items-start items-center">
                 <IconBuild class="fill-slate-400 w-3.5 h-3.5 sm:w-4 sm:h-4"></IconBuild>
                 <h3 class="font-semibold text-xs sm:text-base line-clamp-2 leading-tight sm:leading-normal">
@@ -47,7 +43,6 @@
                 </h3>
             </div>
 
-            <!-- Ubicación compacta -->
             <div class="flex flex-row gap-1 sm:gap-1.5 items-center">
                 <IconLocation class="fill-slate-400 w-3.5 h-3.5 sm:w-4 sm:h-4"></IconLocation>
                 <p class="text-[10px] sm:text-sm leading-tight">{{ `${props.province}, ${props.city}` }}</p>
@@ -68,7 +63,6 @@
                 </div>
             </div>
 
-            <!-- Tags más compactos en mobile -->
             <div class="flex gap-1 sm:gap-2 text-blue-700 flex-wrap border-t-2 pt-1 sm:pt-2 pb-0.5 sm:pb-1">
                 <span v-for="tag in tags_to_show" class="inline-flex items-center bg-blue-50 text-blue-500 text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2.5 py-0.5 border sm:border-2 rounded-full border-blue-500 whitespace-nowrap">{{ tag }}</span>
                 <span v-if="tags_left > 0" class="inline-flex items-center bg-blue-100 text-blue-500 text-[10px] sm:text-xs font-bold px-1.5 sm:px-2.5 py-0.5 border sm:border-2 rounded-full border-blue-500">{{ `+${tags_left}` }}</span>
