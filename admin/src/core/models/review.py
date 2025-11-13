@@ -43,13 +43,19 @@ class Review(db.Model):
         db.ForeignKey("historic_site.id", ondelete="CASCADE"),
         nullable=False,
     )
-    site = db.relationship("HistoricSite", back_populates="reviews")
+    historic_site = db.relationship("HistoricSite", back_populates="reviews")
 
     # Restricciones
     __table_args__ = (
-        db.UniqueConstraint("user_id", "historic_site_id", name="unique_user_review"), # Un usuario solo puede dejar una reseña por sitio histórico
-        CheckConstraint("rating >= 1 AND rating <= 5", name="check_rating_range"), # La calificación debe estar entre 1 y 5
-        db.Index("idx_historic_site_rating", "rating"), # Índice para optimizar consultas por calificación
+        db.UniqueConstraint(
+            "user_id", "historic_site_id", name="unique_user_review"
+        ),  # Un usuario solo puede dejar una reseña por sitio histórico
+        CheckConstraint(
+            "rating >= 1 AND rating <= 5", name="check_rating_range"
+        ),  # La calificación debe estar entre 1 y 5
+        db.Index(
+            "idx_historic_site_rating", "rating"
+        ),  # Índice para optimizar consultas por calificación
     )
 
     # Validaciones
@@ -82,13 +88,11 @@ class Review(db.Model):
     def __repr__(self):
         return f"<Review {self.id} - {self.status}>"
 
-# Event listener
-# TODO: Evaluar esto
-from sqlalchemy import event
 
 @event.listens_for(Review, "after_insert")
 def add_site_rating(mapper, connection, target):
     from core.models import HistoricSite
+
     if target.status == ReviewStatus.APROBADA:
         session = db.object_session(target)
         site = session.get(HistoricSite, target.historic_site_id)
@@ -99,6 +103,7 @@ def add_site_rating(mapper, connection, target):
 @event.listens_for(Review, "after_update")
 def update_site_rating(mapper, connection, target):
     from core.models import HistoricSite
+
     session = db.object_session(target)
     site = session.get(HistoricSite, target.historic_site_id)
     if not site:
@@ -130,6 +135,7 @@ def update_site_rating(mapper, connection, target):
 @event.listens_for(Review, "after_delete")
 def remove_site_rating(mapper, connection, target):
     from core.models import HistoricSite
+
     if target.status == ReviewStatus.APROBADA:
         session = db.object_session(target)
         site = session.get(HistoricSite, target.historic_site_id)

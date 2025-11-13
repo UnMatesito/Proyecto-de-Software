@@ -1,4 +1,3 @@
-
 <script setup>
 import { computed } from 'vue';
 
@@ -92,7 +91,7 @@ function onPageSizeChange(event) {
 </script>
 
 <template>
-  <div class="flex w-full flex-col gap-4  sm:items-center sm:justify-between">
+  <div class="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div v-if="showPageSizeSelector" class="flex items-center gap-2 text-sm text-gray-600">
       <label class="font-medium text-gray-700">{{ pageSizeLabel }}</label>
       <select

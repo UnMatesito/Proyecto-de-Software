@@ -15,10 +15,16 @@ class SiteImage(db.Model):
     order = db.Column(db.Integer, nullable=True, default=0)
 
     # Timestamps
-    uploaded_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=False)
+    uploaded_at = db.Column(
+        db.DateTime, default=datetime.now(timezone.utc), nullable=False
+    )
 
     # Relaciones
-    historic_site_id = db.Column(db.Integer, db.ForeignKey("historic_site.id", ondelete="CASCADE"), nullable=False)
+    historic_site_id = db.Column(
+        db.Integer,
+        db.ForeignKey("historic_site.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     historic_site = db.relationship("HistoricSite", back_populates="images")
 
     # Metodos

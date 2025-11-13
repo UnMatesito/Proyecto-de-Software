@@ -9,16 +9,16 @@
     <div class="flex justify-between items-center flex-wrap gap-2">
 
       <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-        <ButtonPrimary 
-        v-for="value in radius" 
-        :text="value + ' km'"  
-        @click="onRadiusClick(value)" 
+        <ButtonPrimary
+        v-for="value in radius"
+        :text="value + ' km'"
+        @click="onRadiusClick(value)"
         :class="actualRadius == value*1000 ? 'bg-proyecto-accent' : ''" />
       </div>
       <div class="flex flex-col items-end">
-        <ButtonPrimary v-if="showButton && !isDisable" 
-        :text="'Actualizar radio de búsqueda'" 
-        @click="updateRadiusPath" 
+        <ButtonPrimary v-if="showButton && !isDisable"
+        :text="'Actualizar radio de búsqueda'"
+        @click="updateRadiusPath"
         :icon_left="'fa-solid fa-rotate mr-2'" />
       </div>
     </div>
@@ -35,7 +35,7 @@
         </div>
       </l-control>
 
-      <l-marker  v-for="(m, index) in props.marks" 
+      <l-marker  v-for="(m, index) in props.marks"
       :lat-lng="[m.lat, m.lon]"
       :key="index"
       :icon="customIconOrange">
@@ -44,15 +44,15 @@
         </l-popup>
       </l-marker>
 
-      <l-marker v-if="actualRadius && !isDisable"  
+      <l-marker v-if="actualRadius && !isDisable"
       :lat-lng="radiusCenter"
       :icon="customIconRed">
       </l-marker>
 
-      <l-circle 
+      <l-circle
       v-if="actualRadius && !isDisable"
-      :lat-lng="radiusCenter" 
-      :radius="actualRadius" 
+      :lat-lng="radiusCenter"
+      :radius="actualRadius"
       color="orange">
       </l-circle>
     </l-map>
@@ -67,7 +67,6 @@
     import { useRoute, useRouter } from 'vue-router';
     import ButtonPrimary from "./buttons/ButtonPrimary.vue"
 
-    console.log("HOLA")
     const showButton = ref(false)
     const radiusCenter = ref({lat: -34.92098577515593, lng: -57.95459747314454})
     const radius = [5, 10, 30, 50, 100]
@@ -86,7 +85,7 @@
         popupAnchor: [1, -34],
         shadowSize: [41, 41],
       })
-      
+
     const customIconRed=  L.icon({
         iconUrl:
           "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
@@ -99,8 +98,8 @@
       })
 
     const props = defineProps({
-        center: { default: [-34.9205, -57.9536] }, 
-        zoom : { default: 13 }, 
+        center: { default: [-34.9205, -57.9536] },
+        zoom : { default: 13 },
         marks : { default: [] },
         name : { default: "site name" },
         styleContent: { default: "" },
@@ -108,8 +107,10 @@
         isDisable: {default: false}
     })
 
-    const emit = defineEmits("changeMapSate") 
-    
+    const emit = defineEmits(["changeMapState"])
+
+
+
     const calculateNewRadius = (r) => {
       return r * 1000
     }
@@ -117,7 +118,7 @@
     const onMapClick = (e) => {
       radiusCenter.value = e.latlng
       if (props.isDisable)
-        emit("changeMapSate", false)
+        emit("changeMapState", false)
       if (!actualRadius.value)
         actualRadius.value = 5*1000;
       showButton.value = true;
@@ -130,14 +131,14 @@
     const onRadiusClick = (r) => {
       actualRadius.value = calculateNewRadius(r);
       if (props.isDisable)
-        emit("changeMapSate", false)
+        emit("changeMapState", false)
       showButton.value = true;
     }
 
     const updateRadiusPath = () => {
       router.push({
         path: route.path,
-        query: { 
+        query: {
           ...route.query,
           lat: radiusCenter.value.lat,
           lon: radiusCenter.value.lng ,

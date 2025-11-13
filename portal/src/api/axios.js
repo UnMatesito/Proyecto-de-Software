@@ -8,21 +8,22 @@ function getCookie(name) {
 }
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://admin-grupo09.proyecto2025.linti.unlp.edu.ar',
+  baseURL: import.meta.env.VITE_API_URL || 'https://admin-grupo09.proyecto2025.linti.unlp.edu.ar/api',
   withCredentials: true,
 });
 
-// Interceptor para agregar el header CSRF automáticamente
-api.interceptors.request.use(config => {
-    const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrf_access_token='))
-        ?.split('=')[1];
 
+api.interceptors.request.use(config => {
+    const csrfToken = getCookie("csrf_access_token");
+    
     if (csrfToken && ['post', 'put', 'delete', 'patch'].includes(config.method.toLowerCase())) {
         config.headers['X-CSRF-TOKEN'] = csrfToken;
     }
     return config;
+
+}, (error) => {
+    return Promise.reject(error);
 });
+
 
 export default api;

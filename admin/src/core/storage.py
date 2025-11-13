@@ -1,16 +1,18 @@
-from minio import Minio
-from minio.error import S3Error
 import json
+import logging
 import mimetypes
 import uuid
 from pathlib import Path
 from typing import Optional
+
+from minio import Minio
+from minio.error import S3Error
 from werkzeug.datastructures import FileStorage
-import logging
 
 
 class StorageError(Exception):
     """Excepción base para errores de Storage"""
+
     pass
 
 
@@ -28,7 +30,7 @@ class Storage:
     MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
     # Tipos MIME permitidos para imágenes
-    ALLOWED_MIME_TYPES = {'image/jpeg', 'image/png', 'image/webp'}
+    ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
     def __init__(self, app=None):
         self._client = None
@@ -42,11 +44,11 @@ class Storage:
 
     def init_app(self, app):
         """Inicializa el cliente MinIO con la aplicación Flask"""
-        endpoint = app.config.get("MINIO_SERVER", "localhost:9000")
+        endpoint = app.config.get("MINIO_SERVER", "https://minio.proyecto2025.linti.unlp.edu.ar/")
         access_key = app.config.get("MINIO_ACCESS_KEY", "minioadmin")
         secret_key = app.config.get("MINIO_SECRET_KEY", "minioadmin")
         self._secure = app.config.get("MINIO_SECURE", False)
-        self._bucket_name = app.config.get("MINIO_BUCKET", "proyecto")
+        self._bucket_name = app.config.get("MINIO_BUCKET", "grupo09")
         self._logger = app.logger
 
         # Limpiar el endpoint
@@ -86,12 +88,14 @@ class Storage:
             # Configurar como público
             policy = {
                 "Version": "2012-10-17",
-                "Statement": [{
-                    "Effect": "Allow",
-                    "Principal": {"AWS": "*"},
-                    "Action": ["s3:GetObject"],
-                    "Resource": [f"arn:aws:s3:::{self._bucket_name}/*"]
-                }]
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {"AWS": "*"},
+                        "Action": ["s3:GetObject"],
+                        "Resource": [f"arn:aws:s3:::{self._bucket_name}/*"],
+                    }
+                ],
             }
 
             self._client.set_bucket_policy(self._bucket_name, json.dumps(policy))
@@ -143,8 +147,13 @@ class Storage:
         protocol = "https" if self._secure else "http"
         return f"{protocol}://{self._endpoint}/{self._bucket_name}/{key}"
 
-    def upload_file(self, file_storage: FileStorage, folder: str = "sites",
-                    validate: bool = True, public: bool = True) -> dict:
+    def upload_file(
+        self,
+        file_storage: FileStorage,
+        folder: str = "sites",
+        validate: bool = True,
+        public: bool = True,
+    ) -> dict:
         """
         Sube una imagen a MinIO y retorna su URL pública.
 
@@ -170,7 +179,10 @@ class Storage:
             if validate:
                 content_type, file_size = self._validate_image(file_storage)
             else:
-                content_type = mimetypes.guess_type(file_storage.filename)[0] or "application/octet-stream"
+                content_type = (
+                    mimetypes.guess_type(file_storage.filename)[0]
+                    or "application/octet-stream"
+                )
                 file_storage.seek(0, 2)
                 file_size = file_storage.tell()
                 file_storage.seek(0)
@@ -191,10 +203,10 @@ class Storage:
 
             # Retornar información con URL pública
             return {
-                'url': self._get_public_url(file_key),
-                'key': file_key,
-                'size': file_size,
-                'content_type': content_type
+                "url": self._get_public_url(file_key),
+                "key": file_key,
+                "size": file_size,
+                "content_type": content_type,
             }
 
         except StorageError:
@@ -206,7 +218,9 @@ class Storage:
             self._logger.error(f"✗ Error inesperado: {e}")
             raise StorageError(f"Error inesperado: {e}")
 
-    def delete_file(self, file_url: Optional[str] = None, key: Optional[str] = None) -> bool:
+    def delete_file(
+        self, file_url: Optional[str] = None, key: Optional[str] = None
+    ) -> bool:
         """
         Elimina una imagen de MinIO.
 
@@ -265,11 +279,11 @@ class Storage:
         try:
             stat = self._client.stat_object(self._bucket_name, key)
             return {
-                'key': key,
-                'url': self._get_public_url(key),
-                'size': stat.size,
-                'content_type': stat.content_type,
-                'last_modified': stat.last_modified,
+                "key": key,
+                "url": self._get_public_url(key),
+                "size": stat.size,
+                "content_type": stat.content_type,
+                "last_modified": stat.last_modified,
             }
         except S3Error as e:
             raise StorageError(f"Error al obtener información: {e}")

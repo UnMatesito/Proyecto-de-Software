@@ -5,8 +5,8 @@ from core.services.tag_service import (
     delete_tag,
     get_paginated_tags,
     get_tag_by_id,
+    get_tag_by_name,
     update_tag,
-    get_tag_by_name
 )
 from web.forms.tag import CreateTagForm, EditTagForm
 from web.utils.auth import login_required, permission_required

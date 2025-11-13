@@ -1,16 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
 import { getFeatureFlag } from '@/api/featureFlags'
 import { maintenanceState } from '@/utils/maintenanceState'
+import { useAuthStore } from '../stores/auth'
 
 import HomeView from '../views/HomeView.vue'
-import AuthView from '../views/AuthView.vue'
 import ProfileView from '../views/ProfileView.vue'
-import { useAuthStore } from '../stores/auth'
+import MaintenanceView from '../views/MaintenanceView.vue'
 
 const requireAuth = (to, from, next) => {
   const authStore = useAuthStore();
-
   if (authStore.isAuthenticated) {
     next();
   } else {
@@ -18,7 +16,7 @@ const requireAuth = (to, from, next) => {
   }
 };
 
-import MaintenanceView from '../views/MaintenanceView.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -55,11 +53,6 @@ const router = createRouter({
       path: '/sites/:site_id',
       name: 'siteDetail',
       component: () => import('../views/DetailView.vue')
-    },
-    {
-      path: '/auth/callback', 
-      name: 'authCallback',
-      component: AuthView,
     },
     {
       path: '/profile',

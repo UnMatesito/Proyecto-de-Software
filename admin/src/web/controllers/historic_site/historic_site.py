@@ -2,17 +2,18 @@ from flask import (
     Blueprint,
     Response,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
     session,
     url_for,
-    jsonify,
 )
 
 from core.services import (
     assign_relations_to_historic_site,
     create_historic_site,
+    create_multiple_images,
     delete_historic_site,
     get_all_cities,
     get_all_conservation_state,
@@ -23,15 +24,14 @@ from core.services import (
     get_conservation_state_by_id,
     get_historic_site_by_id,
     get_province_by_id,
+    get_site_images,
     get_sites_filtered,
     get_tag_by_id,
     get_user_by_id,
+    reorder_site_images,
     restore_historic_site,
     update_historic_site,
     validate_historic_site,
-    create_multiple_images,
-    get_site_images,
-    reorder_site_images,
 )
 from core.utils.export import export_sites_to_csv, get_csv_filename
 from web.forms.historic_site import CreateSiteForm, EditSiteForm, SiteImageUploadForm
@@ -257,9 +257,7 @@ def post_create():
 
         city = get_city_by_id(form.city.data)
         category = get_category_by_id(form.category.data)
-        conservation_state = get_conservation_state_by_id(
-            form.conservation_state.data
-        )
+        conservation_state = get_conservation_state_by_id(form.conservation_state.data)
         tags = []
         for tag_id in form.tags.data:
             tags.append(get_tag_by_id(tag_id))
@@ -298,6 +296,7 @@ def post_create():
     except Exception as e:
         flash(f"Error al crear el sitio, {e}", "error")
         return redirect(url_for("site_bp.get_create"))
+
 
 @site_bp.get("/edit/<int:site_id>")
 @login_required
@@ -459,8 +458,8 @@ def delete(site_id):
 def delete_image(image_id):
     """Elimina una imagen específica de un sitio"""
     try:
-        from core.services.site_image_service import delete_site_image
         from core.models import SiteImage
+        from core.services.site_image_service import delete_site_image
 
         image = SiteImage.query.get_or_404(image_id)
         site_id = image.historic_site_id
@@ -489,7 +488,10 @@ def reorder_images(site_id):
     try:
         casted_ids = [int(image_id) for image_id in ordered_ids]
     except (TypeError, ValueError):
-        return jsonify({"error": "Los identificadores de las imágenes no son válidos."}), 400
+        return (
+            jsonify({"error": "Los identificadores de las imágenes no son válidos."}),
+            400,
+        )
 
     try:
         reorder_site_images(historic_site_id=site_id, ordered_image_ids=casted_ids)
@@ -513,7 +515,9 @@ def set_image_cover(image_id):
 
     try:
         ordered_images = get_site_images(site_id)
-        ordered_ids = [image_id] + [img.id for img in ordered_images if img.id != image_id]
+        ordered_ids = [image_id] + [
+            img.id for img in ordered_images if img.id != image_id
+        ]
         reorder_site_images(historic_site_id=site_id, ordered_image_ids=ordered_ids)
         flash("La portada del sitio se actualizó correctamente", "success")
     except Exception as e:

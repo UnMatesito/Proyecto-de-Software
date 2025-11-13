@@ -2,8 +2,8 @@
     <h2 class="font-semibold text-3xl text-proyecto-primary">Listado de sitios históricos</h2>
     <p class="text-proyecto-accent">Aqui puedes buscar el sitio que justo necesitas.</p>
     <aside class="p-3 ">
-      <Filter :page="pagination.page" :tags="tags" :provinces="provinces" @disableMap="changeMapSate"></Filter>
-      <Map styleContent="height:400px;  width: 100%" :marks="marks" :isDisable="disableMap" @changeMapSate="changeMapSate"></Map>
+      <Filter :page="pagination.page" :tags="tags" :provinces="provinces" @disableMap="changeMapState"></Filter>
+      <Map styleContent="height:400px;  width: 100%" :marks="marks" :isDisable="disableMap" @changeMapState="changeMapState"></Map>
     </aside>
 
     <section class="grid grid-cols-1  md:grid-cols-3 lg:grid-cols-4 gap-3 p-3">
@@ -59,7 +59,6 @@
       sites.value = response.data
       pagination.value = response.meta
       marks.value = []
-      console.log(response)
       sites.value.forEach(site => {
         marks.value.push({name: site.name, lat: site.lat, lon: site.lon})
       });
@@ -77,7 +76,7 @@
     provinces.value =  data.data
   }
 
-  const changeMapSate = (isDisable) => {
+  const changeMapState = (isDisable) => {
     disableMap.value = isDisable
   }
 

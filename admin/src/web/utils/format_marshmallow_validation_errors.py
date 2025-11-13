@@ -15,7 +15,9 @@ def format_validation_errors(errors):
             details[field] = messages
         elif isinstance(messages, dict):
             # Para errores anidados
-            details[field] = [str(v) for v in messages.values()] if messages else ["Invalid value"]
+            details[field] = (
+                [str(v) for v in messages.values()] if messages else ["Invalid value"]
+            )
         else:
             details[field] = [str(messages)]
 
@@ -23,6 +25,6 @@ def format_validation_errors(errors):
         "error": {
             "code": "invalid_data",
             "message": "Invalid input data",
-            "details": details
+            "details": details,
         }
     }
