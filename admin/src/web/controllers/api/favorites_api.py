@@ -118,7 +118,7 @@ def list_favorites():
                 ),
                 "lat": site.latitude,
                 "lon": site.longitude,
-                "tags": [t.slug for t in site.tags],
+                "tags": [t.name for t in site.tags],
                 "state_of_conservation": (
                     site.conservation_state.state if site.conservation_state else None
                 ),
