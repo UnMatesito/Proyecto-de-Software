@@ -19,11 +19,11 @@ def add_favorite(site_id):
     try:
         user_service.add_favorite_site(user_id, site_id)
         return "", 204
-    except ValueError:
+    except ValueError as err:
         return jsonify({
             "error": {
                 "code": "not_found",
-                "message": "Site not found"
+                "message": err.args[0]
             }
         }), 404
     except Exception:

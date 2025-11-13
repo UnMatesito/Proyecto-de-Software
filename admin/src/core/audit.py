@@ -49,15 +49,23 @@ def log_update_history(mapper, connection, target):
         delattr(target, "_skip_next_audit")
         return
 
-    user_id = get_current_user_id()
-    if not user_id:
-        raise ValueError("User ID no encontrado en la sesión.")
-
     instance_state = inspect(target)
     changed_attributes = _get_changed_attributes(instance_state)
 
     if not changed_attributes:
         return
+
+    favorite_only_change = all(
+        attr in {"favorited_by", "favorited_by_collection"}
+        for attr in changed_attributes
+    )
+
+    if favorite_only_change:
+        return
+
+    user_id = get_current_user_id()
+    if not user_id:
+        raise ValueError("User ID no encontrado en la sesión.")
 
     # Manejo de casos especiales
     if "tags" in changed_attributes:

@@ -142,11 +142,15 @@
             </div>
             <p v-else class="text-gray-500 italic">Aún no marcaste ningún sitio como favorito.</p>
 
-            <div v-if="favorites.length > 0 && favoritesTotalPages > 1" class="mt-6">
+            <div v-if="favorites.length > 0" class="mt-6">
               <Pagination
                 :page="favoritesPage"
                 :total-pages="favoritesTotalPages"
+                :page-size="favoritesPerPage"
+                :page-size-options="favoritePageSizeOptions"
+                page-size-label="Sitios por página"
                 @page-change="handleFavoritePageChange"
+                @page-size-change="handleFavoritePageSizeChange"
               />
             </div>
           </div>
@@ -181,7 +185,9 @@ const reviewPageSizeOptions = Object.freeze([25, 50, 100]);
 const favorites = ref([]);
 const favoritesPage = ref(1);
 const favoritesTotalPages = ref(1);
+const favoritesPerPage = ref(25);
 const favoritesLoading = ref(true);
+const favoritePageSizeOptions = Object.freeze([10, 25, 50]);
 
 // Combined loading state
 const loading = computed(() => reviewsLoading.value && favoritesLoading.value);
@@ -218,7 +224,7 @@ async function fetchFavorites(page = 1) {
 
   try {
     const response = await api.get('/me/favorites', {
-      params: { page },
+      params: { page, per_page: favoritesPerPage.value },
     });
 
     const favoritesData = response.data?.data ?? [];
@@ -272,6 +278,15 @@ function handleReviewSortChange() {
 
 function handleFavoritePageChange(newPage) {
   fetchFavorites(newPage);
+}
+
+function handleFavoritePageSizeChange(newSize) {
+  if (favoritesPerPage.value === newSize) {
+    return;
+  }
+
+  favoritesPerPage.value = newSize;
+  fetchFavorites(1);
 }
 
 // Initialize on mount

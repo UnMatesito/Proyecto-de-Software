@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime, timezone
 
 from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
@@ -323,6 +322,12 @@ def add_favorite_site(user_id: int, site_id: int):
         raise ValueError(f"No existe el usuario con id {user_id}")
 
     site = get_historic_site_by_id(site_id)
+
+    if not site:
+        raise ValueError(f"No existe el sitio con id {site_id}")
+
+    if not site.is_visible or site.pending_validation:
+        raise ValueError("El sitio no está publicado o no es visible")
 
     try:
         user.add_favorite(site)
