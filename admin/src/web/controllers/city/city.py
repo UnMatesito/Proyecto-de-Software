@@ -5,6 +5,7 @@ from web.utils.auth import login_required, permission_required
 
 city_bp = Blueprint("city_bp", __name__, url_prefix="/cities")
 
+
 @city_bp.get("/<int:province_id>")
 @login_required
 @permission_required("city_index")

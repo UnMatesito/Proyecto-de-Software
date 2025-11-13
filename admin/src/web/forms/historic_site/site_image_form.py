@@ -15,7 +15,9 @@ class MultiStringField(Field):
         super().__init__(*args, **kwargs)
         self.data: List[str] = []
 
-    def process_formdata(self, valuelist: List[str]) -> None:  # pragma: no cover - wtforms hook
+    def process_formdata(
+        self, valuelist: List[str]
+    ) -> None:  # pragma: no cover - wtforms hook
         if not valuelist:
             self.data = []
             return
@@ -86,7 +88,9 @@ class SiteImageUploadForm(FlaskForm):
         if total_images > self.max_images:
             remaining_slots = max(0, self.max_images - self.existing_images_count)
             if remaining_slots <= 0:
-                raise ValidationError("Ya se alcanzó el máximo de 10 imágenes para el sitio.")
+                raise ValidationError(
+                    "Ya se alcanzó el máximo de 10 imágenes para el sitio."
+                )
 
             raise ValidationError(
                 f"Solo podés agregar {remaining_slots} imágenes nuevas para no superar el máximo de {self.max_images}."

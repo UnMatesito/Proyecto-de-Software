@@ -20,9 +20,9 @@ class EditSiteForm(CreateSiteForm):
     images = FileField(
         "Imágenes del sitio (máximo 10)",
         validators=[
-            FileAllowed(['jpg', 'jpeg', 'png', 'webp'], 'Solo se permiten imágenes'),
+            FileAllowed(["jpg", "jpeg", "png", "webp"], "Solo se permiten imágenes"),
         ],
-        render_kw={'multiple': True, 'accept': 'image/*', 'max': 10}
+        render_kw={"multiple": True, "accept": "image/*", "max": 10},
     )
 
     submit = SubmitField("Editar")

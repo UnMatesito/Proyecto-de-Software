@@ -145,7 +145,9 @@ def get_review_by_id(review_id):
     return Review.query.get(review_id)
 
 
-def get_user_reviews(user_id: int, page: int = 1, per_page: int = 25, sort: str = "date_desc"):
+def get_user_reviews(
+    user_id: int, page: int = 1, per_page: int = 25, sort: str = "date_desc"
+):
     """Obtiene las reseñas de un usuario con la paginación solicitada."""
 
     try:
@@ -161,9 +163,8 @@ def get_user_reviews(user_id: int, page: int = 1, per_page: int = 25, sort: str 
 
     sort = sort or "date_desc"
 
-    query = (
-        Review.query.options(joinedload(Review.historic_site))
-        .filter_by(user_id=user_id)
+    query = Review.query.options(joinedload(Review.historic_site)).filter_by(
+        user_id=user_id
     )
 
     if sort == "date_asc":

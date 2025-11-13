@@ -257,9 +257,7 @@ def post_create():
 
         city = get_city_by_id(form.city.data)
         category = get_category_by_id(form.category.data)
-        conservation_state = get_conservation_state_by_id(
-            form.conservation_state.data
-        )
+        conservation_state = get_conservation_state_by_id(form.conservation_state.data)
         tags = []
         for tag_id in form.tags.data:
             tags.append(get_tag_by_id(tag_id))
@@ -298,6 +296,7 @@ def post_create():
     except Exception as e:
         flash(f"Error al crear el sitio, {e}", "error")
         return redirect(url_for("site_bp.get_create"))
+
 
 @site_bp.get("/edit/<int:site_id>")
 @login_required
@@ -489,7 +488,10 @@ def reorder_images(site_id):
     try:
         casted_ids = [int(image_id) for image_id in ordered_ids]
     except (TypeError, ValueError):
-        return jsonify({"error": "Los identificadores de las imágenes no son válidos."}), 400
+        return (
+            jsonify({"error": "Los identificadores de las imágenes no son válidos."}),
+            400,
+        )
 
     try:
         reorder_site_images(historic_site_id=site_id, ordered_image_ids=casted_ids)
@@ -513,7 +515,9 @@ def set_image_cover(image_id):
 
     try:
         ordered_images = get_site_images(site_id)
-        ordered_ids = [image_id] + [img.id for img in ordered_images if img.id != image_id]
+        ordered_ids = [image_id] + [
+            img.id for img in ordered_images if img.id != image_id
+        ]
         reorder_site_images(historic_site_id=site_id, ordered_image_ids=ordered_ids)
         flash("La portada del sitio se actualizó correctamente", "success")
     except Exception as e:

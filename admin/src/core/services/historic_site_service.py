@@ -403,18 +403,18 @@ def get_published_site_by_id(site_id: int):
 
 
 def list_published_sites(
-        name=None,
-        description=None,
-        city_name=None,
-        province_name=None,
-        tags_str=None,
-        order_by="latest",
-        lat=None,
-        lon=None,
-        radius=None,
-        favorited_by_user_id=None,
-        page=1,
-        per_page=20
+    name=None,
+    description=None,
+    city_name=None,
+    province_name=None,
+    tags_str=None,
+    order_by="latest",
+    lat=None,
+    lon=None,
+    radius=None,
+    favorited_by_user_id=None,
+    page=1,
+    per_page=20,
 ):
     """
     Lista sitios históricos publicados con filtros.
@@ -562,12 +562,13 @@ def get_city_and_province(city_name, province_name):
 
     # Buscar ciudad en esa provincia
     city = City.query.filter(
-        db.func.lower(City.name) == city_name.lower(),
-        City.province_id == province.id
+        db.func.lower(City.name) == city_name.lower(), City.province_id == province.id
     ).first()
 
     if not city:
-        raise ValueError(f"City '{city_name}' does not exist in province '{province_name}'")
+        raise ValueError(
+            f"City '{city_name}' does not exist in province '{province_name}'"
+        )
 
     return city, province
 
@@ -597,18 +598,18 @@ def get_tags_by_slugs(tag_slugs):
 
 
 def create_site_from_api(
-        user_id,
-        name,
-        short_description,
-        description,
-        city_name,
-        province_name,
-        lat,
-        lon,
-        tags,
-        state_of_conservation,
-        inauguration_year,
-        category_name=None
+    user_id,
+    name,
+    short_description,
+    description,
+    city_name,
+    province_name,
+    lat,
+    lon,
+    tags,
+    state_of_conservation,
+    inauguration_year,
+    category_name=None,
 ):
     """
     Crea un sitio histórico desde la API con todos los datos necesarios.
@@ -669,7 +670,7 @@ def create_site_from_api(
         full_description=description,
         latitude=lat,
         longitude=lon,
-        inauguration_year=inauguration_year
+        inauguration_year=inauguration_year,
     )
 
     # Asignar relaciones
@@ -679,9 +680,7 @@ def create_site_from_api(
         category=category,
         user=user,
         city=city,
-        tags=tag_objects if tag_objects else None
+        tags=tag_objects if tag_objects else None,
     )
 
     return site
-
-

@@ -37,6 +37,7 @@ user_favorite_site = db.Table(
     ),
 )
 
+
 class HistoricSite(db.Model):
     __tablename__ = "historic_site"
 
@@ -102,14 +103,18 @@ class HistoricSite(db.Model):
         "SiteHistory", back_populates="historic_site", cascade="all, delete-orphan"
     )
 
-    images = db.relationship("SiteImage", back_populates="historic_site", cascade="all, delete-orphan")
+    images = db.relationship(
+        "SiteImage", back_populates="historic_site", cascade="all, delete-orphan"
+    )
 
     favorited_by = db.relationship(
         "User",
         secondary="user_favorite_site",
         back_populates="favorite_sites",
     )
-    reviews = db.relationship("Review", back_populates="historic_site", cascade="all, delete-orphan")
+    reviews = db.relationship(
+        "Review", back_populates="historic_site", cascade="all, delete-orphan"
+    )
 
     # Metodos
     def is_deleted(self):
@@ -240,7 +245,9 @@ class HistoricSite(db.Model):
     def add_rating(self, rating: int):
         """Actualiza el promedio de rating al agregar una nueva reseña aprobada."""
         n = self.rating_count
-        self.average_rating = self.average_rating + (rating - self.average_rating) / (n + 1)
+        self.average_rating = self.average_rating + (rating - self.average_rating) / (
+            n + 1
+        )
         self.rating_count = n + 1
 
     def remove_rating(self, rating: int):
@@ -261,6 +268,7 @@ class HistoricSite(db.Model):
         total = self.average_rating * n
         total = total - old_rating + new_rating
         self.average_rating = total / n
+
     def __repr__(self):
         """Retorna una representación de sitio histórico la cual posee su nombre"""
 

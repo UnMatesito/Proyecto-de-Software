@@ -31,5 +31,5 @@ __all__ = [
     "role_permission",
     "SiteImage",
     "Review",
-    "ReviewStatus"
+    "ReviewStatus",
 ]

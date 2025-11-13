@@ -19,5 +19,5 @@ __all__ = [
     "city_bp",
     "site_history_bp",
     "main_bp",
-    "review_bp"
+    "review_bp",
 ]

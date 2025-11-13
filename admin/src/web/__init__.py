@@ -1,5 +1,3 @@
-import os
-
 from authlib.integrations.flask_client import OAuth
 from flask import Flask
 from flask_cors import CORS
@@ -26,6 +24,7 @@ session = Session()
 oauth = OAuth()
 jwt = JWTManager()
 
+
 def create_app(env="development", static_folder="../../static"):
     app = Flask(__name__, static_folder=static_folder)
     app.config.from_object(get_current_config(env))
@@ -43,20 +42,20 @@ def create_app(env="development", static_folder="../../static"):
     CORS(
         app,
         resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},
-        supports_credentials=True
+        supports_credentials=True,
     )
 
     jwt.init_app(app)
     oauth.init_app(app)
 
     oauth.register(
-        name='google',
-        client_id=app.config.get('GOOGLE_CLIENT_ID'),
-        client_secret=app.config.get('GOOGLE_CLIENT_SECRET'),
-        authorize_url='https://accounts.google.com/o/oauth2/v2/auth?prompt=select_account&',
-        access_token_url='https://oauth2.googleapis.com/token',
-        client_kwargs={'scope': 'openid email profile'},
-        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration'
+        name="google",
+        client_id=app.config.get("GOOGLE_CLIENT_ID"),
+        client_secret=app.config.get("GOOGLE_CLIENT_SECRET"),
+        authorize_url="https://accounts.google.com/o/oauth2/v2/auth?prompt=select_account&",
+        access_token_url="https://oauth2.googleapis.com/token",
+        client_kwargs={"scope": "openid email profile"},
+        server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     )
 
     # Registrar listeners de auditoría
@@ -75,8 +74,6 @@ def create_app(env="development", static_folder="../../static"):
         user_management_bp,
     )
     from .controllers.api import api_bp
-
-    from core import audit
 
     # Hooks
     app.before_request(hook_admin_maintenance)

@@ -20,19 +20,19 @@ def add_favorite(site_id):
         user_service.add_favorite_site(user_id, site_id)
         return "", 204
     except ValueError as err:
-        return jsonify({
-            "error": {
-                "code": "not_found",
-                "message": err.args[0]
-            }
-        }), 404
+        return jsonify({"error": {"code": "not_found", "message": err.args[0]}}), 404
     except Exception:
-        return jsonify({
-            "error": {
-                "code": "server_error",
-                "message": "An unexpected error occurred"
-            }
-        }), 500
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "server_error",
+                        "message": "An unexpected error occurred",
+                    }
+                }
+            ),
+            500,
+        )
 
 
 @api_bp.delete("/sites/<int:site_id>/favorite")
@@ -47,19 +47,22 @@ def remove_favorite(site_id):
         user_service.remove_favorite_site(user_id, site_id)
         return "", 204
     except ValueError:
-        return jsonify({
-            "error": {
-                "code": "not_found",
-                "message": "Site not found"
-            }
-        }), 404
+        return (
+            jsonify({"error": {"code": "not_found", "message": "Site not found"}}),
+            404,
+        )
     except Exception:
-        return jsonify({
-            "error": {
-                "code": "server_error",
-                "message": "An unexpected error occurred"
-            }
-        }), 500
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "server_error",
+                        "message": "An unexpected error occurred",
+                    }
+                }
+            ),
+            500,
+        )
 
 
 @api_bp.get("/me/favorites")
@@ -76,13 +79,18 @@ def list_favorites():
     try:
         params = schema.load(request.args)
     except ValidationError as err:
-        return jsonify({
-            "error": {
-                "code": "invalid_query",
-                "message": "Parameter validation failed",
-                "details": err.messages
-            }
-        }), 400
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "invalid_query",
+                        "message": "Parameter validation failed",
+                        "details": err.messages,
+                    }
+                }
+            ),
+            400,
+        )
 
     try:
         # Usar parámetros validados
@@ -91,7 +99,7 @@ def list_favorites():
             params["page"],
             params["per_page"],
             params["order_by"],
-            params["sorted_by"]
+            params["sorted_by"],
         )
 
         data = [
@@ -103,7 +111,11 @@ def list_favorites():
                 "review_count": site.rating_count,
                 "average_rating": site.average_rating,
                 "city": site.city.name if site.city else None,
-                "province": site.city.province.name if site.city and site.city.province else None,
+                "province": (
+                    site.city.province.name
+                    if site.city and site.city.province
+                    else None
+                ),
                 "lat": site.latitude,
                 "lon": site.longitude,
                 "tags": [t.slug for t in site.tags],
@@ -112,8 +124,12 @@ def list_favorites():
                 ),
                 "inauguration_year": site.inauguration_year,
                 "category": site.category.name if site.category else None,
-                "inserted_at": site.created_at.isoformat() + "Z" if site.created_at else None,
-                "updated_at": site.updated_at.isoformat() + "Z" if site.updated_at else None
+                "inserted_at": (
+                    site.created_at.isoformat() + "Z" if site.created_at else None
+                ),
+                "updated_at": (
+                    site.updated_at.isoformat() + "Z" if site.updated_at else None
+                ),
             }
             for site in pagination["items"]
         ]
@@ -128,17 +144,20 @@ def list_favorites():
         return jsonify({"data": data, "meta": meta}), 200
 
     except ValueError:
-        return jsonify({
-            "error": {
-                "code": "not_found",
-                "message": "Site not found"
-            }
-        }), 404
+        return (
+            jsonify({"error": {"code": "not_found", "message": "Site not found"}}),
+            404,
+        )
 
     except Exception:
-        return jsonify({
-            "error": {
-                "code": "server_error",
-                "message": "An unexpected error occurred"
-            }
-        }), 500
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "server_error",
+                        "message": "An unexpected error occurred",
+                    }
+                }
+            ),
+            500,
+        )

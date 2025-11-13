@@ -24,7 +24,9 @@ class ReviewQuerySchema(Schema):
     page = fields.Int(load_default=1, validate=validate.Range(min=1))
     per_page = fields.Int(load_default=10, validate=validate.Range(min=1, max=100))
     order_by = fields.Str(load_default="created_at")
-    sorted_by = fields.Str(validate=validate.OneOf(["asc", "desc"]), load_default="desc")
+    sorted_by = fields.Str(
+        validate=validate.OneOf(["asc", "desc"]), load_default="desc"
+    )
 
 
 class ReviewResponseSchema(Schema):

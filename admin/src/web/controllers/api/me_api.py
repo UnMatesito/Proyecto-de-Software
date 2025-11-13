@@ -14,24 +14,21 @@ from . import api_bp
 def get_current_user():
     user_id = get_jwt_identity()
     user = user_service.get_user_by_id(user_id)
+
     if not user:
         return jsonify({"msg": "User not found"}), 404
-    try:
-        full_name = user.get_full_name()
-    except Exception as e:
-        return jsonify({"msg": "Error interno al procesar nombre"}), 500
 
-    try:
-        avatar_url = user.avatar or None
-    except Exception as e:
-        return jsonify({"msg": "Error interno al procesar avatar"}), 500
-
-    return jsonify({
-        "id": user.id,
-        "name": user.get_full_name(),
-        "email": user.email,
-        "avatar": user.avatar or None,
-    }), 200
+    return (
+        jsonify(
+            {
+                "id": user.id,
+                "name": user.get_full_name(),
+                "email": user.email,
+                "avatar": user.avatar or None,
+            }
+        ),
+        200,
+    )
 
 
 @api_bp.get("/me/reviews")
@@ -113,15 +110,10 @@ def my_favorites():
             page=page,
             per_page=per_page,
             order_by=order_by,
-            sorted_by=sorted_by
+            sorted_by=sorted_by,
         )
     except ValueError as e:
-        return jsonify({
-            "error": {
-                "code": "not_found",
-                "message": str(e)
-            }
-        }), 404
+        return jsonify({"error": {"code": "not_found", "message": str(e)}}), 404
 
     data = [
         {
@@ -130,24 +122,33 @@ def my_favorites():
             "short_description": site.brief_description,
             "description": site.full_description,
             "city": site.city.name if site.city else None,
-            "province": site.city.province.name if site.city and site.city.province else None,
+            "province": (
+                site.city.province.name if site.city and site.city.province else None
+            ),
             "country": "AR",
             "lat": site.latitude,
             "long": site.longitude,
             "tags": [tag.name for tag in site.tags],
-            "state_of_conservation": site.conservation_state.name if site.conservation_state else None,
+            "state_of_conservation": (
+                site.conservation_state.name if site.conservation_state else None
+            ),
             "inserted_at": site.created_at.isoformat() if site.created_at else None,
             "updated_at": site.updated_at.isoformat() if site.updated_at else None,
         }
         for site in paginated_result.items
     ]
 
-    return jsonify({
-        "data": data,
-        "meta": {
-            "page": paginated_result.page,
-            "per_page": paginated_result.per_page,
-            "total": paginated_result.total,
-            "pages": paginated_result.pages
-        }
-    }), 200
+    return (
+        jsonify(
+            {
+                "data": data,
+                "meta": {
+                    "page": paginated_result.page,
+                    "per_page": paginated_result.per_page,
+                    "total": paginated_result.total,
+                    "pages": paginated_result.pages,
+                },
+            }
+        ),
+        200,
+    )

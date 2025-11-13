@@ -33,9 +33,9 @@ def index():
         order_by = request.args.get("order_by", "name")
         sorted_by = request.args.get("sorted_by", "asc")
         page = request.args.get("page", 1)
-        blocked_param=None
-        deleted_param=None
-        active_param=None
+        blocked_param = None
+        deleted_param = None
+        active_param = None
         status = request.args.get("status", None)
         if status == "blocked":
             blocked_param = True

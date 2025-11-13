@@ -1,6 +1,7 @@
 """
 Schemas de validación para la API usando Marshmallow
 """
+
 from .favorites_schemas import FavoriteQuerySchema
 from .reviews_schemas import (
     MyReviewQuerySchema,
@@ -18,15 +19,15 @@ from .sites_schemas import (
 )
 
 __all__ = [
-    'SiteQuerySchema',
-    'SiteCreateSchema',
-    'SiteResponseSchema',
-    'SiteListResponseSchema',
-    'FavoriteQuerySchema',
-    'ReviewQuerySchema',
-    'ReviewResponseSchema',
-    'ReviewCreateSchema',
+    "SiteQuerySchema",
+    "SiteCreateSchema",
+    "SiteResponseSchema",
+    "SiteListResponseSchema",
+    "FavoriteQuerySchema",
+    "ReviewQuerySchema",
+    "ReviewResponseSchema",
+    "ReviewCreateSchema",
     "MyReviewQuerySchema",
     "MyReviewResponseSchema",
-    "HistoricSiteShortSchema"
+    "HistoricSiteShortSchema",
 ]

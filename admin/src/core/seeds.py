@@ -156,7 +156,7 @@ def seed_roles():
     all_permissions = Permission.query.all()
 
     roles_permissions = {
-        "Moderador" : [
+        "Moderador": [
             # Reseñas
             "review_index",
             "review_show",
@@ -307,6 +307,7 @@ def seed_system_admin():
     db.session.add(admin_user)
     db.session.commit()
 
+
 def seed_feature_flags():
     """Crea los feature flags iniciales del sistema.
 
@@ -425,8 +426,11 @@ def seed_provinces_and_cities():
         ("Santa Cruz", ["Río Gallegos", "Caleta Olivia"]),
         ("Santa Fe", ["Santa Fe", "Rosario"]),
         ("Santiago del Estero", ["Santiago del Estero", "La Banda"]),
-        ("Tierra del Fuego, Antártida e Islas del Atlántico Sur", ["Ushuaia", "Río Grande"]),
-        ("Tucumán", ["San Miguel de Tucumán", "Tafí Viejo"])
+        (
+            "Tierra del Fuego, Antártida e Islas del Atlántico Sur",
+            ["Ushuaia", "Río Grande"],
+        ),
+        ("Tucumán", ["San Miguel de Tucumán", "Tafí Viejo"]),
     ]
 
     # Crear todo en una sola transacción
@@ -434,13 +438,13 @@ def seed_provinces_and_cities():
         province = Province(name=province_name)
         db.session.add(province)
         db.session.flush()  # Para obtener el ID sin hacer commit
-        
+
         for city_name in city_names:
             city = City(name=city_name, province=province)
             db.session.add(city)
 
     db.session.commit()
-    
+
 
 def seed_consevation_states():
     """Crea los estados de conservación posibles para los sitios históricos"""
@@ -774,6 +778,7 @@ def seed_site_tags():
     # Rehabilitar listeners de auditoría
     enable_audit_listeners()
 
+
 def seed_aditional_public_users():
     """Crea usuarios públicos adicionales (portal)"""
     import uuid
@@ -802,6 +807,7 @@ def seed_aditional_public_users():
 
     db.session.add_all(usuarios)
     db.session.commit()
+
 
 def seed_aditional_editors():
     """Crea usuarios editores adicionales"""
@@ -891,6 +897,7 @@ def seed_aditional_moderators():
 
     db.session.add_all(usuarios)
     db.session.commit()
+
 
 def seed_aditional_historic_sites():
     """
@@ -1013,6 +1020,7 @@ def seed_aditional_validated_historic_sites():
     db.session.commit()
     enable_audit_listeners()
 
+
 def seed_reviews():
     """Genera reseñas (reviews) aleatorias para los sitios históricos."""
     import random
@@ -1023,7 +1031,6 @@ def seed_reviews():
     from core.audit import disable_audit_listeners, enable_audit_listeners
     from core.models import HistoricSite, Review, User
     from core.models.review import ReviewStatus
-
 
     print("Generando reseñas aleatorias...")
 
@@ -1039,8 +1046,12 @@ def seed_reviews():
     reviews = []
     used_pairs = set()  # para evitar duplicar (user_id, site_id)
 
-    for user in random.sample(public_users, min(len(public_users), 30)):  # hasta 30 usuarios dejan reseñas
-        reviewed_sites = random.sample(sites, random.randint(2, 5))  # cada uno deja entre 2 y 5 reseñas
+    for user in random.sample(
+        public_users, min(len(public_users), 30)
+    ):  # hasta 30 usuarios dejan reseñas
+        reviewed_sites = random.sample(
+            sites, random.randint(2, 5)
+        )  # cada uno deja entre 2 y 5 reseñas
         for site in reviewed_sites:
             pair = (user.id, site.id)
             if pair in used_pairs:
@@ -1051,16 +1062,18 @@ def seed_reviews():
             status = random.choices(
                 [ReviewStatus.PENDIENTE, ReviewStatus.APROBADA, ReviewStatus.RECHAZADA],
                 weights=[0.2, 0.6, 0.2],
-                k=1
+                k=1,
             )[0]
 
             rejected_reason = None
             if status == ReviewStatus.RECHAZADA:
-                rejected_reason = random.choice([
-                    "Lenguaje inapropiado",
-                    "Contenido irrelevante",
-                    "No cumple las normas del sitio"
-                ])
+                rejected_reason = random.choice(
+                    [
+                        "Lenguaje inapropiado",
+                        "Contenido irrelevante",
+                        "No cumple las normas del sitio",
+                    ]
+                )
 
             review = Review(
                 rating=random.randint(1, 5),
@@ -1079,7 +1092,6 @@ def seed_reviews():
     db.session.commit()
 
     enable_audit_listeners()
-
 
 
 def seed_favorites():
@@ -1114,6 +1126,7 @@ def seed_favorites():
                 count += 1
 
     from core.database import db
+
     db.session.commit()
 
     # Rehabilitar listeners de auditoría

@@ -23,9 +23,14 @@ def list_tags():
         ]
         return jsonify({"data": data}), 200
     except Exception:
-        return jsonify({
-            "error": {
-                "code": "server_error",
-                "message": "An unexpected error occurred"
-            }
-        }), 500
+        return (
+            jsonify(
+                {
+                    "error": {
+                        "code": "server_error",
+                        "message": "An unexpected error occurred",
+                    }
+                }
+            ),
+            500,
+        )
