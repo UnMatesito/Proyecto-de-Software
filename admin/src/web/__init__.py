@@ -2,6 +2,7 @@ from authlib.integrations.flask_client import OAuth
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from isort.identify import imports
 
 from core.database import db
 from core.storage import storage
@@ -24,6 +25,17 @@ session = Session()
 oauth = OAuth()
 jwt = JWTManager()
 
+#### Para arreglar imports
+import os, sys
+
+# Obtiene /admin/src/
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Agrega ese path al inicio del sys.path
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+####
 
 def create_app(env="development", static_folder="../../static"):
     app = Flask(__name__, static_folder=static_folder)
