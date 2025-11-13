@@ -8,7 +8,7 @@
 
     <section class="grid grid-cols-1  md:grid-cols-3 lg:grid-cols-4 gap-3 p-3">
       <Card
-      class="  md:max-w-[250px]"
+      class=" md:w-[270px]"
       v-for="site in sites"
       :key="`${site.id}-${site.name}`"
       :name="site.name"
@@ -25,6 +25,7 @@
     </section>
 
     <Pagination
+      class="md:justify-center mb-3"
       :page="pagination.page"
       :pageSize=25
       :totalPages="pagination.total_pages"

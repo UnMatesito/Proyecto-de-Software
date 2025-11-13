@@ -127,8 +127,10 @@
         })
 
         const inputTag = document.getElementById('tag-input')
-
+        const containerTags = document.getElementById('selected-tags')
         if (inputTag) {
+            console.log(containerTags)
+            containerTags.classList.add('max-w-[1290px]')
             inputTag.className = 'w-full'
             inputTag.setAttribute('readonly', '')
         }
