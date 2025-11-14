@@ -20,7 +20,7 @@
                 <div class="h-14 w-14 sm:mr-2">
                   <img src="../src/assets/images/logo.svg" alt="logo histori.ar" class="h-full w-full">
                 </div>
-                <h1 class="text-xl lg:text-2xl font-bold text-proyecto-primary hidden sm:block">Portal Público</h1>
+                <h1 class="text-xl lg:text-2xl font-bold text-proyecto-primary hidden sm:block">Histori.ar</h1>
               </div>
 
               <!-- Botón hamburguesa (solo móvil) -->
