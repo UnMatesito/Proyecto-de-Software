@@ -26,7 +26,7 @@ class Config:
     MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
     MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "supersecretjwtkey")
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
     JWT_TOKEN_LOCATION = ["cookies"]
     JWT_COOKIE_CSRF_PROTECT = True
     JWT_COOKIE_SECURE = True

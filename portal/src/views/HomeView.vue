@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-proyecto-accent w-screen h-[22rem] sm:h-[35rem] text-white flex items-center justify-evenly mb-8 shadow-xl">
+    <div class="bg-proyecto-accent w-full h-[22rem] sm:h-[35rem] text-white flex items-center justify-evenly mb-8 shadow-xl">
       <img src="../assets/images/mapa.png" alt="gif mapa" class="hidden sm:block sm:h-[22rem] lg:h-[40rem] pointer-events-none select-none transition-transform"/>
       <div>
         <h1 class="text-7xl md:text-8xl font-bold text-center">Histori.ar</h1>
