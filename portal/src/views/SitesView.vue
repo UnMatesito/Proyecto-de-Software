@@ -9,7 +9,7 @@
 
     <section class=" w-full sm:w-auto grid  sm:grid-cols-2  md:grid-cols-3  lg:grid-cols-3 xl:grid-cols-4 gap-3 p-3">
       <Card
-      class="  md:w-[250px] lg:-[270px]"
+      class="  md:w-[250px] lg:w-[270px]"
       v-for="site in sites"
       :key="`${site.id}-${site.name}`"
       :name="site.name"
@@ -20,7 +20,8 @@
       :state_of_conservation="site.state_of_conservation"
       :inauguration_year="site.inauguration_year"
       :category="site.category"
-      :imagen="site.imagen"
+      :imagen="site.images[0].url"
+      :alt-imagen="site.images[0].alt"
       :id="site.id"
       :rating="site.average_rating"
       ></Card>
@@ -63,6 +64,7 @@
       const response = data
       sites.value = response.data
       pagination.value = response.meta
+      console.log(data)
       marks.value = []
       sites.value.forEach(site => {
         marks.value.push({name: site.name, lat: site.lat, lon: site.lon})

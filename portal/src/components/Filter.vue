@@ -1,6 +1,6 @@
 <template>
     <form class="  m-auto">
-        <div class="grid grid-cols-2  md:grid-cols-4 gap-1 mb-3">
+        <div class="grid grid-cols-2  md:grid-cols-4 gap-2 mb-3">
 
                 <select id="small" v-model="provinceValue" @click="fetchCities(provinceValue)" class="block max-w-96  p-2  text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                     <option selected>Provincia</option>
