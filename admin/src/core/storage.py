@@ -201,7 +201,7 @@ class Storage:
                 content_type=content_type,
             )
 
-            self._logger.info(f"✓ Imagen subida: {file_key} ({file_size} bytes)")
+            # self._logger.info(f"✓ Imagen subida: {file_key} ({file_size} bytes)")
 
             # Retornar información con URL pública
             return {
