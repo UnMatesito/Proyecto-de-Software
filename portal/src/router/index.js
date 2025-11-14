@@ -110,7 +110,6 @@ router.beforeEach(async (to, from, next) => {
 
 router.beforeResolve(async (to, from, next) => {
   await ensurePortalAvailability(true)
-
   next()
 })
 

@@ -34,9 +34,12 @@ class Config:
     JWT_COOKIE_SAMESITE = "None"
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-    FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://grupo09.proyecto2025.linti.unlp.edu.ar/")
+    FRONTEND_URL = os.environ.get(
+        "FRONTEND_URL", "https://grupo09.proyecto2025.linti.unlp.edu.ar/"
+    )
     GOOGLE_REDIRECT_URI = os.environ.get(
-        "GOOGLE_REDIRECT_URI", "https://admin-grupo09.proyecto2025.linti.unlp.edu.ar/api/auth/google/callback"
+        "GOOGLE_REDIRECT_URI",
+        "https://admin-grupo09.proyecto2025.linti.unlp.edu.ar/api/auth/google/callback",
     )
     CORS_ORIGINS = [
         "https://grupo09.proyecto2025.linti.unlp.edu.ar",

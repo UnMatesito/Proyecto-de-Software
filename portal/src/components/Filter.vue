@@ -1,6 +1,6 @@
 <template>
     <form class="  ">
-        <div class="flex items-center gap-3 flex-wrap ">
+        <div class="flex items-center gap-3 flex-wrap mb-2 ">
 
             <div class="flex flex-col gap-2 ">
                 <select id="small" v-model="provinceValue" @click="fetchCities(provinceValue)" class="block max-w-96  p-2  text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -31,38 +31,41 @@
                     <input type="search" v-model="descrpitionValue" id="search" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Descripción breve"  />
                 </div>
             </div>
-            <div class="flex flex-col gap-2">
-                <div v-on:click="tags" class="w-96 p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                    <input id="bordered-checkbox-1" v-model="favoriteValue" type="checkbox" value="" name="bordered-checkbox" class=" text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                    <label for="bordered-checkbox-1" class="w-full  ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Favoritos</label>
+            <div :class=" authStore.isAuthenticated ? 'flex  gap-2' : 'flex flex-col  gap-2'">
+              <div :class=" authStore.isAuthenticated ? 'flex flex-col  gap-2' : 'flex flex-col  gap-2'">
+                    <div v-if="authStore.isAuthenticated" v-on:click="tags" class="w-96 p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <input id="bordered-checkbox-1" v-model="favoriteValue" type="checkbox" value="" name="bordered-checkbox" class=" text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                        <label for="bordered-checkbox-1" class="w-full  ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Favoritos</label>
+                    </div>
+                    <div>
+                        <select id="default" v-model="orderByValue" class="block w-96 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <option selected>Ordenar por</option>
+                            <option value="oldest">Últimos creados</option>
+                            <option value="latest">Primeros creados</option>
+                            <option value="rating-1-5">Reseñas 1-5 estrellas</option>
+                            <option value="rating-5-1">Reseñas 5-1 estrellas</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <select id="default" v-model="orderByValue" class="block w-96 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                        <option selected>Ordenar por</option>
-                        <option value="oldest">Últimos creados</option>
-                        <option value="latest">Primeros creados</option>
-                        <option value="rating-1-5">Reseñas 1-5 estrellas</option>
-                        <option value="rating-5-1">Reseñas 5-1 estrellas</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="flex md:flex-col">
-                <router-link :to="{query: {
+                <div :class="authStore.isAuthenticated ? 'flex flex-col gap-1 ' : 'flex   gap-1'">
+                <router-link :to="{query: { 
                                     ...(nameValue) && {name: nameValue},
                                     ...(descrpitionValue) && {description: descrpitionValue},
                                     ...(provinceValue != 'Provincia') && {province: provinceValue},
                                     ...(cityValue != 'Ciudad') && {city: cityValue},
                                     ...(tagsValue.length > 0) && {tags: tagsValue.join()},
-                                    ...{page: rout.query.page || 1},
+                                    ...{page: 1},
                                     ...{favorites: favoriteValue},
                                     ...(orderByValue != 'Ordenar por') && {order_by: orderByValue},
                                     ...({lat: rout.query.lat}),
                                     ...({lon: rout.query.lon}),
                                     ...({radius: rout.query.radius})
-                                    }}" class="text-white bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Filtrar</router-link>
-                <router-link @click="disableMapClick" :to="{query: {}}" class="text-white  bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Restaurar</router-link>
+                                    }}" class="text-white bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Filtrar</router-link>
+                <router-link @click="desibleMapClick" :to="{query: {}}" class="text-white  bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Restaurar</router-link>
             </div>
+            </div>
+
+
         </div>
         <div>
             <select name="tags" id="tags" multiple>
@@ -77,16 +80,17 @@
     import api from '@/api/axios'
     import { ref, watch, nextTick, onMounted, defineEmits } from 'vue'
     import { useRoute } from 'vue-router'
+    import { useAuthStore } from '@/stores/auth'
+
+    const authStore = useAuthStore()
     const emit = defineEmits(['disableMap'])
     const cityValue = ref("Ciudad")
     const nameValue = ref("")
     const descrpitionValue = ref("")
     const tagsValue = ref([])
     const favoriteValue = ref(false)
-    const order_by = ref("latest")
     const orderByValue = ref("Ordenar por")
     const provinceValue = ref("Provincia")
-    const order = ref("")
     const cities = ref([])
     const rout = useRoute()
     const props = defineProps(["provinces", "states", "page", "tags"])
@@ -112,22 +116,26 @@
 
 
     function initMultiSelect() {
-    new MultiSelectTag('tags', {
-          rounded: true,
-          shadow: true,
-          placeholder: 'Seleccionar tags',
-          onChange(selected) {
-          tagsValue.value = selected.map(s => s.label)
+        new MultiSelectTag('tags', {
+            rounded: true,
+            shadow: true,
+            placeholder: 'Seleccionar tags',
+            onChange(selected) {
+                tagsValue.value = selected.map((e) => (e.id))
+                console.log('Tags seleccionados:', tagsValue.value)
+            }
+        })
+
+        const inputTag = document.getElementById('tag-input')
+        const containerTags = document.getElementById('selected-tags')
+        if (inputTag) {
+            console.log(containerTags)
+            containerTags.classList.add('max-w-[1290px]')
+            inputTag.className = 'w-full'
+            inputTag.setAttribute('readonly', '')
         }
-    })
 
-    const inputTag = document.getElementById('tag-input')
-    if (inputTag) {
-        inputTag.className = 'w-full'
-        inputTag.setAttribute('readonly', '')
-    }
-
-    const dropdown = document.getElementById('dropdown')
+        const dropdown = document.getElementById('dropdown')
         if (dropdown) dropdown.style.zIndex = '1200'
     }
 

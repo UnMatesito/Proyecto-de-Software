@@ -11,7 +11,7 @@
                         {{ detalle.name }}
                     </h2>
                     <div class="flex gap-1 items-center  border-b-2 pb-2">
-                        <Stars :rating="detalle.average_rating || 0" :class="'w-32'"></Stars>
+                        <Stars :rating="detalle.average_rating" :class="'w-32'"></Stars>
                         <span class="text-lg font-semibold text-yellow-500">
                             ({{ detalle.review_count || 0 }})
                         </span>
@@ -35,7 +35,7 @@
                             <span>
                                 {{ detalle.state_of_conservation }}
                             </span>
-                            <p class="font-semibold">Año de inauguración</p>
+                            <p class="font-semibold">Año de inagaruación</p>
                             <span class="">
                                 {{ detalle.inauguration_year }}
                             </span>
@@ -63,10 +63,7 @@
         <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
             <h3 class="text-3xl text-proyecto-accent">Locación</h3>
             <div id="map">
-                <Map v-if="detalle.name"
-                styleContent="height:400px;  width: 100%"
-                :marks="[{name: detalle.name, lat: detalle.lat, lon: detalle.lon}]"
-                :center="[detalle.lat, detalle.lon]"></Map>
+                <MapDetail v-if="detalle.lat" :mark="[detalle.lat, detalle.lon]" :mark-name="detalle.name"/>
             </div>
         </div>
         <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3" >
@@ -79,7 +76,7 @@
             :text="r.comment"
             :created_at="r.inserted_at"
             :rating="r.rating"/>
-            <p v-if="page > 1" @click="fetchReviews()" class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out">Ver más reseñas...</p>
+            <p v-if="detalle.page > 1" @click="fetchReviews()" class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out">Ver más reseñas...</p>
         </section>
     </div>
 </template>
@@ -94,7 +91,7 @@
     import api from '@/api/axios'
     import Review from '@/components/Review.vue'
     import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
-    import Map from '@/components/Map.vue'
+    import MapDetail from '@/components/MapDetail.vue'
     import { useRoute } from 'vue-router';
     const route  = useRoute()
     const detalle = ref({})
@@ -106,6 +103,7 @@
         try {
             const { data } = await api.get(`${route.path}`)
             detalle.value = data
+            console.log(data)
             detalle.value = {...detalle.value, 'inserted_at': detalle.value.inserted_at.slice(0,  detalle.value.inserted_at.indexOf("T")).replaceAll("-", "/")}
             content.value = [{id:1, header:'Descripción detallada', text:detalle.value.description},{id:2, header:'Descripción breve', text:detalle.value.short_description}]
         } catch (error) {
@@ -114,10 +112,8 @@
     }
     const fetchReviews = async () => {
         try {
-            const response = await api.get(`${route.path}/reviews`, {
-                params: { page: page.value }
-            })
-            reviews.value = [...reviews.value, ...response.data.data]
+            const response = await api.get(`${route.path}/reviews`)
+            reviews.value = response.data.data
             page.value++
         } catch (error) {
             console.error('Error al cargar reseñas:', error)
@@ -130,10 +126,10 @@
 
     const scrollToMap = () => {
         const map = document.getElementById('map');
-        map?.scrollIntoView({ behavior: "smooth" });
+        map.scrollIntoView({ behavior: "smooth" });
     }
     const scrollToReviews = () => {
-        const reviewsSection = document.getElementById('reviews');
-        reviewsSection?.scrollIntoView({ behavior: "smooth" });
+        const reviews = document.getElementById('reviews');
+        reviews.scrollIntoView({ behavior: "smooth" });
     }
 </script>
