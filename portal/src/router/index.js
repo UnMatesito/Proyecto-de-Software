@@ -6,6 +6,7 @@ import { useAuthStore } from '../stores/auth'
 import HomeView from '../views/HomeView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import MaintenanceView from '../views/MaintenanceView.vue'
+import SiteDetailsView from '../views/SiteDetailsView.vue'
 
 const requireAuth = (to, from, next) => {
   const authStore = useAuthStore();
@@ -15,7 +16,6 @@ const requireAuth = (to, from, next) => {
     next('/');
   }
 };
-
 
 
 const router = createRouter({
@@ -47,13 +47,18 @@ const router = createRouter({
     {
       path: '/sites/:site_id',
       name: 'siteDetail',
-      component: () => import('../views/DetailView.vue')
+      component: () => import('../views/SiteDetailsView.vue')
     },
     {
       path: '/profile',
       name: 'profile',
       component: ProfileView,
       beforeEnter: requireAuth,
+    },
+    {
+      path: '/sites/:site_id',
+      name: 'siteDetails',
+      component: SiteDetailsView,
     }
   ],
 })
