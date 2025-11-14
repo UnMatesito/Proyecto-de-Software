@@ -10,36 +10,47 @@ export const useFavoritesStore = defineStore('favorites', () => {
   const error = ref(null);
   let ongoingRequest = null;
 
+  const CACHE_TTL = 30 * 1000;
+  const lastFetchedAt = ref(null);
+
+  function cacheIsValid() {
+    if (!lastFetchedAt.value) return false;
+    return (Date.now() - lastFetchedAt.value) < CACHE_TTL;
+  }
+
   async function fetchFavorites(forceRefresh = false) {
     if (!authStore.isAuthenticated) {
       resetFavorites();
       return favorites.value;
     }
 
-    if (!forceRefresh && favorites.value.length) {
+    if (!forceRefresh && favorites.value.length && cacheIsValid()) {
       return favorites.value;
     }
 
-    if (!ongoingRequest) {
-      isLoading.value = true;
-      error.value = null;
-
-      ongoingRequest = api
-        .get('/me/favorites')
-        .then(({ data }) => {
-          favorites.value = (data?.data ?? []).map((site) => site.id);
-          return favorites.value;
-        })
-        .catch((err) => {
-          favorites.value = [];
-          error.value = err;
-          throw err;
-        })
-        .finally(() => {
-          isLoading.value = false;
-          ongoingRequest = null;
-        });
+    if (ongoingRequest) {
+      return ongoingRequest;
     }
+
+    isLoading.value = true;
+    error.value = null;
+
+    ongoingRequest = api
+      .get('/me/favorites')
+      .then(({ data }) => {
+        favorites.value = (data?.data ?? []).map(site => site.id);
+        lastFetchedAt.value = Date.now();   // renovar TTL
+        return favorites.value;
+      })
+      .catch(err => {
+        favorites.value = [];
+        error.value = err;
+        throw err;
+      })
+      .finally(() => {
+        isLoading.value = false;
+        ongoingRequest = null;
+      });
 
     return ongoingRequest;
   }
@@ -48,6 +59,7 @@ export const useFavoritesStore = defineStore('favorites', () => {
     favorites.value = [];
     error.value = null;
     ongoingRequest = null;
+    lastFetchedAt.value = null;
   }
 
   function isFavorite(siteId) {
@@ -67,11 +79,13 @@ export const useFavoritesStore = defineStore('favorites', () => {
   async function addFavorite(siteId) {
     await api.put(`/sites/${siteId}/favorite`);
     addFavoriteLocally(siteId);
+    lastFetchedAt.value = Date.now();
   }
 
   async function removeFavorite(siteId) {
     await api.delete(`/sites/${siteId}/favorite`);
     removeFavoriteLocally(siteId);
+    lastFetchedAt.value = Date.now();
   }
 
   async function toggleFavorite(siteId) {
@@ -105,5 +119,6 @@ export const useFavoritesStore = defineStore('favorites', () => {
     toggleFavorite,
     addFavoriteLocally,
     removeFavoriteLocally,
+    lastFetchedAt
   };
 });
