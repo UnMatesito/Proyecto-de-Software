@@ -63,7 +63,7 @@
                     </div>
         
 
-                 <router-link @click="desibleMapClick" :to="{query: {}}" class="text-white w-24 bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Restaurar</router-link>
+                 <router-link @click="disableMapClick" :to="{query: {}}" class="text-white w-24 bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Restaurar</router-link>
 
 
             </div>
@@ -123,7 +123,6 @@
             placeholder: 'Seleccionar tags',
             onChange(selected) {
                 tagsValue.value = selected.map((e) => (e.id))
-                console.log('Tags seleccionados:', tagsValue.value)
             }
         })
 

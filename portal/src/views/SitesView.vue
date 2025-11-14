@@ -64,7 +64,6 @@
       const response = data
       sites.value = response.data
       pagination.value = response.meta
-      console.log(data)
       marks.value = []
       sites.value.forEach(site => {
         marks.value.push({name: site.name, lat: site.lat, lon: site.lon})
