@@ -73,7 +73,7 @@ def google_callback():
             next_url = "/"
 
         expires_delta = current_app.config.get(
-            "JWT_ACCESS_TOKEN_EXPIRES", timedelta(hours=1)
+            "JWT_ACCESS_TOKEN_EXPIRES", timedelta(hours=24)
         )
         access_token = create_access_token(
             identity=str(user.id), expires_delta=expires_delta

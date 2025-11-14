@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-proyecto-accent w-screen h-[22rem] sm:h-[35rem] text-white flex items-center justify-evenly mb-8 shadow-xl">
+    <div class="bg-proyecto-accent w-full h-[22rem] sm:h-[35rem] text-white flex items-center justify-evenly mb-8 shadow-xl">
       <img src="../assets/images/mapa.png" alt="gif mapa" class="hidden sm:block sm:h-[22rem] lg:h-[40rem] pointer-events-none select-none transition-transform"/>
       <div>
         <h1 class="text-7xl md:text-8xl font-bold text-center">Histori.ar</h1>
@@ -17,27 +17,25 @@
       </div>
     </div>
 
-    <div class="mx-4 w-[90%] mx-auto">
-      <!-- Sección de Más Visitados -->
-      <Section title="Más Visitados"/>
-
+    <div class="mx-4 w-[90%]">
       <!-- Seccion Mejor Puntuados -->
-      <Section title="Mejor Puntuados"/>
+      <TopRatedSection />
 
       <!-- Seccion Favoritos del usuario-->
-      <Section title="Tus Favoritos"/>
+      <FavoritesSection />
 
       <!-- Seccion recientemente agregados-->
-      <Section title="Recientemente Agregados"/>
+      <RecentlySection />
     </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import api from '@/api/axios'
-import Card from "@/components/Card.vue";
-import Section from "@/components/Section.vue";
 import ButtonPrimary from "@/components/buttons/ButtonPrimary.vue";
+import RecentlySection from "@/components/RecentlySection.vue";
+import FavoritesSection from "@/components/FavoritesSection.vue";
+import TopRatedSection from "@/components/TopRatedSection.vue";
 
 const apiMessage = ref('')
 

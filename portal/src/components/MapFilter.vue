@@ -1,6 +1,6 @@
 <template>
   <div class="border p-2 my-2 bg-white rounded-md">
-    <div class="flex justify-between">
+    <div class="flex justify-between mb-2">
       <h4 class="font-semibold text-proyecto-text ">
       Radio de búsqueda: {{ !isDisable ? actualRadius / 1000 + " km" : '' }}
       </h4>
@@ -24,7 +24,7 @@
     </div>
   </div>
   <div :style="props.styleContent">
-    <l-map @click="onMapClick"   @mousemove="onMouseMove" :zoom="props.zoom" :center="props.center" :class="'border rounded-xl'">
+    <l-map @click="onMapClick" @mousemove="onMouseMove" :zoom="props.zoom" :center="props.center" :class="'border rounded-xl'">
       <l-tile-layer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       ></l-tile-layer>
