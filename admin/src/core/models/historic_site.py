@@ -287,9 +287,9 @@ class HistoricSite(db.Model):
     def _compute_avg(self):
         """Actualiza el promedio a partir del total y el count."""
         if self.rating_count <= 0:
-            self.rating_avg = 0.0
+            self.average_rating = 0.0
         else:
-            self.rating_avg = self.rating_total / self.rating_count
+            self.average_rating = self.rating_total / self.rating_count
 
     def __repr__(self):
         """Retorna una representación de sitio histórico la cual posee su nombre"""

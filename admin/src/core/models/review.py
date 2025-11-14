@@ -106,7 +106,7 @@ class Review(db.Model):
 @event.listens_for(Session, "after_flush")
 def update_site_rating_after_flush(session, ctx):
     """
-    Actualiza rating_count, rating_total y rating_avg de HistoricSite
+    Actualiza rating_count, rating_total y average_rating de HistoricSite
     después de que SQLAlchemy termina el flush.
     Maneja inserts, updates y deletes sin inner-flush warnings.
     """
