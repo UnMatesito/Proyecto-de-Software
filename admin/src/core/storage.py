@@ -45,7 +45,7 @@ class Storage:
     def init_app(self, app):
         """Inicializa el cliente MinIO con la aplicación Flask"""
         endpoint = app.config.get(
-            "MINIO_SERVER", "https://minio.proyecto2025.linti.unlp.edu.ar/"
+            "MINIO_SERVER", "minio.proyecto2025.linti.unlp.edu.ar"
         )
         access_key = app.config.get("MINIO_ACCESS_KEY", "minioadmin")
         secret_key = app.config.get("MINIO_SECRET_KEY", "minioadmin")
