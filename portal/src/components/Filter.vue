@@ -19,10 +19,10 @@
                 <div v-if="authStore.isAuthenticated" class="p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                     <input id="bordered-checkbox-1" v-model="favoriteValue" type="checkbox" value="" name="bordered-checkbox" class=" text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                     <label for="bordered-checkbox-1" class="w-full  ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Favoritos</label>
-                </div> 
+                </div>
 
                 <div class="col-start-2 row-start-3 md:col-start-4 md:row-start-1"  :class="authStore.isAuthenticated ? 'flex flex-col gap-1 ' : 'flex   gap-1'">
-                    <router-link :to="{query: { 
+                    <router-link :to="{query: {
                                         ...(nameValue) && {name: nameValue},
                                         ...(descrpitionValue) && {description: descrpitionValue},
                                         ...(provinceValue != 'Provincia') && {province: provinceValue},
@@ -61,9 +61,9 @@
                             <option value="rating-5-1">Reseñas 5-1 estrellas</option>
                         </select>
                     </div>
-        
 
-                 <router-link @click="desibleMapClick" :to="{query: {}}" class="text-white w-24 bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Restaurar</router-link>
+
+                 <router-link @click="disableMapClick" :to="{query: {}}" class="text-white w-24 bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Restaurar</router-link>
 
 
             </div>
