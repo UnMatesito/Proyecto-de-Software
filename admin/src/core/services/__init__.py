@@ -48,6 +48,7 @@ from .historic_site_service import (
     update_conservation_state,
     update_historic_site,
     validate_historic_site,
+    get_total_sites_count
 )
 
 # Permission services
@@ -128,6 +129,7 @@ from .tag_service import (
     get_tag_by_name,
     update_tag,
     validate_tag_name,
+    get_total_tags_count
 )
 
 # User services
@@ -183,6 +185,8 @@ __all__ = [
     "get_sites_filtered",
     "restore_historic_site",
     "validate_historic_site",
+    "update_category",
+    "get_total_sites_count",
     # Permission services
     "create_multiple_permissions",
     "create_permission",
@@ -231,6 +235,7 @@ __all__ = [
     "update_tag",
     "validate_tag_name",
     "get_all_tags",
+    "get_total_tags_count",
     "get_all_not_deleted_tags",
     # User services
     "assign_role",
