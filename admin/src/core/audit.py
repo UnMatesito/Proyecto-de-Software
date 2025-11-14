@@ -211,7 +211,13 @@ def log_image_removed(mapper, connection, target):
 
 def _get_changed_attributes(instance_state):
     """Obtiene lista de atributos modificados, excluyendo duplicados FK/relación."""
-    ignored_fields = ["updated_at", "created_at"]
+    ignored_fields = [
+        "updated_at",
+        "created_at",
+        "rating_count",
+        "rating_total",
+        "average_rating",
+    ]
     changed = [
         attr.key
         for attr in instance_state.attrs
