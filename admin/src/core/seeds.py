@@ -1104,14 +1104,18 @@ def seed_reviews():
         print("No hay usuarios públicos para generar reseñas.")
         return
 
-    max_reviews_per_site = min(10, len(public_users))
-
     disable_audit_listeners()
 
     reviews = []
     try:
         for site in sites:
-            review_count = random.randint(1, max_reviews_per_site)
+            max_possible = min(30, len(public_users))
+
+            if max_possible < 10:
+                review_count = max_possible
+            else:
+                review_count = random.randint(10, max_possible)
+
             reviewers = random.sample(public_users, review_count)
 
             for user in reviewers:
