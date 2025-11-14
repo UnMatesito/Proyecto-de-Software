@@ -26,7 +26,7 @@ def run(env="production"):
     seed_event_types()
 
     # Solo si estamos en development
-    if env == "production":
+    if env == "development":
         seed_aditional_public_users()
         seed_aditional_editors()
         seed_aditional_admins()
