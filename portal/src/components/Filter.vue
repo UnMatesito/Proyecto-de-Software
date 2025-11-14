@@ -15,10 +15,25 @@
                     </div>
                     <input type="search" v-model="nameValue" id="search" class=" w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Nombre del sitio" />
                 </div>
+                <div
+                  class="p-2 border rounded-md text-sm bg-gray-50 dark:bg-gray-700 dark:border-gray-600 relative"
+                  :class="!authStore.isAuthenticated ? 'opacity-50 cursor-not-allowed group' : ''"
+                >
+                    <input
+                      id="bordered-checkbox-1"
+                      v-model="favoriteValue"
+                      type="checkbox"
+                      :disabled="!authStore.isAuthenticated"
+                      class="text-blue-600 bg-gray-100 border-gray-300 rounded-sm ..."
+                    >
+                    <label for="bordered-checkbox-1" class="ms-2">Favoritos</label>
 
-                <div v-if="authStore.isAuthenticated" class="p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                    <input id="bordered-checkbox-1" v-model="favoriteValue" type="checkbox" value="" name="bordered-checkbox" class=" text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                    <label for="bordered-checkbox-1" class="w-full  ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Favoritos</label>
+                    <span
+                      v-if="!authStore.isAuthenticated"
+                      class="absolute left-0 top-full mt-1 text-xs bg-black text-white px-2 py-1 rounded hidden group-hover:block"
+                    >
+                      Inicia sesión para usar favoritos
+                    </span>
                 </div>
 
                 <div class="col-start-2 row-start-3 md:col-start-4 md:row-start-1"  :class="authStore.isAuthenticated ? 'flex flex-col gap-1 ' : 'flex   gap-1'">
@@ -55,8 +70,8 @@
                     <div>
                         <select id="default" v-model="orderByValue" class="block w-full  p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                             <option selected>Ordenar por</option>
-                            <option value="oldest">Últimos creados</option>
-                            <option value="latest">Primeros creados</option>
+                            <option value="oldest">Más antiguos primero</option>
+                            <option value="latest">Más recientes primero</option>
                             <option value="rating-1-5">Reseñas 1-5 estrellas</option>
                             <option value="rating-5-1">Reseñas 5-1 estrellas</option>
                         </select>
