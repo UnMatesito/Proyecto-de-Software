@@ -1,4 +1,5 @@
 <template>
+  <div class="flex flex-col items-center p-3 w-full">
     <h2 class="font-semibold text-3xl text-proyecto-primary">Listado de sitios históricos</h2>
     <p class="text-proyecto-accent">Aqui puedes buscar el sitio que justo necesitas.</p>
     <aside class="p-3 ">
@@ -33,6 +34,7 @@
       :totalPages="pagination.total_pages"
       @page-change="pageChanged"
     ></Pagination>
+  </div>
 </template>
 
 <script setup>
