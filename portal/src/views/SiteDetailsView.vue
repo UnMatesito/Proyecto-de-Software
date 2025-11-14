@@ -226,13 +226,8 @@ const toggleFavorite = async () => {
   }
 }
 
-watch(images, (arr) => {
-  if (arr && arr.length) {
-    const coverIdx = arr.findIndex(i => i.is_cover)
-    activeIndex.value = coverIdx >= 0 ? coverIdx : 0
-  } else {
-    activeIndex.value = 0
-  }
+watch(images, () => {
+  activeIndex.value = 0
 }, { immediate: true })
 
 const prev = () => {
