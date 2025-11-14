@@ -42,6 +42,11 @@ def list_reviews(site_id):
     Devuelve una lista paginada de reseñas para un sitio histórico específico.
     Usa los métodos genéricos de búsqueda y paginación.
     """
+    # Verificar si la funcionalidad de reseñas está habilitada
+    blocked_response = _reviews_feature_blocked_response()
+    if blocked_response:
+        return blocked_response
+
     try:
         historic_site_service.get_published_site_by_id(site_id)
     except ValueError:
@@ -101,7 +106,7 @@ def create_review(site_id):
     """
     user_id = get_jwt_identity()
 
-    # Verificar si la funcionalidad de creación de reseñas está habilitada
+    # Verificar si la funcionalidad de reseñas está habilitada
     blocked_response = _reviews_feature_blocked_response()
     if blocked_response:
         return blocked_response
@@ -184,6 +189,11 @@ def get_review(site_id, review_id):
     GET /sites/{site_id}/reviews/{review_id}
     Devuelve una reseña específica.
     """
+    # Verificar si la funcionalidad de reseñas está habilitada
+    blocked_response = _reviews_feature_blocked_response()
+    if blocked_response:
+        return blocked_response
+
     try:
         review = Review.query.filter_by(id=review_id, historic_site_id=site_id).first()
 
@@ -218,6 +228,11 @@ def delete_review(site_id, review_id):
     DELETE /sites/{site_id}/reviews/{review_id}
     Elimina una reseña del usuario autenticado.
     """
+    # Verificar si la funcionalidad de reseñas está habilitada
+    blocked_response = _reviews_feature_blocked_response()
+    if blocked_response:
+        return blocked_response
+
     user_id = get_jwt_identity()
 
     try:
