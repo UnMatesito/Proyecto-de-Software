@@ -21,13 +21,15 @@
             {# Panel de Ordenación #}
             <div class="w-full lg:w-auto px-3 py-2 border-2 border-gray-300 rounded shadow-lg flex-none">
                 <h3 class="text-lg font-semibold mb-2">Ordenar Sitios</h3>
-                {# Consigo los argumentos de la request #}
+                {# Consigo los argumentos de la request EXCEPTO sorted_by y order_by #}
                 {% set current_args = request.args.to_dict() %}
-                {% set _ = current_args.update({'sorted_by': 'asc', 'order_by': 'name'}) %}
+                {% set _ = current_args.pop('sorted_by', None) %}
+                {% set _ = current_args.pop('order_by', None) %}
+                {% set _ = current_args.pop('page', None) %}
 
                 <div class="flex flex-row flex-wrap justify-center 2xl:flex-col overflow-x-auto 2xl:overflow-x-visible gap-2 2xl:gap-0 2xl:space-y-2 pb-2 2xl:pb-0">
                     <div class="flex-shrink-0 2xl:flex-shrink">
-                        <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='asc', order_by='name') }}"
+                        <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='asc', order_by='name', **current_args) }}"
                         class="
                         block px-3 py-2 rounded-md whitespace-nowrap
                         {% if order_by == 'name' and sorted_by == 'asc' %}
@@ -40,7 +42,7 @@
                         </a>
                     </div>
                     <div class="flex-shrink-0 2xl:flex-shrink">
-                        <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='desc', order_by='name') }}"
+                        <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='desc', order_by='name', **current_args) }}"
                             class="
                             block px-3 py-2 rounded-md whitespace-nowrap
                             {% if order_by == 'name' and sorted_by == 'desc' %}
@@ -53,7 +55,7 @@
                         </a>
                     </div>
                     <div class="flex-shrink-0 2xl:flex-shrink">
-                        <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='desc', order_by='created_at') }}"
+                        <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='desc', order_by='created_at', **current_args) }}"
                             class="
                             block px-3 py-2 rounded-md whitespace-nowrap
                             {% if order_by == 'created_at' and sorted_by == 'desc' %}
@@ -66,7 +68,7 @@
                         </a>
                     </div>
                     <div class="flex-shrink-0 2xl:flex-shrink">
-                        <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='asc', order_by='created_at') }}"
+                        <a href="{{ url_for('site_bp.list_paginated_sites', sorted_by='asc', order_by='created_at', **current_args) }}"
                             class="
                             block px-3 py-2 rounded-md whitespace-nowrap
                             {% if order_by == 'created_at' and sorted_by == 'asc' %}
@@ -91,10 +93,7 @@
                 <div class="mt-2">
                     {{ button(
                         "Exportar CSV",
-                        link=url_for(
-                            'site_bp.export',
-                            **dict(request.args.to_dict(), order_by=order_by, sorted_by=sorted_by)
-                        ),
+                        link=url_for('site_bp.export', **request.args.to_dict()),
                         icon_left_svg='<i class="fa-solid fa-file-csv mr-1"></i>',
                         class="w-full h-14"
                     ) }}
@@ -123,7 +122,7 @@
                                             {{ text_input(
                                             name='search_text',
                                             placeholder='Nombre del sitio o Breve descripcion',
-                                            value=request.args.get('name', ''),
+                                            value=request.args.get('search_text', ''),
                                             class='w-full max-w-xs text-sm h-12',
                                             required=false
                                             ) }}

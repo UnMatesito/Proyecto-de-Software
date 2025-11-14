@@ -15,6 +15,7 @@
       :province="site.province"
       :city="site.city"
       :tags="site.tags"
+      :average_rating="site.average_rating"
       :state_of_conservation="site.state_of_conservation"
       :inauguration_year="site.inauguration_year"
       :category="site.category"
@@ -41,7 +42,7 @@
   import Pagination from '@/components/Pagination.vue'
   import Filter from '@/components/Filter.vue'
   import Map from '@/components/MapFilter.vue'
-  
+
   const apiMessage = ref('')
   const sites = ref({})
   const pagination = ref({})
