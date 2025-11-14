@@ -141,6 +141,7 @@
       >
         Ver más reseñas...
       </p>
+      <SkeletonReview v-if="reviews.length == 0 && page == 1" />
     </section>
   </div>
 </template>
@@ -159,6 +160,7 @@ import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useFavoritesStore } from '@/stores/favorites.js'
 import MapDetail from '@/components/MapDetail.vue'
+import SkeletonReview from '@/components/SkeletonReview.vue'
 
 const route = useRoute()
 const detalle = ref({})

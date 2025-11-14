@@ -33,7 +33,7 @@
             </div>
             <div :class=" authStore.isAuthenticated ? 'flex  gap-2' : 'flex flex-col  gap-2'">
               <div :class=" authStore.isAuthenticated ? 'flex flex-col  gap-2' : 'flex flex-col  gap-2'">
-                    <div v-if="authStore.isAuthenticated" v-on:click="tags" class="w-96 p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    <div v-if="authStore.isAuthenticated" class="w-96 p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                         <input id="bordered-checkbox-1" v-model="favoriteValue" type="checkbox" value="" name="bordered-checkbox" class=" text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                         <label for="bordered-checkbox-1" class="w-full  ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Favoritos</label>
                     </div>
