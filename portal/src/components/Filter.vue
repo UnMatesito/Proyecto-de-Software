@@ -1,6 +1,6 @@
 <template>
     <form class="  m-auto">
-        <div class="grid grid-cols-4 gap-1 mb-3">
+        <div class="grid grid-cols-2  md:grid-cols-4 gap-1 mb-3">
 
                 <select id="small" v-model="provinceValue" @click="fetchCities(provinceValue)" class="block max-w-96  p-2  text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                     <option selected>Provincia</option>
@@ -21,7 +21,7 @@
                     <label for="bordered-checkbox-1" class="w-full  ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Favoritos</label>
                 </div> 
 
-                <div  :class="authStore.isAuthenticated ? 'flex flex-col gap-1 ' : 'flex   gap-1'">
+                <div class="col-start-2 row-start-3 md:col-start-4 md:row-start-1"  :class="authStore.isAuthenticated ? 'flex flex-col gap-1 ' : 'flex   gap-1'">
                     <router-link :to="{query: { 
                                         ...(nameValue) && {name: nameValue},
                                         ...(descrpitionValue) && {description: descrpitionValue},
@@ -34,7 +34,7 @@
                                         ...({lat: rout.query.lat}),
                                         ...({lon: rout.query.lon}),
                                         ...({radius: rout.query.radius})
-                                        }}" class="text-white w-24 bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Filtrar</router-link>
+                                        }}" class="text-white w-24 bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 ">Filtrar</router-link>
                 </div>
 
                 <select id="default" v-model="cityValue"  class="block  p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -65,12 +65,12 @@
 
                  <router-link @click="desibleMapClick" :to="{query: {}}" class="text-white w-24 bg-proyecto-primary hover:bg-proyecto-accent focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Restaurar</router-link>
 
+
+            </div>
                 <select name="tags" id="tags" multiple>
                         <option v-for="tag in tags" :key="tag.id" :value="tag.slug">{{ tag.name }}</option>
                 </select>
-            </div>
-
-        <div>
+            <div>
 
         </div>
     </form>
