@@ -18,6 +18,7 @@
             default: 0
         },
         imagen: String,
+        altImagen: String,
         isFavorite: Boolean,
         isAuthenticated: Boolean,
         hideFavoriteButton: Boolean
