@@ -22,7 +22,7 @@
       :id="site.id"
       :rating="site.average_rating"
       ></Card>
-      <SkeletonCard v-if="!sites" v-for="n in 25" />
+      <SkeletonCard v-if="!sites" v-for="n in 24" />
     </section>
 
     <Pagination
