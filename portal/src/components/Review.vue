@@ -23,4 +23,4 @@
     const props = defineProps(["user_name", "text", "user_email", "rating", "created_at"])
     const createdDate = ref("")
    /* createdDate.value = props.created_at.slice(0, props.created_at.indexOf(":")) */
-</script>er
+</script>

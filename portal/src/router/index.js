@@ -6,7 +6,7 @@ import { useAuthStore } from '../stores/auth'
 import HomeView from '../views/HomeView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import MaintenanceView from '../views/MaintenanceView.vue'
-import SiteDetailsView from "@/components/SiteDetailsView.vue";
+import SiteDetailsView from '../views/SiteDetailsView.vue'
 
 const requireAuth = (to, from, next) => {
   const authStore = useAuthStore();

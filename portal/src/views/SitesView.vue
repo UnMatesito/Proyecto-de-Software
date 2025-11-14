@@ -23,6 +23,7 @@
       :id="site.id"
       :rating="site.average_rating"
       ></Card>
+      <SkeletonCard v-if="!sites" v-for="n in 24" />
     </section>
 
     <Pagination
@@ -42,9 +43,9 @@
   import Pagination from '@/components/Pagination.vue'
   import Filter from '@/components/Filter.vue'
   import Map from '@/components/MapFilter.vue'
-
+  import SkeletonCard from '@/components/SkeletonCard.vue'
   const apiMessage = ref('')
-  const sites = ref({})
+  const sites = ref(null)
   const pagination = ref({})
   const rout = useRoute()
   const router = useRouter()
