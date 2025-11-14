@@ -26,20 +26,19 @@ def run(env="production"):
     seed_event_types()
 
     # Solo si estamos en development
-    if env == "production":
-        seed_aditional_public_users()
-        seed_aditional_editors()
-        seed_aditional_admins()
-        seed_aditional_moderators()
-        seed_historic_sites()
-        seed_aditional_historic_sites()
-        seed_aditional_validated_historic_sites()
-        seed_site_tags()
-        seed_favorites()
-        seed_reviews()
-        seed_pending_reviews()
-        seed_rejected_reviews()
-        seed_site_images_from_seed_folder()
+    seed_aditional_public_users()
+    seed_aditional_editors()
+    seed_aditional_admins()
+    seed_aditional_moderators()
+    seed_historic_sites()
+    seed_aditional_historic_sites()
+    seed_aditional_validated_historic_sites()
+    seed_site_tags()
+    seed_favorites()
+    seed_reviews()
+    seed_pending_reviews()
+    seed_rejected_reviews()
+    seed_site_images_from_seed_folder()
 
 
     print("Seed finalizado")

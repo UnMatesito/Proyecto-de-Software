@@ -1,14 +1,15 @@
 <template>
+  <div class="flex flex-col items-center p-3 w-full">
     <h2 class="font-semibold text-3xl text-proyecto-primary">Listado de sitios históricos</h2>
     <p class="text-proyecto-accent">Aqui puedes buscar el sitio que justo necesitas.</p>
-    <aside class="p-3 ">
+    <aside class="p-3 max-w-[1150px]">
       <Filter :page="pagination.page" :tags="tags" :provinces="provinces" @disableMap="changeMapState"></Filter>
       <Map styleContent="height:400px;  width: 100%" :marks="marks" :isDisable="disableMap" @changeMapState="changeMapState"></Map>
     </aside>
 
-    <section class="grid grid-cols-1  md:grid-cols-3 lg:grid-cols-4 gap-3 p-3">
+    <section class=" w-full sm:w-auto grid  sm:grid-cols-2  md:grid-cols-3  lg:grid-cols-3 xl:grid-cols-4 gap-3 p-3">
       <Card
-      class=" md:w-[270px]"
+      class="  md:w-[250px] lg:w-[270px]"
       v-for="site in sites"
       :key="`${site.id}-${site.name}`"
       :name="site.name"
@@ -19,7 +20,8 @@
       :state_of_conservation="site.state_of_conservation"
       :inauguration_year="site.inauguration_year"
       :category="site.category"
-      :imagen="site.imagen"
+      :imagen="site.images[0].url"
+      :alt-imagen="site.images[0].alt"
       :id="site.id"
       :rating="site.average_rating"
       ></Card>
@@ -33,6 +35,7 @@
       :totalPages="pagination.total_pages"
       @page-change="pageChanged"
     ></Pagination>
+  </div>
 </template>
 
 <script setup>
@@ -61,6 +64,7 @@
       const response = data
       sites.value = response.data
       pagination.value = response.meta
+      console.log(data)
       marks.value = []
       sites.value.forEach(site => {
         marks.value.push({name: site.name, lat: site.lat, lon: site.lon})
