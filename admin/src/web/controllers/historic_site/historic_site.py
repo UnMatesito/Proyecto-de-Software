@@ -32,6 +32,7 @@ from core.services import (
     restore_historic_site,
     update_historic_site,
     validate_historic_site,
+    get_total_sites_count
 )
 from core.utils.export import export_sites_to_csv, get_csv_filename
 from web.forms.historic_site import CreateSiteForm, EditSiteForm, SiteImageUploadForm
@@ -121,6 +122,7 @@ def list_paginated_sites():
         )
 
         sites = pagination["items"]
+        total_sites = get_total_sites_count()
 
         columns = [
             {"key": "name", "label": "Nombre"},
@@ -169,6 +171,7 @@ def list_paginated_sites():
             city_choices=city_choices,
             tag_choices=tag_choices,
             selected_tags=selected_tags,
+            total_sites=total_sites,
         )
     except Exception as e:
         flash(f"Error al cargar los sitios, error: {e}", "error")
