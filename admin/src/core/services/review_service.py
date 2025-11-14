@@ -53,6 +53,7 @@ def approve_review(review_id: int) -> bool:
     try:
         review.approve()
         db.session.commit()
+        db.session.refresh(review)
     except (ValueError, SQLAlchemyError) as e:
         db.session.rollback()
         raise RuntimeError(f"Error al aprobar la reseña {e}")
@@ -71,6 +72,7 @@ def reject_review(review_id: int, reason: str) -> bool:
     try:
         review.reject(reason)
         db.session.commit()
+        db.session.refresh(review)
     except (ValueError, SQLAlchemyError) as e:
         db.session.rollback()
         raise RuntimeError(f"Error al aprobar la reseña {e}")
@@ -110,7 +112,7 @@ def get_paginated_reviews(
     # Normalizar enum si llega como texto
     if "status" in filters and filters["status"]:
         try:
-            filters["status"] = ReviewStatus(filters["status"].capitalize()).value
+            filters["status"] = ReviewStatus(filters["status"].capitalize())
         except ValueError:
             filters.pop("status", None)
 
