@@ -101,7 +101,7 @@
               name: nameValue || undefined,
               description: descrpitionValue || undefined,
               tags: tagsValue.length ? tagsValue.join(',') : undefined,
-              orderBy: orderByValue !== 'Ordenar por' ? orderByValue : undefined,
+              order_by: orderByValue !== 'Ordenar por' ? orderByValue : undefined,
               favorites: favoriteValue || undefined,
               page: props.page
             }
