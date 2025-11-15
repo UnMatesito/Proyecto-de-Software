@@ -21,7 +21,9 @@ def index():
     try:
         # Parámetros de paginación y orden
         order_by = request.args.get("order_by", "created_at")
-        sorted_by = request.args.get("sorted_by", "desc")  # Más recientes primero por defecto
+        sorted_by = request.args.get(
+            "sorted_by", "desc"
+        )  # Más recientes primero por defecto
         page = request.args.get("page", 1, type=int)
 
         # Filtro de estado
@@ -98,14 +100,14 @@ def index():
             sorted_by=sorted_by,
             # Mantener los filtros en el template para repoblar el formulario
             current_filters={
-                'status': status,
-                'site_id': site_id,
-                'rating_min': rating_min,
-                'rating_max': rating_max,
-                'date_from': date_from,
-                'date_to': date_to,
-                'search_email': search_email,
-            }
+                "status": status,
+                "site_id": site_id,
+                "rating_min": rating_min,
+                "rating_max": rating_max,
+                "date_from": date_from,
+                "date_to": date_to,
+                "search_email": search_email,
+            },
         )
     except Exception as e:
         flash(f"Error al cargar reseñas: {str(e)}", "error")
@@ -144,7 +146,7 @@ def approve(review_id):
             f"Rating de '{review.historic_site.name}': "
             f"{review.historic_site.average_rating:.1f} "
             f"({review.historic_site.rating_count} reseñas)",
-            "success"
+            "success",
         )
 
     except ValueError as e:
@@ -181,10 +183,7 @@ def reject(review_id):
     try:
         review = reject_review_serv(review_id=review_id, reason=reason)
 
-        flash(
-            f"Reseña rechazada correctamente. Motivo: {reason[:50]}...",
-            "success"
-        )
+        flash(f"Reseña rechazada correctamente. Motivo: {reason[:50]}...", "success")
 
     except ValueError as e:
         flash(str(e), "warning")
@@ -221,7 +220,7 @@ def delete(review_id):
         if was_approved:
             flash(
                 f"Reseña eliminada. El rating de '{site_name}' ha sido actualizado.",
-                "success"
+                "success",
             )
         else:
             flash("Reseña eliminada correctamente.", "success")

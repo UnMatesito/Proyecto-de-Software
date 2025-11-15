@@ -172,7 +172,7 @@ def update_review(review_id: int, rating: int = None, content: str = None) -> Re
 
 
 def get_paginated_reviews(
-        filters=None, page=1, per_page=25, order_by="created_at", order_dir="asc"
+    filters=None, page=1, per_page=25, order_by="created_at", order_dir="asc"
 ):
     """
     Obtiene reseñas con filtros combinables y paginación.
@@ -226,7 +226,7 @@ def get_review_by_id(review_id: int) -> Review:
 
 
 def get_user_reviews(
-        user_id: int, page: int = 1, per_page: int = 25, sort: str = "date_desc"
+    user_id: int, page: int = 1, per_page: int = 25, sort: str = "date_desc"
 ):
     """Obtiene las reseñas de un usuario con la paginación solicitada."""
 
@@ -256,10 +256,7 @@ def get_user_reviews(
 
 
 def get_site_reviews(
-        site_id: int,
-        status: ReviewStatus = None,
-        page: int = 1,
-        per_page: int = 25
+    site_id: int, status: ReviewStatus = None, page: int = 1, per_page: int = 25
 ):
     """
     Obtiene las reseñas de un sitio histórico específico.

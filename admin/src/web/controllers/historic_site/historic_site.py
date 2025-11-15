@@ -27,12 +27,12 @@ from core.services import (
     get_site_images,
     get_sites_filtered,
     get_tag_by_id,
+    get_total_sites_count,
     get_user_by_id,
     reorder_site_images,
     restore_historic_site,
     update_historic_site,
     validate_historic_site,
-    get_total_sites_count
 )
 from core.utils.export import export_sites_to_csv, get_csv_filename
 from web.forms.historic_site import CreateSiteForm, EditSiteForm, SiteImageUploadForm

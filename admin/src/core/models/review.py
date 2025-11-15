@@ -109,8 +109,9 @@ def update_site_rating_after_flush(session, ctx):
     Actualiza rating_count y average_rating de HistoricSite después de flush.
     Maneja inserts, updates, deletes y cambios de sitio sin inner-flush.
     """
-    from core.models import Review, HistoricSite, ReviewStatus
     import sqlalchemy as sa
+
+    from core.models import HistoricSite, Review, ReviewStatus
 
     def as_status(value):
         """Convierte el valor a ReviewStatus de forma segura."""
