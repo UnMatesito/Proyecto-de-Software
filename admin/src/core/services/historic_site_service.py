@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
 
 from geoalchemy2.elements import WKTElement
+from geoalchemy2.functions import ST_DWithin, ST_Transform
+from sqlalchemy import false, func, or_
 from sqlalchemy.exc import SQLAlchemyError
 
 from core.database import db
-from core.models import HistoricSite
+from core.models import City, HistoricSite, Province, Tag, User
 from core.services import (
     category_service,
     city_service,
@@ -18,6 +20,11 @@ from core.utils.search import apply_ordering, build_search_query
 def get_all_historic_site():
     """Obtiene todos los sitios históricos."""
     return HistoricSite.query.all()
+
+
+def get_total_sites_count():
+    """Obtiene el conteo total de sitios históricos."""
+    return HistoricSite.query.count()
 
 
 def get_published_historic_sites():
@@ -303,7 +310,7 @@ def update_historic_site(body):
             elif key != "historic_site_id":
                 raise ValueError("Campos invalidos enviados")
 
-        site.update_at = datetime.now(timezone.utc)
+        site.updated_at = datetime.now(timezone.utc)
 
         db.session.commit()
         return site
@@ -401,17 +408,18 @@ def get_published_site_by_id(site_id: int):
 
 
 def list_published_sites(
-        name=None,
-        description=None,
-        city_name=None,
-        province_name=None,
-        tags_str=None,
-        order_by="latest",
-        lat=None,
-        lon=None,
-        radius=None,
-        page=1,
-        per_page=20
+    name=None,
+    description=None,
+    city_name=None,
+    province_name=None,
+    tags_str=None,
+    order_by="latest",
+    lat=None,
+    lon=None,
+    radius=None,
+    favorited_by_user_id=None,
+    page=1,
+    per_page=20,
 ):
     """
     Lista sitios históricos publicados con filtros.
@@ -424,84 +432,83 @@ def list_published_sites(
         tags_str: Tags separados por coma (todos deben coincidir)
         order_by: latest | oldest | rating-5-1 | rating-1-5
         lat, lon, radius: Para búsqueda geoespacial
+        favorited_by_user_id: ID de usuario para filtrar sólo sus favoritos
         page: Número de página
         per_page: Items por página
 
     Returns:
         Dict con paginación: {"items": [], "current_page": 1, "per_page": 20, "total": 100}
     """
-    from core.models import City, Province, Tag
-    from geoalchemy2.functions import ST_DWithin, ST_Transform
-    from sqlalchemy import func, or_
+    query = HistoricSite.query
 
-    filters = {}
+    # Solo sitios publicados y no eliminados
+    query = query.filter(
+        HistoricSite.is_visible.is_(True),
+        HistoricSite.pending_validation.is_(False),
+        HistoricSite.deleted_at.is_(None),
+    )
 
-    # Filtros de texto - SEPARADOS (ambos deben coincidir si se envían ambos)
+    # Filtros de texto
     if name:
-        filters["name"] = name  # Búsqueda parcial en columna name
-    if description:
-        # Buscar en brief_description y full_description
-        # Necesitamos manejar esto como caso especial
-        filters["description_search"] = description
+        query = query.filter(HistoricSite.name.ilike(f"%{name}%"))
 
-    # Filtro por ciudad - buscar city_id
-    if city_name:
-        city = City.query.filter(
-            func.lower(City.name) == city_name.lower()
-        ).first()
-        if city:
-            filters["city_id"] = city.id
-
-    print(filters)
-    # Filtro por provincia - buscar province_id
-    if province_name:
-        province = Province.query.filter(
-            func.lower(Province.name) == province_name.lower()
-        ).first()
-        if province:
-            filters["province_id"] = province.id
-
-    # Filtro por tags - usar tags_id que aprovecha el filtro especial
-    if tags_str:
-        tag_list = [t.strip() for t in tags_str.split(",") if t.strip()]
-        if tag_list:
-            tag_ids = []
-            for slug in tag_list:
-                tag = Tag.query.filter_by(slug=slug).first()
-                if tag:
-                    tag_ids.append(tag.id)
-
-            if tag_ids:
-                filters["tags_id"] = tag_ids
-
-    # Filtros de visibilidad: solo sitios publicados
-    filters["is_visible"] = True
-    filters["pending_validation"] = False
-
-    # Construir query base
-    query = build_search_query(HistoricSite, filters)
-
-    # Filtro especial para description (buscar en ambas columnas de descripción)
     if description:
         query = query.filter(
             or_(
                 HistoricSite.brief_description.ilike(f"%{description}%"),
-                HistoricSite.full_description.ilike(f"%{description}%")
+                HistoricSite.full_description.ilike(f"%{description}%"),
             )
+        )
+
+    # Filtros por ciudad/provincia
+    if city_name or province_name:
+        query = query.join(HistoricSite.city)
+
+        if city_name:
+            query = query.filter(func.lower(City.name) == city_name.lower())
+
+        if province_name:
+            query = query.join(City.province)
+            query = query.filter(func.lower(Province.name) == province_name.lower())
+
+    # Filtro por tags - todos los tags deben coincidir
+    if tags_str:
+        from slugify import slugify
+
+        tag_slugs = [slugify(tag.strip()) for tag in tags_str.split(",") if tag.strip()]
+
+        if tag_slugs:
+            existing_tags = Tag.query.filter(Tag.slug.in_(tag_slugs)).all()
+            if len(existing_tags) != len(tag_slugs):
+                query = query.filter(false())
+            else:
+                tag_ids = [tag.id for tag in existing_tags]
+                tag_subquery = (
+                    db.session.query(HistoricSite.id)
+                    .join(HistoricSite.tags)
+                    .filter(Tag.id.in_(tag_ids))
+                    .group_by(HistoricSite.id)
+                    .having(func.count(func.distinct(Tag.id)) == len(tag_ids))
+                )
+                query = query.filter(HistoricSite.id.in_(tag_subquery))
+
+    # Filtro por sitios favoritados por un usuario específico
+    if favorited_by_user_id is not None:
+        query = query.filter(
+            HistoricSite.favorited_by.any(User.id == favorited_by_user_id)
         )
 
     # Búsqueda geoespacial
     if lat is not None and lon is not None and radius is not None:
-
+        print(lat)
         radius_meters = float(radius) * 1000
         ref_point = WKTElement(f"POINT({lon} {lat})", srid=4326)
 
-        # Filtrar usando ST_DWithin con transformación a metros
         query = query.filter(
             ST_DWithin(
                 ST_Transform(HistoricSite.location, 3857),
                 ST_Transform(ref_point, 3857),
-                radius_meters
+                radius_meters,
             )
         )
 
@@ -531,14 +538,8 @@ def list_published_sites(
         page=page,
         per_page=per_page,
         order_by=service_order_by,
-        sorted_by=service_sorted_by
+        sorted_by=service_sorted_by,
     )
-
-    # Filtrar sitios eliminados (doble verificación)
-    pagination["items"] = [
-        site for site in pagination["items"]
-        if site.deleted_at is None
-    ]
 
     return pagination
 
@@ -557,7 +558,7 @@ def get_city_and_province(city_name, province_name):
     Raises:
         ValueError: Si la provincia o ciudad no existen
     """
-    from core.models import Province, City
+    from core.models import City, Province
 
     # Buscar provincia
     province = Province.query.filter(
@@ -569,12 +570,13 @@ def get_city_and_province(city_name, province_name):
 
     # Buscar ciudad en esa provincia
     city = City.query.filter(
-        db.func.lower(City.name) == city_name.lower(),
-        City.province_id == province.id
+        db.func.lower(City.name) == city_name.lower(), City.province_id == province.id
     ).first()
 
     if not city:
-        raise ValueError(f"City '{city_name}' does not exist in province '{province_name}'")
+        raise ValueError(
+            f"City '{city_name}' does not exist in province '{province_name}'"
+        )
 
     return city, province
 
@@ -604,19 +606,18 @@ def get_tags_by_slugs(tag_slugs):
 
 
 def create_site_from_api(
-        user_id,
-        name,
-        short_description,
-        description,
-        city_name,
-        province_name,
-        country,
-        lat,
-        lon,
-        tags,
-        state_of_conservation,
-        inauguration_year,
-        category_name=None
+    user_id,
+    name,
+    short_description,
+    description,
+    city_name,
+    province_name,
+    lat,
+    lon,
+    tags,
+    state_of_conservation,
+    inauguration_year,
+    category_name=None,
 ):
     """
     Crea un sitio histórico desde la API con todos los datos necesarios.
@@ -629,7 +630,6 @@ def create_site_from_api(
         description: Descripción completa
         city_name: Nombre de la ciudad
         province_name: Nombre de la provincia
-        country: Código del país (2 letras)
         lat: Latitud
         lon: Longitud
         tags: Lista de slugs de tags
@@ -643,7 +643,7 @@ def create_site_from_api(
     Raises:
         ValueError: Si hay datos inválidos
     """
-    from core.models import ConservationState, Category, User
+    from core.models import Category, ConservationState, User
 
     # Validar que el usuario exista
     user = User.query.get(user_id)
@@ -678,7 +678,7 @@ def create_site_from_api(
         full_description=description,
         latitude=lat,
         longitude=lon,
-        inauguration_year=inauguration_year
+        inauguration_year=inauguration_year,
     )
 
     # Asignar relaciones
@@ -688,9 +688,7 @@ def create_site_from_api(
         category=category,
         user=user,
         city=city,
-        tags=tag_objects if tag_objects else None
+        tags=tag_objects if tag_objects else None,
     )
 
     return site
-
-

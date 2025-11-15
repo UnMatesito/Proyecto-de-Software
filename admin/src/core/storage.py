@@ -1,55 +1,36 @@
-from minio import Minio
-from minio.error import S3Error
-from minio.commonconfig import ENABLED, Filter
-from minio.lifecycleconfig import LifecycleConfig, Rule, Expiration
-import io
+import json
+import logging
 import mimetypes
 import uuid
-from datetime import timedelta
 from pathlib import Path
-from typing import BinaryIO, Optional, Tuple
+from typing import Optional
+
+from minio import Minio
+from minio.error import S3Error
 from werkzeug.datastructures import FileStorage
-import logging
 
 
 class StorageError(Exception):
     """Excepción base para errores de Storage"""
-    pass
 
-
-class StorageConnectionError(StorageError):
-    """Error de conexión con MinIO"""
-    pass
-
-
-class StorageUploadError(StorageError):
-    """Error al subir archivos"""
-    pass
-
-
-class StorageDeleteError(StorageError):
-    """Error al eliminar archivos"""
     pass
 
 
 class Storage:
     """
-    Wrapper para MinIO con funcionalidades mejoradas:
-    - Manejo robusto de errores
-    - Soporte para múltiples tipos de almacenamiento
-    - URLs pre-firmadas y públicas
-    - Validación de archivos
-    - Gestión de políticas de bucket
+    Cliente MinIO simplificado para almacenamiento de imágenes públicas.
+    Características:
+    - Crea automáticamente el bucket si no existe
+    - Configura el bucket como público
+    - Genera nombres únicos para archivos
+    - Retorna URLs públicas directas
     """
 
-    # Límites por defecto
-    DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
-    DEFAULT_URL_EXPIRY = timedelta(days=7)
+    # Límites
+    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
-    # Tipos MIME permitidos por defecto
-    ALLOWED_MIME_TYPES = {
-        'image/jpeg', 'image/png', 'image/webp',
-    }
+    # Tipos MIME permitidos para imágenes
+    ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
     def __init__(self, app=None):
         self._client = None
@@ -62,20 +43,18 @@ class Storage:
             self.init_app(app)
 
     def init_app(self, app):
-        """Inicializa el cliente de MinIO con la aplicación Flask"""
-        endpoint = app.config.get("MINIO_SERVER", "localhost:9000")
+        """Inicializa el cliente MinIO con la aplicación Flask"""
+        endpoint = app.config.get(
+            "MINIO_SERVER", "minio.proyecto2025.linti.unlp.edu.ar"
+        )
         access_key = app.config.get("MINIO_ACCESS_KEY", "minioadmin")
         secret_key = app.config.get("MINIO_SECRET_KEY", "minioadmin")
         self._secure = app.config.get("MINIO_SECURE", False)
-        self._bucket_name = app.config.get("MINIO_BUCKET", "proyecto")
-
-        # Configuraciones adicionales
-        self.max_file_size = app.config.get("MAX_FILE_SIZE", self.DEFAULT_MAX_FILE_SIZE)
-        self.url_expiry = timedelta(days=app.config.get("MINIO_URL_EXPIRY_DAYS", 7))
+        self._bucket_name = app.config.get("MINIO_BUCKET", "grupo09")
+        self._logger = app.logger
 
         # Limpiar el endpoint
         self._endpoint = endpoint.replace("http://", "").replace("https://", "")
-        self._logger = app.logger
 
         try:
             # Crear cliente MinIO
@@ -90,351 +69,231 @@ class Storage:
             self._client.list_buckets()
             self._logger.info(f"✓ Conexión con MinIO establecida: {self._endpoint}")
 
-            # Inicializar bucket
-            self._ensure_bucket_exists(self._bucket_name)
+            # Crear bucket público si no existe
+            self._setup_public_bucket()
 
-        except S3Error as e:
-            self._logger.error(f"✗ Error S3 al conectar con MinIO: {e}")
-            raise StorageConnectionError(f"No se pudo conectar con MinIO: {e}")
         except Exception as e:
-            self._logger.error(f"✗ Error inesperado al inicializar MinIO: {e}")
-            raise StorageConnectionError(f"Error de inicialización: {e}")
+            self._logger.error(f"✗ Error al inicializar MinIO: {e}")
+            raise StorageError(f"Error de inicialización: {e}")
 
-        # Adjuntar al contexto Flask
         app.storage = self
         return app
 
-    def _ensure_bucket_exists(self, bucket_name: str) -> None:
-        """Asegura que el bucket exista, lo crea si no existe"""
+    def _setup_public_bucket(self):
+        """Crea el bucket y lo configura como público"""
         try:
-            if not self._client.bucket_exists(bucket_name):
-                self._client.make_bucket(bucket_name)
-                self._logger.info(f"✓ Bucket creado: {bucket_name}")
-            else:
-                self._logger.info(f"✓ Bucket existente: {bucket_name}")
+            # Crear bucket si no existe
+            if not self._client.bucket_exists(self._bucket_name):
+                self._client.make_bucket(self._bucket_name)
+                self._logger.info(f"✓ Bucket creado: {self._bucket_name}")
+
+            # Configurar como público
+            policy = {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {"AWS": "*"},
+                        "Action": ["s3:GetObject"],
+                        "Resource": [f"arn:aws:s3:::{self._bucket_name}/*"],
+                    }
+                ],
+            }
+
+            self._client.set_bucket_policy(self._bucket_name, json.dumps(policy))
+            self._logger.info(f"✓ Bucket configurado como público: {self._bucket_name}")
+
         except S3Error as e:
-            raise StorageError(f"Error al verificar/crear bucket {bucket_name}: {e}")
+            raise StorageError(f"Error al configurar bucket: {e}")
 
-    def _validate_file(self, file_storage: FileStorage, max_size: Optional[int] = None) -> Tuple[str, int]:
-        """
-        Valida el archivo antes de subirlo
-
-        Returns:
-            Tuple[str, int]: (content_type, file_size)
-        """
-        max_size = max_size or self.max_file_size
-
+    def _validate_image(self, file: FileStorage) -> tuple[str, int]:
+        """Valida que el archivo sea una imagen válida"""
         # Obtener tipo MIME
-        content_type = mimetypes.guess_type(file_storage.filename)[0]
+        content_type = mimetypes.guess_type(file.filename)[0]
         if not content_type:
-            content_type = file_storage.content_type or "application/octet-stream"
+            content_type = file.content_type or "application/octet-stream"
 
-        # Validar tipo MIME si está habilitada la validación
-        if hasattr(self, 'validate_mime_types') and self.validate_mime_types:
-            if content_type not in self.ALLOWED_MIME_TYPES:
-                raise StorageUploadError(
-                    f"Tipo de archivo no permitido: {content_type}. "
-                    f"Permitidos: {', '.join(self.ALLOWED_MIME_TYPES)}"
-                )
-
-        # Obtener tamaño del archivo
-        file_storage.seek(0, 2)  # Ir al final
-        file_size = file_storage.tell()
-        file_storage.seek(0)  # Volver al inicio
-
-        # Validar tamaño
-        if file_size > max_size:
-            raise StorageUploadError(
-                f"Archivo demasiado grande: {file_size} bytes. "
-                f"Máximo permitido: {max_size} bytes"
+        # Validar tipo MIME
+        if content_type not in self.ALLOWED_MIME_TYPES:
+            raise StorageError(
+                f"Tipo de archivo no permitido: {content_type}. "
+                f"Solo se permiten imágenes: {', '.join(self.ALLOWED_MIME_TYPES)}"
             )
 
+        # Obtener tamaño
+        file.seek(0, 2)
+        file_size = file.tell()
+        file.seek(0)
+
+        # Validar tamaño
         if file_size == 0:
-            raise StorageUploadError("El archivo está vacío")
+            raise StorageError("El archivo está vacío")
+
+        if file_size > self.MAX_FILE_SIZE:
+            raise StorageError(
+                f"Archivo demasiado grande: {file_size / 1024 / 1024:.2f}MB. "
+                f"Máximo: {self.MAX_FILE_SIZE / 1024 / 1024}MB"
+            )
 
         return content_type, file_size
 
     def _generate_filename(self, original_filename: str, folder: str = "sites") -> str:
-        """Genera un nombre de archivo único y seguro"""
-        # Sanitizar el nombre original
+        """Genera un nombre único y seguro para el archivo"""
         safe_filename = Path(original_filename).name
-        unique_id = uuid.uuid4().hex
-        return f"{folder}/{unique_id}_{safe_filename}"
+        unique_id = uuid.uuid4().hex[:12]  # 12 caracteres son suficientes
+        extension = Path(safe_filename).suffix
+        return f"{folder}/{unique_id}{extension}"
 
-    def _get_base_url(self) -> str:
-        """Obtiene la URL base del servidor MinIO"""
+    def _get_public_url(self, key: str) -> str:
+        """Genera la URL pública del archivo"""
         protocol = "https" if self._secure else "http"
-        return f"{protocol}://{self._endpoint}"
-
-    @property
-    def client(self):
-        """Obtiene el cliente MinIO (solo para operaciones avanzadas)"""
-        if not self._client:
-            raise StorageConnectionError("Cliente MinIO no inicializado")
-        return self._client
-
-    @property
-    def bucket_name(self) -> str:
-        """Obtiene el nombre del bucket por defecto"""
-        return self._bucket_name
+        return f"{protocol}://{self._endpoint}/{self._bucket_name}/{key}"
 
     def upload_file(
-            self,
-            file_storage: FileStorage,
-            bucket: Optional[str] = None,
-            folder: str = "sites",
-            validate: bool = True,
-            public: bool = False,
-            max_size: Optional[int] = None
+        self,
+        file_storage: FileStorage,
+        folder: str = "sites",
+        validate: bool = True,
+        public: bool = True,
     ) -> dict:
         """
-        Sube un archivo a MinIO
+        Sube una imagen a MinIO y retorna su URL pública.
 
         Args:
-            file_storage: Objeto FileStorage de Flask/Werkzeug
-            bucket: Nombre del bucket (usa el por defecto si es None)
-            folder: Carpeta dentro del bucket
-            validate: Si debe validar el archivo
-            public: Si debe generar URL pública permanente
-            max_size: Tamaño máximo permitido
+            file_storage: Archivo de imagen (FileStorage)
+            folder: Carpeta dentro del bucket (default: "sites")
+            validate: Si debe validar el archivo (default: True)
+            public: Mantiene compatibilidad, siempre retorna URL pública
 
         Returns:
-            dict: Información del archivo subido {
-                'url': URL del archivo,
-                'key': Clave/path en el bucket,
-                'bucket': Nombre del bucket,
+            dict: {
+                'url': URL pública del archivo,
+                'key': Ruta del archivo en el bucket,
                 'size': Tamaño en bytes,
                 'content_type': Tipo MIME
             }
         """
         if not self._client:
-            raise StorageConnectionError("Cliente MinIO no inicializado")
-
-        bucket = bucket or self._bucket_name
+            raise StorageError("Cliente MinIO no inicializado")
 
         try:
-            # Validar archivo
+            # Validar imagen si está habilitado
             if validate:
-                content_type, file_size = self._validate_file(file_storage, max_size)
+                content_type, file_size = self._validate_image(file_storage)
             else:
-                content_type = mimetypes.guess_type(file_storage.filename)[0] or "application/octet-stream"
+                content_type = (
+                    mimetypes.guess_type(file_storage.filename)[0]
+                    or "application/octet-stream"
+                )
                 file_storage.seek(0, 2)
                 file_size = file_storage.tell()
                 file_storage.seek(0)
 
-            # Generar nombre de archivo
-            filename = self._generate_filename(file_storage.filename, folder)
-
-            # Asegurar que el bucket existe
-            self._ensure_bucket_exists(bucket)
+            # Generar nombre único
+            file_key = self._generate_filename(file_storage.filename, folder)
 
             # Subir archivo
             self._client.put_object(
-                bucket,
-                filename,
+                self._bucket_name,
+                file_key,
                 file_storage.stream,
                 length=file_size,
                 content_type=content_type,
             )
 
-            self._logger.info(f"✓ Archivo subido: {bucket}/{filename} ({file_size} bytes)")
+            # self._logger.info(f"✓ Imagen subida: {file_key} ({file_size} bytes)")
 
-            # Generar URL
-            if public:
-                url = f"{self._get_base_url()}/{bucket}/{filename}"
-            else:
-                # URL pre-firmada con expiración
-                url = self._client.presigned_get_object(
-                    bucket,
-                    filename,
-                    expires=self.url_expiry
-                )
-
+            # Retornar información con URL pública
             return {
-                'url': url,
-                'key': filename,
-                'bucket': bucket,
-                'size': file_size,
-                'content_type': content_type
+                "url": self._get_public_url(file_key),
+                "key": file_key,
+                "size": file_size,
+                "content_type": content_type,
             }
 
-        except StorageUploadError:
-            raise  # Re-lanzar errores de validación
+        except StorageError:
+            raise
         except S3Error as e:
-            self._logger.error(f"✗ Error S3 al subir archivo: {e}")
-            raise StorageUploadError(f"Error al subir archivo: {e}")
+            self._logger.error(f"✗ Error S3: {e}")
+            raise StorageError(f"Error al subir imagen: {e}")
         except Exception as e:
-            self._logger.error(f"✗ Error inesperado al subir archivo: {e}")
-            raise StorageUploadError(f"Error inesperado: {e}")
+            self._logger.error(f"✗ Error inesperado: {e}")
+            raise StorageError(f"Error inesperado: {e}")
 
-    def upload_bytes(
-            self,
-            data: bytes,
-            filename: str,
-            bucket: Optional[str] = None,
-            folder: str = "sites",
-            content_type: str = "application/octet-stream"
-    ) -> dict:
+    def delete_file(
+        self, file_url: Optional[str] = None, key: Optional[str] = None
+    ) -> bool:
         """
-        Sube datos binarios directamente
-
-        Args:
-            data: Datos binarios a subir
-            filename: Nombre del archivo
-            bucket: Nombre del bucket
-            folder: Carpeta dentro del bucket
-            content_type: Tipo MIME
-
-        Returns:
-            dict: Información del archivo subido
-        """
-        if not self._client:
-            raise StorageConnectionError("Cliente MinIO no inicializado")
-
-        bucket = bucket or self._bucket_name
-
-        try:
-            file_key = self._generate_filename(filename, folder)
-            file_size = len(data)
-
-            self._ensure_bucket_exists(bucket)
-
-            self._client.put_object(
-                bucket,
-                file_key,
-                io.BytesIO(data),
-                length=file_size,
-                content_type=content_type,
-            )
-
-            self._logger.info(f"✓ Bytes subidos: {bucket}/{file_key} ({file_size} bytes)")
-
-            url = self._client.presigned_get_object(bucket, file_key, expires=self.url_expiry)
-
-            return {
-                'url': url,
-                'key': file_key,
-                'bucket': bucket,
-                'size': file_size,
-                'content_type': content_type
-            }
-
-        except S3Error as e:
-            raise StorageUploadError(f"Error al subir bytes: {e}")
-
-    def delete_file(self, file_url: Optional[str] = None, key: Optional[str] = None,
-                    bucket: Optional[str] = None) -> bool:
-        """
-        Elimina un archivo de MinIO
+        Elimina una imagen de MinIO.
 
         Args:
             file_url: URL completa del archivo
-            key: Clave/path del archivo en el bucket
-            bucket: Nombre del bucket
+            key: Ruta del archivo en el bucket
 
         Returns:
             bool: True si se eliminó correctamente
 
         Note:
-            Debes proporcionar file_url O (key + bucket)
+            Proporciona file_url O key (al menos uno)
         """
         if not self._client:
-            raise StorageConnectionError("Cliente MinIO no inicializado")
-
-        bucket = bucket or self._bucket_name
+            raise StorageError("Cliente MinIO no inicializado")
 
         try:
-            # Extraer la key del URL si se proporcionó
-            if file_url:
-                # Remover query parameters (para URLs pre-firmadas)
-                clean_url = file_url.split("?")[0]
-                # Extraer bucket y key
-                parts = clean_url.split(f"/{bucket}/")
+            # Extraer key de la URL si se proporcionó
+            if file_url and not key:
+                parts = file_url.split(f"/{self._bucket_name}/")
                 if len(parts) < 2:
-                    raise StorageDeleteError(f"No se pudo extraer la key del URL: {file_url}")
-                key = parts[1]
+                    raise StorageError(f"URL inválida: {file_url}")
+                key = parts[1].split("?")[0]  # Remover query params si existen
 
             if not key:
-                raise StorageDeleteError("Debes proporcionar file_url o key")
+                raise StorageError("Debes proporcionar file_url o key")
 
-            # Eliminar el archivo
-            self._client.remove_object(bucket, key)
-            self._logger.info(f"✓ Archivo eliminado: {bucket}/{key}")
+            # Eliminar archivo
+            self._client.remove_object(self._bucket_name, key)
+            self._logger.info(f"✓ Imagen eliminada: {key}")
             return True
 
         except S3Error as e:
-            self._logger.error(f"✗ Error S3 al eliminar archivo: {e}")
-            raise StorageDeleteError(f"Error al eliminar archivo: {e}")
+            self._logger.error(f"✗ Error S3: {e}")
+            raise StorageError(f"Error al eliminar imagen: {e}")
         except Exception as e:
-            self._logger.error(f"✗ Error inesperado al eliminar archivo: {e}")
-            raise StorageDeleteError(f"Error inesperado: {e}")
+            self._logger.error(f"✗ Error inesperado: {e}")
+            raise StorageError(f"Error inesperado: {e}")
 
-    def file_exists(self, key: str, bucket: Optional[str] = None) -> bool:
-        """Verifica si un archivo existe en el bucket"""
+    def image_exists(self, key: str) -> bool:
+        """Verifica si una imagen existe en el bucket"""
         if not self._client:
-            raise StorageConnectionError("Cliente MinIO no inicializado")
-
-        bucket = bucket or self._bucket_name
+            raise StorageError("Cliente MinIO no inicializado")
 
         try:
-            self._client.stat_object(bucket, key)
+            self._client.stat_object(self._bucket_name, key)
             return True
         except S3Error:
             return False
 
-    def get_file_info(self, key: str, bucket: Optional[str] = None) -> dict:
-        """Obtiene información de un archivo"""
+    def get_image_info(self, key: str) -> dict:
+        """Obtiene información de una imagen"""
         if not self._client:
-            raise StorageConnectionError("Cliente MinIO no inicializado")
-
-        bucket = bucket or self._bucket_name
+            raise StorageError("Cliente MinIO no inicializado")
 
         try:
-            stat = self._client.stat_object(bucket, key)
+            stat = self._client.stat_object(self._bucket_name, key)
             return {
-                'key': key,
-                'bucket': bucket,
-                'size': stat.size,
-                'content_type': stat.content_type,
-                'last_modified': stat.last_modified,
-                'etag': stat.etag
+                "key": key,
+                "url": self._get_public_url(key),
+                "size": stat.size,
+                "content_type": stat.content_type,
+                "last_modified": stat.last_modified,
             }
         except S3Error as e:
-            raise StorageError(f"Error al obtener información del archivo: {e}")
+            raise StorageError(f"Error al obtener información: {e}")
 
-    def get_presigned_url(self, key: str, bucket: Optional[str] = None, expires: Optional[timedelta] = None) -> str:
-        """Genera una URL pre-firmada para un archivo existente"""
-        if not self._client:
-            raise StorageConnectionError("Cliente MinIO no inicializado")
-
-        bucket = bucket or self._bucket_name
-        expires = expires or self.url_expiry
-
-        try:
-            return self._client.presigned_get_object(bucket, key, expires=expires)
-        except S3Error as e:
-            raise StorageError(f"Error al generar URL pre-firmada: {e}")
-
-    def list_files(self, bucket: Optional[str] = None, prefix: str = "", recursive: bool = True) -> list:
-        """Lista archivos en un bucket"""
-        if not self._client:
-            raise StorageConnectionError("Cliente MinIO no inicializado")
-
-        bucket = bucket or self._bucket_name
-
-        try:
-            objects = self._client.list_objects(bucket, prefix=prefix, recursive=recursive)
-            return [
-                {
-                    'key': obj.object_name,
-                    'size': obj.size,
-                    'last_modified': obj.last_modified,
-                    'etag': obj.etag
-                }
-                for obj in objects
-            ]
-        except S3Error as e:
-            raise StorageError(f"Error al listar archivos: {e}")
+    @property
+    def bucket_name(self) -> str:
+        """Retorna el nombre del bucket"""
+        return self._bucket_name
 
 
 # Instancia global

@@ -219,3 +219,6 @@ __marimo__/
 
 # Sesiones de Flask
 flask_session/
+
+# Vite
+.vite/

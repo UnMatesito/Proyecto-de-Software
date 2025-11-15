@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+import uuid
 
 from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
@@ -6,7 +6,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from core.database import db
 from core.models import Role, User
 from core.utils import pagination
-import uuid
 
 
 def get_all_users():
@@ -32,7 +31,7 @@ def get_paginated_users(
     delete=None,
     role_id=None,
     email=None,
-    active=None
+    active=None,
 ):
     """Paginacion de usuarios ordenado por creacion
     -sorted_by ordenado asc o des
@@ -176,6 +175,7 @@ def restore_user(user_id):
 
     return True
 
+
 def block_user(user_id):
     """Bloquea un usuario"""
 
@@ -305,13 +305,12 @@ def toggle_system_admin(user_id, make_admin: bool):
 
     return True
 
+
 def get_user_history():
     """Obtiene todos los usuarios con el permiso 'site_update'"""
-    return (
-        User.query
-        .filter(User.role.has(Role.permissions.any(name="site_update")))
-        .all()
-    )
+    return User.query.filter(
+        User.role.has(Role.permissions.any(name="site_update"))
+    ).all()
 
 def add_favorite_site(user_id: int, site_id: int):
     """Agrega un sitio histórico a los favoritos del usuario."""
@@ -322,6 +321,12 @@ def add_favorite_site(user_id: int, site_id: int):
         raise ValueError(f"No existe el usuario con id {user_id}")
 
     site = get_historic_site_by_id(site_id)
+
+    if not site:
+        raise ValueError(f"No existe el sitio con id {site_id}")
+
+    if not site.is_visible or site.pending_validation:
+        raise ValueError("El sitio no está publicado o no es visible")
 
     try:
         user.add_favorite(site)
@@ -352,7 +357,10 @@ def remove_favorite_site(user_id: int, site_id: int):
 
     return True
 
-def get_user_favorites(user_id: int, page: int = 1, per_page: int = 20, order_by="id", sorted_by="asc"):
+
+def get_user_favorites(
+    user_id: int, page: int = 1, per_page: int = 20, order_by="id", sorted_by="asc"
+):
     """Devuelve la lista paginada de sitios favoritos de un usuario."""
     from core.models import HistoricSite, user_favorite_site
 
@@ -361,11 +369,9 @@ def get_user_favorites(user_id: int, page: int = 1, per_page: int = 20, order_by
         raise ValueError(f"No existe el usuario con id {user_id}")
 
     # Generar query base desde la relación del usuario
-    query = (
-        HistoricSite.query
-        .join(user_favorite_site, HistoricSite.id == user_favorite_site.c.historic_site_id)
-        .filter(user_favorite_site.c.user_id == user.id)
-    )
+    query = HistoricSite.query.join(
+        user_favorite_site, HistoricSite.id == user_favorite_site.c.historic_site_id
+    ).filter(user_favorite_site.c.user_id == user.id)
 
     return pagination.paginate_query(
         query,
@@ -374,12 +380,14 @@ def get_user_favorites(user_id: int, page: int = 1, per_page: int = 20, order_by
         order_by=order_by,
         sorted_by=sorted_by,
     )
+
+
 def find_or_create_google_user(user_info: dict) -> User:
     """
     Busca un usuario por email. Si no existe, lo crea usando la info de Google.
     'user_info' es el diccionario devuelto por Google (ej. userinfo endpoint).
     """
-    email = user_info.get('email')
+    email = user_info.get("email")
     if not email:
         raise ValueError("No se recibió email válido desde Google.")
 
@@ -388,41 +396,53 @@ def find_or_create_google_user(user_info: dict) -> User:
     if user:
         if not user.is_active():
             raise ValueError("El usuario existe pero está inactivo o bloqueado.")
-        
-        user.avatar = user_info.get('picture') 
-        user.first_name = user_info.get('given_name', user.first_name)
-        user.last_name = user_info.get('family_name', user.last_name)
-        
+
+        picture = user_info.get("picture")
+        if not picture:
+            picture = f"https://ui-avatars.com/api/?name={user.first_name}"
+
+        user.avatar = picture
+        user.first_name = user_info.get("given_name", user.first_name)
+        user.last_name = user_info.get("family_name", user.last_name)
+
         try:
             db.session.commit()
         except SQLAlchemyError as e:
             db.session.rollback()
             print(f"Error al actualizar usuario de Google {email}: {e}")
-            
+
         return user
-    
+
     else:
         public_role = Role.query.filter_by(name="Usuario público").first()
         if not public_role:
-            raise RuntimeError("El rol 'Usuario público' no se encuentra en la base de datos.")
+            raise RuntimeError(
+                "El rol 'Usuario público' no se encuentra en la base de datos."
+            )
 
-        first_name = user_info.get('given_name', '')
-        last_name = user_info.get('family_name', '')
+        first_name = user_info.get("given_name", "")
+        last_name = user_info.get("family_name", "")
 
-        if not first_name: first_name = email.split('@')[0]
-        if not last_name: last_name = "(Usuario Google)" 
+        if not first_name:
+            first_name = email.split("@")[0]
+        if not last_name:
+            last_name = "(Usuario Google)"
 
         random_password = str(uuid.uuid4())
+
+        picture = user_info.get("picture")
+        if not picture:
+            picture = f"https://ui-avatars.com/api/?name={user.first_name}"
 
         user_data = {
             "email": email,
             "first_name": first_name,
             "last_name": last_name,
             "role_id": public_role.id,
-            "system_admin": False, 
+            "system_admin": False,
             "blocked": False,
             "password": random_password,
-            "avatar": user_info.get('picture'),
+            "avatar": picture,
         }
 
         try:

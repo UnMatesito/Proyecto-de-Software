@@ -26,18 +26,60 @@ def run(env="production"):
     seed_event_types()
 
     # Solo si estamos en development
-    if env == "development":
-        seed_aditional_editors()
-        seed_aditional_admins()
-        seed_aditional_moderators()
-        seed_historic_sites()
-        seed_aditional_historic_sites()
-        seed_aditional_validated_historic_sites()
-        seed_site_tags()
-        seed_favorites()
-        seed_reviews()
+    seed_aditional_public_users()
+    seed_aditional_editors()
+    seed_aditional_admins()
+    seed_aditional_moderators()
+    seed_historic_sites()
+    seed_aditional_historic_sites()
+    seed_aditional_validated_historic_sites()
+    seed_site_tags()
+    seed_favorites()
+    seed_reviews()
+    seed_pending_reviews()
+    seed_rejected_reviews()
+    seed_site_images_from_seed_folder()
 
     print("Seed finalizado")
+
+
+def _recalculate_site_ratings(site_ids):
+    """Recalcula el promedio y la cantidad de reseñas aprobadas para los sitios dados."""
+    if not site_ids:
+        return
+
+    from sqlalchemy import func
+
+    from core.models import HistoricSite, Review
+    from core.models.review import ReviewStatus
+
+    aggregates = (
+        db.session.query(
+            Review.historic_site_id,
+            func.count(Review.id),
+            func.avg(Review.rating),
+        )
+        .filter(
+            Review.historic_site_id.in_(site_ids),
+            Review.status == ReviewStatus.APROBADA,
+        )
+        .group_by(Review.historic_site_id)
+        .all()
+    )
+
+    aggregate_map = {
+        site_id: (count, float(avg) if avg is not None else 0.0)
+        for site_id, count, avg in aggregates
+    }
+
+    for site in (
+        db.session.query(HistoricSite).filter(HistoricSite.id.in_(site_ids)).all()
+    ):
+        count, average = aggregate_map.get(site.id, (0, 0.0))
+        site.rating_count = count
+        site.average_rating = average
+
+    db.session.commit()
 
 
 def seed_permissions():
@@ -155,7 +197,7 @@ def seed_roles():
     all_permissions = Permission.query.all()
 
     roles_permissions = {
-        "Moderador" : [
+        "Moderador": [
             # Reseñas
             "review_index",
             "review_show",
@@ -264,9 +306,9 @@ def seed_event_types():
         "Edición",
         "Eliminación",
         "Restauración",
-        "Cambio de estado",  # cambio de visibilidad
+        "Cambio de estado",  # Cambio de visibilidad
         "Cambio de tags",
-        # "Cambio de imágenes",  para etapa 2
+        "Cambio de imágenes",
     ]
 
     for event_name in event_types:
@@ -305,6 +347,7 @@ def seed_system_admin():
 
     db.session.add(admin_user)
     db.session.commit()
+
 
 def seed_feature_flags():
     """Crea los feature flags iniciales del sistema.
@@ -424,8 +467,11 @@ def seed_provinces_and_cities():
         ("Santa Cruz", ["Río Gallegos", "Caleta Olivia"]),
         ("Santa Fe", ["Santa Fe", "Rosario"]),
         ("Santiago del Estero", ["Santiago del Estero", "La Banda"]),
-        ("Tierra del Fuego, Antártida e Islas del Atlántico Sur", ["Ushuaia", "Río Grande"]),
-        ("Tucumán", ["San Miguel de Tucumán", "Tafí Viejo"])
+        (
+            "Tierra del Fuego, Antártida e Islas del Atlántico Sur",
+            ["Ushuaia", "Río Grande"],
+        ),
+        ("Tucumán", ["San Miguel de Tucumán", "Tafí Viejo"]),
     ]
 
     # Crear todo en una sola transacción
@@ -433,13 +479,13 @@ def seed_provinces_and_cities():
         province = Province(name=province_name)
         db.session.add(province)
         db.session.flush()  # Para obtener el ID sin hacer commit
-        
+
         for city_name in city_names:
             city = City(name=city_name, province=province)
             db.session.add(city)
 
     db.session.commit()
-    
+
 
 def seed_consevation_states():
     """Crea los estados de conservación posibles para los sitios históricos"""
@@ -461,7 +507,7 @@ def seed_categories():
     """Crea las categorías iniciales de los sitios históricos"""
     from core.models import Category
 
-    print("Cargando categorias...")
+    print("Creando categorias...")
 
     categories = [
         Category(name="Arquitectura"),
@@ -749,36 +795,80 @@ def seed_historic_sites():
 
 
 def seed_site_tags():
-    """Asocia sitios históricos con tags de clasificación"""
+    """Asigna entre una y cinco tags aleatorias a cada sitio histórico."""
+
+    from random import randint, sample
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
-    from core.services import historic_site_service as HistoricService
-    from core.services import tag_service as TagService
+    from core.models import HistoricSite, Tag
 
-    print("Agregando relaciones Sites-Tags")
+    print("Asignando tags aleatorias a sitios historicos...")
 
-    # Deshabilitar registros de auditoría temporalmente
+    tags = Tag.query.all()
+    sites = HistoricSite.query.all()
+
+    if not sites:
+        print("No hay sitios historicos para asignar tags.")
+        return
+
+    if not tags:
+        print("No hay tags disponibles para asignar.")
+        return
+
+    max_tags = min(5, len(tags))
+
     disable_audit_listeners()
 
-    cabildo = HistoricService.get_historic_site_by_id(1)
-    san_ignacio = HistoricService.get_historic_site_by_id(2)
+    try:
+        for site in sites:
+            site.tags.clear()
+            count = randint(1, max_tags)
+            selected_tags = sample(tags, count)
+            site.tags.extend(selected_tags)
 
-    tag1 = TagService.get_tag_by_id(1)
-    tag2 = TagService.get_tag_by_id(2)
+        db.session.commit()
+    finally:
+        enable_audit_listeners()
 
-    cabildo.tags.append(tag1)
-    san_ignacio.tags.extend([tag1, tag2])
 
+def seed_aditional_public_users():
+    """Crea usuarios públicos adicionales (portal)"""
+    import uuid
+
+    from faker import Faker
+
+    from core.models import User
+    from core.services import role_service as RoleService
+
+    print("Creando usuarios públicos adicionales...")
+    fake = Faker("es_AR")
+
+    role_public = RoleService.get_role_by_name("Usuario público")
+
+    usuarios = [
+        User(
+            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            password="password123",
+            role_id=role_public.id,
+            system_admin=False,
+        )
+        for _ in range(100)
+    ]
+
+    db.session.add_all(usuarios)
     db.session.commit()
 
-    # Rehabilitar listeners de auditoría
-    enable_audit_listeners()
 
 def seed_aditional_editors():
     """Crea usuarios editores adicionales"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
-    import uuid
 
     print("Creando usuarios editores adicionales...")
     fake = Faker("es_AR")
@@ -803,10 +893,12 @@ def seed_aditional_editors():
 
 def seed_aditional_admins():
     """Crea usuarios administradores adicionales (no system admin)"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
-    import uuid
 
     print("Creando usuarios administradores adicionales...")
     fake = Faker("es_AR")
@@ -831,10 +923,12 @@ def seed_aditional_admins():
 
 def seed_aditional_moderators():
     """Crea usuarios moderadores adicionales"""
+    import uuid
+
     from faker import Faker
+
     from core.models import User
     from core.services import role_service as RoleService
-    import uuid
 
     print("Creando usuarios moderadores adicionales...")
     fake = Faker("es_AR")
@@ -856,18 +950,20 @@ def seed_aditional_moderators():
     db.session.add_all(usuarios)
     db.session.commit()
 
+
 def seed_aditional_historic_sites():
     """
     Crea sitios históricos adicionales con Faker para desarrollo.
     Genera ubicaciones aleatorias dentro de provincias existentes.
     """
+    from datetime import datetime, timezone
+    from random import choice, randint, uniform
+
     from faker import Faker
     from geoalchemy2.elements import WKTElement
-    from random import choice, randint
-    from datetime import datetime, timezone
-    from core.models import HistoricSite, City, Category, ConservationState, User
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
-    from random import uniform
+    from core.models import Category, City, ConservationState, HistoricSite, User
 
     print("Creando sitios históricos adicionales con Faker...")
 
@@ -884,7 +980,7 @@ def seed_aditional_historic_sites():
         return
 
     sitios = []
-    for _ in range(20):
+    for _ in range(100):
         city = choice(cities)
         category = choice(categories)
         state = choice(states)
@@ -921,12 +1017,14 @@ def seed_aditional_validated_historic_sites():
     Crea sitios históricos adicionales validados, con Faker para desarrollo.
     Genera ubicaciones aleatorias dentro de provincias existentes.
     """
+    from datetime import datetime, timezone
+    from random import choice, randint, uniform
+
     from faker import Faker
     from geoalchemy2.elements import WKTElement
-    from random import choice, randint, uniform
-    from datetime import datetime, timezone
-    from core.models import HistoricSite, City, Category, ConservationState, User
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import Category, City, ConservationState, HistoricSite, User
 
     print("Creando sitios históricos validados con Faker...")
 
@@ -943,7 +1041,7 @@ def seed_aditional_validated_historic_sites():
         return
 
     sitios = []
-    for _ in range(20):
+    for _ in range(100):
         city = choice(cities)
         category = choice(categories)
         state = choice(states)
@@ -973,81 +1071,82 @@ def seed_aditional_validated_historic_sites():
     db.session.add_all(sitios)
     db.session.commit()
     enable_audit_listeners()
+
+
 def seed_reviews():
-    """Genera reseñas (reviews) aleatorias para los sitios históricos."""
-    from faker import Faker
+    """Genera entre 1 y 10 reseñas aprobadas para cada sitio histórico publicado."""
     import random
-    from core.models import Review, User, HistoricSite
-    from core.models.review import ReviewStatus
-    from core.audit import disable_audit_listeners, enable_audit_listeners
     from datetime import datetime, timezone
-    from core.services import role_service as RoleService
 
+    from faker import Faker
 
-    print("Generando reseñas aleatorias...")
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import Review, User
+    from core.models.review import ReviewStatus
+    from core.services.historic_site_service import get_published_historic_sites
+
+    print("Generando reseñas aprobadas para sitios publicados...")
 
     fake = Faker("es_AR")
 
-    # Deshabilitar auditoría temporalmente
+    sites = get_published_historic_sites()
+    if not sites:
+        print("No hay sitios publicados para generar reseñas.")
+        return
+
+    public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
+    if not public_users:
+        print("No hay usuarios públicos para generar reseñas.")
+        return
+
     disable_audit_listeners()
 
-    # Obtenemos usuarios públicos (no administradores)
-    public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
-    sites = HistoricSite.query.all()
-
     reviews = []
-    used_pairs = set()  # para evitar duplicar (user_id, site_id)
+    try:
+        for site in sites:
+            max_possible = min(10, len(public_users))
 
-    for user in random.sample(public_users, min(len(public_users), 30)):  # hasta 30 usuarios dejan reseñas
-        reviewed_sites = random.sample(sites, random.randint(2, 5))  # cada uno deja entre 2 y 5 reseñas
-        for site in reviewed_sites:
-            pair = (user.id, site.id)
-            if pair in used_pairs:
-                continue  # ya reseñó ese sitio
+            if max_possible < 10:
+                review_count = max_possible
+            else:
+                review_count = random.randint(10, max_possible)
 
-            used_pairs.add(pair)
+            reviewers = random.sample(public_users, review_count)
 
-            status = random.choices(
-                [ReviewStatus.PENDIENTE, ReviewStatus.APROBADA, ReviewStatus.RECHAZADA],
-                weights=[0.2, 0.6, 0.2],
-                k=1
-            )[0]
+            for user in reviewers:
+                timestamp = fake.date_time_between(
+                    start_date="-2y", end_date="now", tzinfo=timezone.utc
+                )
+                reviews.append(
+                    Review(
+                        rating=random.randint(1, 5),
+                        content=fake.paragraph(nb_sentences=random.randint(2, 4)),
+                        status=ReviewStatus.APROBADA,
+                        user_id=user.id,
+                        historic_site_id=site.id,
+                        created_at=timestamp,
+                        updated_at=timestamp,
+                    )
+                )
 
-            rejected_reason = None
-            if status == ReviewStatus.RECHAZADA:
-                rejected_reason = random.choice([
-                    "Lenguaje inapropiado",
-                    "Contenido irrelevante",
-                    "No cumple las normas del sitio"
-                ])
+        if not reviews:
+            print("No se generaron reseñas para los sitios publicados.")
+            return
 
-            review = Review(
-                rating=random.randint(1, 5),
-                content=fake.paragraph(nb_sentences=random.randint(2, 5)),
-                status=status,
-                rejected_reason=rejected_reason,
-                user_id=user.id,
-                historic_site_id=site.id,
-                created_at=datetime.now(timezone.utc),
-                updated_at=datetime.now(timezone.utc),
-            )
+        db.session.add_all(reviews)
+        db.session.commit()
 
-            reviews.append(review)
-
-    db.session.add_all(reviews)
-    db.session.commit()
-
-    enable_audit_listeners()
-    print(f"✅ {len(reviews)} reseñas generadas correctamente.")
-
-
+        _recalculate_site_ratings([site.id for site in sites])
+    finally:
+        enable_audit_listeners()
 
 
 def seed_favorites():
     """Asocia aleatoriamente sitios históricos a usuarios públicos como favoritos."""
-    from random import sample, randint
-    from core.models import User, HistoricSite
+    from random import randint, sample
+
     from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import HistoricSite, User
 
     print("Agregando favoritos de usuarios...")
 
@@ -1074,11 +1173,225 @@ def seed_favorites():
                 count += 1
 
     from core.database import db
+
     db.session.commit()
 
     # Rehabilitar listeners de auditoría
     enable_audit_listeners()
 
 
+def seed_site_images_from_seed_folder():
+    """Asigna tres imágenes aleatorias desde la carpeta de seeds a cada sitio histórico."""
+
+    from contextlib import ExitStack
+    from pathlib import Path
+    from random import sample
+
+    from werkzeug.datastructures import FileStorage
+
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import HistoricSite
+    from core.services import site_image_service
+
+    print("Asignando imagenes aleatorias a sitios historicos...")
+
+    disable_audit_listeners()
+
+    try:
+        images_folder = (
+            Path(__file__).resolve().parents[2]
+            / "static"
+            / "img"
+            / "images for seeding"
+        )
+
+        if not images_folder.exists():
+            print(
+                "No se encontro la carpeta de imagenes para seeds en 'static/img/images for seeding'."
+            )
+            return
+
+        image_files = [path for path in images_folder.iterdir() if path.is_file()]
+
+        if not image_files:
+            print("No hay imagenes disponibles para asignar a los sitios historicos.")
+            return
+
+        sites = HistoricSite.query.all()
+
+        if not sites:
+            print("No hay sitios historicos para asignar imagenes.")
+            return
+
+        image_count = min(3, len(image_files))
+
+        for site in sites:
+            site_image_service.delete_all_site_images(site.id)
+
+            selected_images = sample(image_files, image_count)
+
+            with ExitStack() as stack:
+                files = []
+                titles = []
+
+                for index, image_path in enumerate(selected_images):
+                    file_handle = stack.enter_context(image_path.open("rb"))
+                    file_storage = FileStorage(
+                        stream=file_handle, filename=image_path.name
+                    )
+                    file_storage.stream.seek(0)
+
+                    files.append(file_storage)
+                    titles.append(f"{site.name} - Imagen {index + 1}")
+
+                site_image_service.create_multiple_images(
+                    historic_site_id=site.id,
+                    files=files,
+                    set_first_as_cover=True,
+                    titles=titles,
+                )
+    finally:
+        enable_audit_listeners()
 
 
+def seed_pending_reviews():
+    """Genera cinco reseñas pendientes para 50 sitios históricos aleatorios."""
+    import random
+    from datetime import datetime, timezone
+
+    from faker import Faker
+
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import Review, User
+    from core.models.review import ReviewStatus
+    from core.services.historic_site_service import get_published_historic_sites
+
+    print("Generando reseñas pendientes para moderación...")
+
+    fake = Faker("es_AR")
+
+    sites = get_published_historic_sites()
+    if not sites:
+        print("No hay sitios publicados para generar reseñas pendientes.")
+        return
+
+    public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
+    if not public_users:
+        print("No hay usuarios públicos para generar reseñas pendientes.")
+        return
+
+    selected_sites = random.sample(sites, min(50, len(sites)))
+
+    disable_audit_listeners()
+
+    pending_reviews = []
+    try:
+        for site in selected_sites:
+            existing_user_ids = {review.user_id for review in site.reviews}
+            available_users = [
+                user for user in public_users if user.id not in existing_user_ids
+            ]
+
+            if not available_users:
+                continue
+
+            reviewers = random.sample(available_users, min(5, len(available_users)))
+
+            for user in reviewers:
+                timestamp = fake.date_time_between(
+                    start_date="-6m", end_date="now", tzinfo=timezone.utc
+                )
+                pending_reviews.append(
+                    Review(
+                        rating=random.randint(1, 5),
+                        content=fake.paragraph(nb_sentences=random.randint(2, 4)),
+                        status=ReviewStatus.PENDIENTE,
+                        user_id=user.id,
+                        historic_site_id=site.id,
+                        created_at=timestamp,
+                        updated_at=timestamp,
+                    )
+                )
+
+        if not pending_reviews:
+            print("No se generaron reseñas pendientes.")
+            return
+
+        db.session.add_all(pending_reviews)
+        db.session.commit()
+    finally:
+        enable_audit_listeners()
+
+
+def seed_rejected_reviews():
+    """Genera cincuenta reseñas rechazadas en sitios publicados al azar."""
+    import random
+    from datetime import datetime, timezone
+
+    from faker import Faker
+
+    from core.audit import disable_audit_listeners, enable_audit_listeners
+    from core.models import Review, User
+    from core.models.review import ReviewStatus
+    from core.services.historic_site_service import get_published_historic_sites
+
+    print("Generando reseñas rechazadas para sitios publicados...")
+
+    fake = Faker("es_AR")
+
+    sites = get_published_historic_sites()
+    if not sites:
+        print("No hay sitios publicados para generar reseñas rechazadas.")
+        return
+
+    public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
+    if not public_users:
+        print("No hay usuarios públicos para generar reseñas rechazadas.")
+        return
+
+    # Generamos la mayor cantidad posible de combinaciones únicas sitio/usuario
+    site_user_pairs = []
+    for site in sites:
+        existing_user_ids = {review.user_id for review in site.reviews}
+        available_users = [
+            user for user in public_users if user.id not in existing_user_ids
+        ]
+        site_user_pairs.extend((site, user) for user in available_users)
+
+    if not site_user_pairs:
+        print("No hay combinaciones disponibles para reseñas rechazadas.")
+        return
+
+    total_reviews = 50
+    selected_pairs = random.sample(
+        site_user_pairs, min(total_reviews, len(site_user_pairs))
+    )
+
+    disable_audit_listeners()
+
+    rejected_reviews = []
+    try:
+        for site, user in selected_pairs:
+            timestamp = fake.date_time_between(
+                start_date="-1y", end_date="now", tzinfo=timezone.utc
+            )
+            rejected_reviews.append(
+                Review(
+                    rating=random.randint(1, 5),
+                    content=fake.paragraph(nb_sentences=random.randint(2, 4)),
+                    status=ReviewStatus.RECHAZADA,
+                    user_id=user.id,
+                    historic_site_id=site.id,
+                    created_at=timestamp,
+                    updated_at=timestamp,
+                )
+            )
+
+        if not rejected_reviews:
+            print("No se generaron reseñas rechazadas.")
+            return
+
+        db.session.add_all(rejected_reviews)
+        db.session.commit()
+    finally:
+        enable_audit_listeners()

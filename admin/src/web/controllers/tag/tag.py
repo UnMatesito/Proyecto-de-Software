@@ -5,8 +5,9 @@ from core.services.tag_service import (
     delete_tag,
     get_paginated_tags,
     get_tag_by_id,
+    get_tag_by_name,
+    get_total_tags_count,
     update_tag,
-    get_tag_by_name
 )
 from web.forms.tag import CreateTagForm, EditTagForm
 from web.utils.auth import login_required, permission_required
@@ -37,6 +38,7 @@ def list_paginated_tags():
         pagination = get_paginated_tags(
             page=page, order_by=order_by, sorted_by=sorted_by, name=name
         )
+        total_tags = get_total_tags_count()
         columns = [
             {"key": "name", "label": "Nombre"},
             {"key": "slug", "label": "Slug"},
@@ -50,6 +52,7 @@ def list_paginated_tags():
             sorted_by=sorted_by,
             pagination=pagination,
             columns=columns,
+            total_tags=total_tags,
         )
     except Exception as e:
         flash(f"Error al cargar tags: {str(e)}", "error")

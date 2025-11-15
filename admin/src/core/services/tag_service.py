@@ -21,6 +21,12 @@ def get_all_tags():
     return Tag.query.all()
 
 
+def get_total_tags_count():
+    """Obtiene el conteo total de tags."""
+
+    return Tag.query.count()
+
+
 def get_tag_by_id(tag_id):
     """Obtiene un tag por su id."""
 
@@ -43,21 +49,23 @@ def tag_exist(tag_name):
     """Retorna verdadero o falso si un tag existe por su nombre."""
 
     return (
-            db.session.query(Tag.id)
-            .filter(func.lower(Tag.name) == func.lower(tag_name))
-            .first()
-            is not None
+        db.session.query(Tag.id)
+        .filter(func.lower(Tag.name) == func.lower(tag_name))
+        .first()
+        is not None
     )
+
 
 def slug_exist(slug):
     """Retorna verdadero o falso si un tag existe por su slug."""
 
     return (
-            db.session.query(Tag.id)
-            .filter(func.lower(Tag.slug) == func.lower(slug))
-            .first()
-            is not None
+        db.session.query(Tag.id)
+        .filter(func.lower(Tag.slug) == func.lower(slug))
+        .first()
+        is not None
     )
+
 
 def validate_tag_name(tag_name):
     """Valida el nombre de un posible futuro tag."""
@@ -131,7 +139,9 @@ def get_paginated_tags(page=1, order_by="name", sorted_by="asc", name=None):
     if order_by == "name":
         query = query.order_by(Tag.name.asc() if sorted_by == "asc" else desc(Tag.name))
     elif order_by == "created_at":
-        query = query.order_by(Tag.created_at.asc() if sorted_by == "asc" else desc(Tag.created_at))
+        query = query.order_by(
+            Tag.created_at.asc() if sorted_by == "asc" else desc(Tag.created_at)
+        )
 
     return pagination.paginate_query(
         query, page=page, order_by=order_by, sorted_by=sorted_by
@@ -145,7 +155,9 @@ def delete_tag(tag_id):
     if tag.is_deleted():
         raise ValueError("El tag se encuentra borrado")
     if tag.has_sites():
-        raise ValueError("No se puede eliminar el tag porque está asociado a uno o más sitios históricos.")
+        raise ValueError(
+            "No se puede eliminar el tag porque está asociado a uno o más sitios históricos."
+        )
     tag.deleted_at = datetime.now(timezone.utc)
     db.session.commit()
     return tag
