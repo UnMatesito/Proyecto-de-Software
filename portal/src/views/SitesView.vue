@@ -23,9 +23,7 @@
       :imagen="site.images[0].url"
       :alt-imagen="site.images[0].alt"
       :id="site.id"
-      :rating="site.average_rating"
-      :is-authenticated="authStore.isAuthenticated" 
-      @toggle-favorite="catchFavEmit"/>
+      :rating="site.average_rating"/>
       <SkeletonCard v-if="!sites" v-for="n in 24" />
     </section>
 
@@ -133,8 +131,4 @@
     fetchSites()
   })
 
-  //Captura el emit envido por la card que combierte a un sitios en favorito}
-  const catchFavEmit = (site_id) => {
-    console.log(site_id)
-  }
 </script>
