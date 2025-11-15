@@ -29,7 +29,7 @@ def _reviews_feature_blocked_response():
                     }
                 }
             ),
-            503,
+            403,
         )
 
     return None
