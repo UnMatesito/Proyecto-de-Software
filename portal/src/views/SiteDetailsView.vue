@@ -125,28 +125,43 @@
         <p v-else class="text-sm text-gray-500">Sin coordenadas para mostrar el mapa.</p>
       </div>
     </div>
+      <!-- SI reviewsEnabled ES TRUE → mostrar reseñas -->
+      <section v-if="reviewsEnabled" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
+        <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto" :link="`/sites/${detalle.id}/review`"/>
+        <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
 
-    <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
-      <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
-      <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto"/>
-      <Review
-        v-for="r in reviews"
-        :key="r.id"
-        :user_name="r.user_name"
-        :user_email="r.user_email"
-        :text="r.comment"
-        :created_at="r.inserted_at"
-        :rating="r.rating"
-      />
-      <p
-        v-if="canLoadMore"
-        @click="fetchReviews"
-        class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out"
+        <Review
+          v-for="r in reviews"
+          :key="r.id"
+          :user_name="r.user_name"
+          :user_email="r.user_email"
+          :text="r.comment"
+          :created_at="r.inserted_at"
+          :rating="r.rating"
+        />
+
+        <Pagination
+          :page="reviewsPage"
+          :total-pages="reviewsTotalPages"
+          :page-size="reviewsPerPage"
+          :page-size-options="[10, 25, 50]"
+          @page-change="handlePageChange"
+          @page-size-change="handlePageSizeChange"
+        />
+      </section>
+
+
+      <!-- SI reviewsEnabled ES FALSE → mostrar mensaje alternativo -->
+      <section
+        v-else
+        id="reviews"
+        class="w-full max-w-[1200px] flex flex-col gap-3 mt-3"
       >
-        Ver más reseñas...
-      </p>
-      <SkeletonReview v-if="reviews.length == 0 && page == 1" />
-    </section>
+        <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
+        <p class="text-gray-600 text-sm">
+          Las reseñas están deshabilitadas temporalmente.
+        </p>
+      </section>
   </div>
 </template>
 
@@ -164,7 +179,8 @@ import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useFavoritesStore } from '@/stores/favorites.js'
 import MapDetail from '@/components/MapDetail.vue'
-import SkeletonReview from '@/components/SkeletonReview.vue'
+import Pagination from "@/components/Pagination.vue"
+
 
 const prevURL = ref('')
 const route = useRoute()
@@ -174,6 +190,16 @@ const shortDescription = ref('')
 const reviews = ref([])
 const page = ref(1)
 const activeIndex = ref(0)
+
+const reviewsPage = ref(1)
+const reviewsPerPage = ref(10)
+const reviewsTotal = ref(0)        
+const reviewsTotalPages = computed(() =>
+  Math.ceil(reviewsTotal.value / reviewsPerPage.value)
+)
+const reviewsLoading = ref(false)
+
+const reviewsEnabled = ref(false)
 
 prevURL.value = localStorage.prevURL || '/sites'
 const authStore = useAuthStore()
@@ -213,15 +239,38 @@ const fetchDetalleSitio = async () => {
   }
 }
 
-const fetchReviews = async () => {
+const fetchReviews = async (page = 1) => {
+  reviewsLoading.value = true
+
   try {
-    const resp = await api.get(`${route.path}/reviews`, { params: { page: page.value } })
-    reviews.value = [...reviews.value, ...(resp.data.data || [])]
-    page.value++
+    const resp = await api.get(`${route.path}/reviews`, {
+      params: {
+        page,
+        per_page: reviewsPerPage.value
+      }
+    })
+
+    reviews.value = resp.data.data
+    reviewsPage.value = resp.data.meta.page
+    reviewsTotal.value = resp.data.meta.total
+
   } catch (error) {
-    console.error('Error al cargar reseñas:', error)
+    console.error("Error al cargar reseñas:", error)
+  } finally {
+    reviewsLoading.value = false
   }
 }
+
+
+const fetchFeatureFlags = async () => {
+  try {
+    const { data } = await api.get("/feature-flags/reviews_enabled")
+    reviewsEnabled.value = data.is_enabled   
+  } catch (error) {
+    console.error("Error cargando feature flags:", error)
+  }
+}
+
 
 const toggleFavorite = async () => {
   if (!detalle.value.id) return
@@ -235,6 +284,16 @@ const toggleFavorite = async () => {
 watch(images, () => {
   activeIndex.value = 0
 }, { immediate: true })
+
+const handlePageChange = (newPage) => {
+  fetchReviews(newPage)
+}
+
+const handlePageSizeChange = (newSize) => {
+  reviewsPerPage.value = newSize
+  fetchReviews(1)
+}
+
 
 const prev = () => {
   if (!hasImages.value) return
@@ -250,7 +309,10 @@ const setActive = (idx) => { activeIndex.value = idx }
 
 onMounted(async () => {
   await fetchDetalleSitio()
-  await fetchReviews()
+  await fetchFeatureFlags()   
+  if (reviewsEnabled.value) {
+    await fetchReviews()
+  }
   if (isAuthenticated.value) {
     await favoritesStore.fetchFavorites()
   }
