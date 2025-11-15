@@ -81,6 +81,8 @@ from .review_service import (
     get_review_by_id,
     get_user_reviews,
     reject_review,
+    update_review,
+    get_site_reviews
 )
 
 # Role services
@@ -256,6 +258,8 @@ __all__ = [
     "get_user_reviews",
     "reject_review",
     "get_review_by_id",
+    "update_review",
+    "get_site_reviews",
     # SiteImage services
     "create_site_image",
     "create_multiple_images",

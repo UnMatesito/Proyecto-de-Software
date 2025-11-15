@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from core.services.historic_site_service import get_all_historic_site
 from core.services.review_service import (
@@ -17,11 +17,11 @@ review_bp = Blueprint("reviews", __name__, url_prefix="/reviews")
 @login_required
 @permission_required("review_index")
 def index():
-    """Lista las reseñas y opciones"""
+    """Lista las reseñas con filtros y paginación"""
     try:
         # Parámetros de paginación y orden
         order_by = request.args.get("order_by", "created_at")
-        sorted_by = request.args.get("sorted_by", "asc")
+        sorted_by = request.args.get("sorted_by", "desc")  # Más recientes primero por defecto
         page = request.args.get("page", 1, type=int)
 
         # Filtro de estado
@@ -77,7 +77,7 @@ def index():
         columns = [
             {"key": "id", "label": "ID"},
             {"key": "site_name", "label": "Sitio", "render": "site_name"},
-            {"key": "rating", "label": "Calificacion", "render": "rating"},
+            {"key": "rating", "label": "Calificación", "render": "rating"},
             {"key": "status", "label": "Estado", "render": "status"},
             {"key": "user_name", "label": "Usuario", "render": "review_user_name"},
             {"key": "created_at", "label": "Creado", "render": "date"},
@@ -96,6 +96,16 @@ def index():
             sites=sites,
             order_by=order_by,
             sorted_by=sorted_by,
+            # Mantener los filtros en el template para repoblar el formulario
+            current_filters={
+                'status': status,
+                'site_id': site_id,
+                'rating_min': rating_min,
+                'rating_max': rating_max,
+                'date_from': date_from,
+                'date_to': date_to,
+                'search_email': search_email,
+            }
         )
     except Exception as e:
         flash(f"Error al cargar reseñas: {str(e)}", "error")
@@ -106,7 +116,7 @@ def index():
 @login_required
 @permission_required("review_show")
 def detail(review_id):
-    """Informacion de una reseña"""
+    """Muestra los detalles de una reseña"""
     try:
         review = get_review_by_id(review_id)
         if not review:
@@ -122,33 +132,31 @@ def detail(review_id):
 @login_required
 @permission_required("review_approve")
 def approve(review_id):
-    """Aprueba una reseña"""
+    """
+    Aprueba una reseña.
+    El event listener actualiza automáticamente el rating del sitio histórico.
+    """
     try:
-        approve_review(review_id)
-        flash("Reseña aprobada", "success")
+        review = approve_review(review_id)
+
+        flash(
+            f"Reseña aprobada exitosamente. "
+            f"Rating de '{review.historic_site.name}': "
+            f"{review.historic_site.average_rating:.1f} "
+            f"({review.historic_site.rating_count} reseñas)",
+            "success"
+        )
+
     except ValueError as e:
+        # Error de validación (reseña no existe, ya aprobada, etc.)
         flash(str(e), "warning")
     except RuntimeError as e:
-        flash(str(e), "error")
+        # Error en la base de datos
+        flash(f"Error al aprobar la reseña: {str(e)}", "error")
     except Exception as e:
+        # Error inesperado
         flash(f"Error inesperado: {str(e)}", "error")
-    return redirect(url_for("reviews.index"))
 
-
-@review_bp.post("/<int:review_id>/delete")
-@login_required
-@permission_required("review_destroy")
-def delete(review_id):
-    """Elimina una reseña"""
-    try:
-        delete_review(review_id)
-        flash("Reseña eliminada", "success")
-    except ValueError as e:
-        flash(str(e), "warning")
-    except RuntimeError as e:
-        flash(str(e), "error")
-    except Exception as e:
-        flash(f"Error inesperado: {str(e)}", "error")
     return redirect(url_for("reviews.index"))
 
 
@@ -156,18 +164,73 @@ def delete(review_id):
 @login_required
 @permission_required("review_reject")
 def reject(review_id):
-    """Rechaza una review"""
+    """
+    Rechaza una reseña con motivo.
+    Si estaba aprobada, el event listener actualiza el rating del sitio.
+    """
     reason = request.form.get("reason", "").strip()
+
     if not reason:
         flash("Debe ingresar un motivo para el rechazo.", "error")
-        return redirect(url_for("reviews.index"))
+        return redirect(url_for("reviews.detail", review_id=review_id))
+
+    if len(reason) < 5:
+        flash("El motivo de rechazo debe tener al menos 5 caracteres.", "error")
+        return redirect(url_for("reviews.detail", review_id=review_id))
+
     try:
-        reject_review_serv(review_id=review_id, reason=reason)
-        flash("La reseña fue rechazada correctamente.", "success")
+        review = reject_review_serv(review_id=review_id, reason=reason)
+
+        flash(
+            f"Reseña rechazada correctamente. Motivo: {reason[:50]}...",
+            "success"
+        )
+
     except ValueError as e:
         flash(str(e), "warning")
     except RuntimeError as e:
-        flash(str(e), "error")
+        flash(f"Error al rechazar la reseña: {str(e)}", "error")
     except Exception as e:
         flash(f"Error inesperado: {str(e)}", "error")
+
+    return redirect(url_for("reviews.index"))
+
+
+@review_bp.post("/<int:review_id>/delete")
+@login_required
+@permission_required("review_destroy")
+def delete(review_id):
+    """
+    Elimina definitivamente una reseña.
+    Si estaba aprobada, el event listener actualiza el rating del sitio.
+    """
+    try:
+        # Obtener info antes de eliminar (para el mensaje)
+        review = get_review_by_id(review_id)
+        if not review:
+            flash("Reseña no encontrada", "warning")
+            return redirect(url_for("reviews.index"))
+
+        site_name = review.historic_site.name
+        was_approved = review.is_approved()
+
+        # Eliminar
+        delete_review(review_id)
+
+        # Mensaje informativo
+        if was_approved:
+            flash(
+                f"Reseña eliminada. El rating de '{site_name}' ha sido actualizado.",
+                "success"
+            )
+        else:
+            flash("Reseña eliminada correctamente.", "success")
+
+    except ValueError as e:
+        flash(str(e), "warning")
+    except RuntimeError as e:
+        flash(f"Error al eliminar la reseña: {str(e)}", "error")
+    except Exception as e:
+        flash(f"Error inesperado: {str(e)}", "error")
+
     return redirect(url_for("reviews.index"))
