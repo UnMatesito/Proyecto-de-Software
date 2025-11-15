@@ -858,7 +858,7 @@ def seed_aditional_public_users():
             role_id=role_public.id,
             system_admin=False,
         )
-        for _ in range(50)
+        for _ in range(100)
     ]
 
     db.session.add_all(usuarios)
@@ -1109,7 +1109,7 @@ def seed_reviews():
     reviews = []
     try:
         for site in sites:
-            max_possible = min(30, len(public_users))
+            max_possible = min(10, len(public_users))
 
             if max_possible < 10:
                 review_count = max_possible

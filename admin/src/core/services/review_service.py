@@ -111,9 +111,21 @@ def get_paginated_reviews(
 
     # Normalizar enum si llega como texto
     if "status" in filters and filters["status"]:
-        try:
-            filters["status"] = ReviewStatus(filters["status"].capitalize())
-        except ValueError:
+        value = filters["status"]
+
+        # si ya viene un enum dejarlo como está
+        if isinstance(value, ReviewStatus):
+            pass
+
+        # si viene como string convertir a Enum
+        elif isinstance(value, str):
+            try:
+                filters["status"] = ReviewStatus(value.capitalize())
+            except ValueError:
+                filters.pop("status", None)
+
+        # si es un valor desconocido eliminar el filtro
+        else:
             filters.pop("status", None)
 
     if "search_text" in filters and filters["search_text"]:
