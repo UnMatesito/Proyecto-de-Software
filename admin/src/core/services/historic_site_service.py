@@ -22,6 +22,11 @@ def get_all_historic_site():
     return HistoricSite.query.all()
 
 
+def get_total_sites_count():
+    """Obtiene el conteo total de sitios históricos."""
+    return HistoricSite.query.count()
+
+
 def get_published_historic_sites():
     """Obtiene todos los sitios históricos publicados (visibles, validados y no eliminados)."""
     return HistoricSite.query.filter(

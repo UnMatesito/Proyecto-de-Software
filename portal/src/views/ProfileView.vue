@@ -80,7 +80,7 @@
                 class="rounded-lg bg-white p-4 shadow"
               >
                 <p class="text-sm text-gray-500">
-                  {{ new Date(review.inserted_at || review.created_at).toLocaleDateString() }}
+                  {{ new Date(review.inserted_at || review.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}
                 </p>
                 <h4 class="mt-1 text-lg font-semibold text-gray-800">
                   {{ review.site?.name || review.name }}

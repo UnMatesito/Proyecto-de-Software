@@ -32,10 +32,13 @@ class Config:
     JWT_COOKIE_SECURE = True
     JWT_SKIP_OPTIONS_REQUESTS = True
     JWT_COOKIE_SAMESITE = "None"
+    JWT_COOKIE_DOMAIN = ".proyecto2025.linti.unlp.edu.ar"
+    JWT_ACCESS_COOKIE_PATH = "/"
+    JWT_REFRESH_COOKIE_PATH = "/"
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     FRONTEND_URL = os.environ.get(
-        "FRONTEND_URL", "https://grupo09.proyecto2025.linti.unlp.edu.ar/"
+        "FRONTEND_URL", "https://grupo09.proyecto2025.linti.unlp.edu.ar"
     )
     GOOGLE_REDIRECT_URI = os.environ.get(
         "GOOGLE_REDIRECT_URI",
@@ -64,6 +67,7 @@ class DevelopmentConfig(Config):
         "http://127.0.0.1:5173",
     ]
     FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+    JWT_COOKIE_DOMAIN = None
 
 
 class TestingConfig(Config):

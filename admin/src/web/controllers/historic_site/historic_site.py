@@ -27,6 +27,7 @@ from core.services import (
     get_site_images,
     get_sites_filtered,
     get_tag_by_id,
+    get_total_sites_count,
     get_user_by_id,
     reorder_site_images,
     restore_historic_site,
@@ -121,6 +122,7 @@ def list_paginated_sites():
         )
 
         sites = pagination["items"]
+        total_sites = get_total_sites_count()
 
         columns = [
             {"key": "name", "label": "Nombre"},
@@ -169,6 +171,7 @@ def list_paginated_sites():
             city_choices=city_choices,
             tag_choices=tag_choices,
             selected_tags=selected_tags,
+            total_sites=total_sites,
         )
     except Exception as e:
         flash(f"Error al cargar los sitios, error: {e}", "error")

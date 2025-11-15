@@ -21,6 +21,12 @@ def get_all_tags():
     return Tag.query.all()
 
 
+def get_total_tags_count():
+    """Obtiene el conteo total de tags."""
+
+    return Tag.query.count()
+
+
 def get_tag_by_id(tag_id):
     """Obtiene un tag por su id."""
 

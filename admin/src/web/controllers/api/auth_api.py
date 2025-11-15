@@ -43,7 +43,7 @@ def google_callback():
     """
 
     frontend_base = current_app.config.get(
-        "FRONTEND_URL", "https://grupo09.proyecto2025.linti.unlp.edu.ar/"
+        "FRONTEND_URL", "https://grupo09.proyecto2025.linti.unlp.edu.ar"
     )
 
     if "error" in request.args and request.args.get("error") == "access_denied":

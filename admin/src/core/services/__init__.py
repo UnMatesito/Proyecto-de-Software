@@ -42,6 +42,7 @@ from .historic_site_service import (
     get_pending_historic_sites,
     get_published_historic_sites,
     get_sites_filtered,
+    get_total_sites_count,
     restore_historic_site,
     update_category,
     update_city,
@@ -78,8 +79,10 @@ from .review_service import (
     delete_review,
     get_paginated_reviews,
     get_review_by_id,
+    get_site_reviews,
     get_user_reviews,
     reject_review,
+    update_review,
 )
 
 # Role services
@@ -126,6 +129,7 @@ from .tag_service import (
     get_paginated_tags,
     get_tag_by_id,
     get_tag_by_name,
+    get_total_tags_count,
     update_tag,
     validate_tag_name,
 )
@@ -183,6 +187,8 @@ __all__ = [
     "get_sites_filtered",
     "restore_historic_site",
     "validate_historic_site",
+    "update_category",
+    "get_total_sites_count",
     # Permission services
     "create_multiple_permissions",
     "create_permission",
@@ -231,6 +237,7 @@ __all__ = [
     "update_tag",
     "validate_tag_name",
     "get_all_tags",
+    "get_total_tags_count",
     "get_all_not_deleted_tags",
     # User services
     "assign_role",
@@ -251,6 +258,8 @@ __all__ = [
     "get_user_reviews",
     "reject_review",
     "get_review_by_id",
+    "update_review",
+    "get_site_reviews",
     # SiteImage services
     "create_site_image",
     "create_multiple_images",

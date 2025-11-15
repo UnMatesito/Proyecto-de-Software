@@ -41,12 +41,14 @@
 <script setup>
   import { ref, watch, onMounted} from 'vue'
   import { useRoute, useRouter} from 'vue-router'
+  import {useAuthStore} from "@/stores/auth.js";
   import api from '@/api/axios'
   import Card from '@/components/Card.vue'
   import Pagination from '@/components/Pagination.vue'
   import Filter from '@/components/Filter.vue'
   import Map from '@/components/MapFilter.vue'
   import SkeletonCard from '@/components/SkeletonCard.vue'
+  const authStore = useAuthStore()
   const apiMessage = ref('')
   const sites = ref(null)
   const pagination = ref({})
@@ -60,7 +62,18 @@
 
   const fetchSites = async (url) => {
     try {
+
+      if (rout.query.favorites && !authStore.isAuthenticated) {
+        sites.value = []       // No mostrar skeleton
+        pagination.value = { total_pages: 0, page: 1 }
+        marks.value = []
+        return
+      }
+
+      sites.value = null // Para activar skeleton
+
       const { data } = await api.get(rout.fullPath)
+
       const response = data
       sites.value = response.data
       pagination.value = response.meta
@@ -71,6 +84,8 @@
     } catch (error) {
       apiMessage.value = '❌ No se pudo conectar con la API'
       console.error(error)
+      sites.value = []
+      marks.value = []
     }
   }
   const fetchTags = async () => {
