@@ -3,13 +3,13 @@
     <h2 class="font-semibold text-3xl text-proyecto-primary">Listado de sitios históricos</h2>
     <p class="text-proyecto-accent">Aqui puedes buscar el sitio que justo necesitas.</p>
     <aside class="p-3 max-w-[1150px]">
-      <Filter :page="pagination.page" :tags="tags" :provinces="provinces" @disableMap="changeMapState"></Filter>
-      <Map styleContent="height:400px;  width: 100%" :marks="marks" :isDisable="disableMap" @changeMapState="changeMapState"></Map>
+      <Filter :page="pagination.page" :tags="tags" :provinces="provinces" @disableMap="changeMapState" />
+      <Map styleContent="height:400px;  width: 100%" :marks="marks" :isDisable="disableMap" @changeMapState="changeMapState" />
     </aside>
 
-    <section class=" w-full sm:w-auto grid  sm:grid-cols-2  md:grid-cols-3  lg:grid-cols-3 xl:grid-cols-4 gap-3 p-3">
+    <section class="w-full sm:w-auto grid  sm:grid-cols-2  md:grid-cols-3  lg:grid-cols-3 xl:grid-cols-4 gap-3 p-3">
       <Card
-      class="  md:w-[250px] lg:w-[270px]"
+      class="md:w-[250px] lg:w-[270px]"
       v-for="site in sites"
       :key="`${site.id}-${site.name}`"
       :name="site.name"
@@ -24,7 +24,8 @@
       :alt-imagen="site.images[0].alt"
       :id="site.id"
       :rating="site.average_rating"
-      ></Card>
+      :is-authenticated="authStore.isAuthenticated" 
+      @toggle-favorite="catchFavEmit"/>
       <SkeletonCard v-if="!sites" v-for="n in 24" />
     </section>
 
@@ -33,8 +34,7 @@
       :page="pagination.page"
       :pageSize=25
       :totalPages="pagination.total_pages"
-      @page-change="pageChanged"
-    ></Pagination>
+      @page-change="pageChanged" />
   </div>
 </template>
 
@@ -60,6 +60,7 @@
   const disableMap = ref(false)
   const page = ref(1)
 
+  //Fetch para obtener los sitios 
   const fetchSites = async (url) => {
     try {
 
@@ -77,9 +78,9 @@
       const response = data
       sites.value = response.data
       pagination.value = response.meta
-
+      marks.value = []
       sites.value.forEach(site => {
-        marks.value.push({name: site.name, lat: site.lat, lon: site.lon})
+        marks.value.push({name: site.name, lat: site.lat, lon: site.lon, desc: site.short_description})
       });
     } catch (error) {
       apiMessage.value = '❌ No se pudo conectar con la API'
@@ -88,19 +89,25 @@
       marks.value = []
     }
   }
+
+  //Obtener los tags para el filtrado de los sitios
   const fetchTags = async () => {
     const { data } = await api.get("/tags")
     tags.value =  data.data
   }
+
+  //Obtener las provicias filtrado de los sitios
   const fetchProvinces = async () => {
     const { data } = await api.get("/provinces")
     provinces.value =  data.data
   }
 
+  //Captura el emit enviado por el filter que desactiva el radio de búsqueda
   const changeMapState = (isDisable) => {
     disableMap.value = isDisable
   }
 
+  //Cambia de pagina y actualiza la URL
   const pageChanged = (p) => {
     page.value = p
     router.push({
@@ -111,6 +118,8 @@
       }
     })
   }
+
+  //Hace los fetch una vez que el componente se cargue
   onMounted(
      async () => {
       fetchSites()
@@ -119,7 +128,13 @@
      }
   )
 
+  //Actualiza los sitios cada vez que la URL cambia 
   watch(rout, () => {
     fetchSites()
   })
+
+  //Captura el emit envido por la card que combierte a un sitios en favorito}
+  const catchFavEmit = (site_id) => {
+    console.log(site_id)
+  }
 </script>

@@ -1,8 +1,7 @@
 <template>
   <div class="flex flex-col items-center justify-center max-w-[1200px] w-full">
     <section class="w-full p-3 max-w-screen-xl">
-      <ButtonPrimary :text="'Volver'" :icon_left="'fa-solid fa-arrow-left mr-2'" :link="'/sites'" :class="'my-4'"/>
-
+      <ButtonPrimary :text="'Volver'" :icon_left="'fa-solid fa-arrow-left mr-2'" :link="prevURL || '/sites'" :class="'my-4'"/>
       <div class="flex items-start gap-4 w-full pt-1 pb-3 flex-wrap relative">
         <!-- (image + aside unchanged) -->
         <!-- ... existing image carousel and aside ... -->
@@ -167,6 +166,7 @@ import { useFavoritesStore } from '@/stores/favorites.js'
 import MapDetail from '@/components/MapDetail.vue'
 import SkeletonReview from '@/components/SkeletonReview.vue'
 
+const prevURL = ref('')
 const route = useRoute()
 const detalle = ref({})
 const detailedContent = ref([])
@@ -175,6 +175,7 @@ const reviews = ref([])
 const page = ref(1)
 const activeIndex = ref(0)
 
+prevURL.value = localStorage.prevURL || '/sites'
 const authStore = useAuthStore()
 const favoritesStore = useFavoritesStore()
 const { isAuthenticated } = storeToRefs(authStore)
