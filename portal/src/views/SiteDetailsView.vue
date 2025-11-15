@@ -8,12 +8,14 @@
         <div class="flex flex-col flex-1 min-w-[300px]">
           <!-- image area -->
           <div class="relative h-[400px] w-full overflow-hidden rounded-lg">
-            <img
-              v-if="currentImage"
-              :src="currentImage.url"
-              :alt="currentImage.title || 'Site image'"
-              class="absolute inset-0 w-full h-full object-cover"
-            />
+            <div v-if="currentImage">
+              <img
+                :src="currentImage.url"
+                :alt="currentImage.title || 'Site image'"
+                class="absolute inset-0 w-full h-full object-cover"
+              />
+              <p class="absolute bottom-0 text-white bg-proyecto-primary px-5 py-1 rounded-r-md opacity-70 font-semibold">{{ currentImage.title }}</p>
+            </div>
             <div v-else class="absolute inset-0 bg-gray-200 animate-pulse" />
             <button v-if="hasImages" type="button" @click="prev" class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none">
               <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white">
