@@ -1,6 +1,7 @@
 <template>
   <form class="m-auto">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+      <!-- Provincia -->
       <select
         id="small"
         v-model="provinceValue"
@@ -20,6 +21,7 @@
         </option>
       </select>
 
+      <!-- Nombre del sitio -->
       <div class="relative">
         <div
           class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
@@ -52,17 +54,19 @@
         />
       </div>
 
+      <!-- Favoritos (con tooltip cuando no está autenticado) -->
       <div
-        v-if="authStore.isAuthenticated"
         class="p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500
                focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600
                dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500
-               dark:focus:border-blue-500"
+               dark:focus:border-blue-500 relative"
+        :class="!authStore.isAuthenticated ? 'opacity-50 cursor-not-allowed group' : ''"
       >
         <input
           id="bordered-checkbox-1"
           v-model="favoriteValue"
           type="checkbox"
+          :disabled="!authStore.isAuthenticated"
           class="text-blue-600 bg-gray-100 border-gray-300 rounded-sm
                  focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800
                  focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
@@ -73,8 +77,18 @@
         >
           Favoritos
         </label>
+
+        <!-- Tooltip para usuario no autenticado -->
+        <span
+          v-if="!authStore.isAuthenticated"
+          class="absolute left-0 top-full mt-1 text-xs bg-black text-white px-2 py-1
+                 rounded hidden group-hover:block z-10"
+        >
+          Inicia sesión para usar favoritos
+        </span>
       </div>
 
+      <!-- Botón Filtrar -->
       <div
         class="col-start-2 row-start-3 md:col-start-4 md:row-start-1"
         :class="authStore.isAuthenticated ? 'flex flex-col gap-1' : 'flex gap-1'"
@@ -82,17 +96,14 @@
         <router-link
           :to="{
             query: {
-              ...(nameValue && { name: nameValue }),
-              ...(descrpitionValue && { description: descrpitionValue }),
-              ...(provinceValue !== 'Provincia' && { province: provinceValue }),
-              ...(cityValue !== 'Ciudad' && { city: cityValue }),
-              ...(tagsValue.length > 0 && { tags: tagsValue.join() }),
-              page: 1,
-              favorites: favoriteValue,
-              ...(orderByValue !== 'Ordenar por' && { order_by: orderByValue }),
-              ...(rout.query.lat && { lat: rout.query.lat }),
-              ...(rout.query.lon && { lon: rout.query.lon }),
-              ...(rout.query.radius && { radius: rout.query.radius })
+              province: provinceValue !== 'Provincia' ? provinceValue : undefined,
+              city: cityValue !== 'Ciudad' ? cityValue : undefined,
+              name: nameValue || undefined,
+              description: descrpitionValue || undefined,
+              tags: tagsValue.length ? tagsValue.join(',') : undefined,
+              orderBy: orderByValue !== 'Ordenar por' ? orderByValue : undefined,
+              favorites: favoriteValue || undefined,
+              page: props.page
             }
           }"
           class="text-white w-full bg-proyecto-primary hover:bg-proyecto-accent
@@ -105,6 +116,7 @@
         </router-link>
       </div>
 
+      <!-- Ciudad -->
       <select
         id="default"
         v-model="cityValue"
@@ -123,6 +135,7 @@
         </option>
       </select>
 
+      <!-- Descripción -->
       <div class="relative">
         <div
           class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
@@ -155,9 +168,10 @@
         />
       </div>
 
+      <!-- Ordenar por -->
       <div>
         <select
-          id="default"
+          id="order"
           v-model="orderByValue"
           class="block w-full p-2 text-sm text-gray-900 border border-gray-300
                  rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500
@@ -165,13 +179,14 @@
                  dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         >
           <option selected>Ordenar por</option>
-          <option value="oldest">Últimos creados</option>
-          <option value="latest">Primeros creados</option>
+          <option value="oldest">Más antiguos primero</option>
+          <option value="latest">Más recientes primero</option>
           <option value="rating-1-5">Reseñas 1-5 estrellas</option>
           <option value="rating-5-1">Reseñas 5-1 estrellas</option>
         </select>
       </div>
 
+      <!-- Botón Restaurar -->
       <router-link
         @click="handleReset"
         :to="{ query: {} }"
@@ -185,6 +200,7 @@
       </router-link>
     </div>
 
+    <!-- Tags multiselect -->
     <select name="tags" id="tags" multiple>
       <option
         v-for="tag in tags"
@@ -199,49 +215,59 @@
 </template>
 
 <script setup>
-import api from '@/api/axios'
-import { ref, watch, nextTick, onMounted, defineEmits } from 'vue'
+import { ref, watch, nextTick, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import api from '@/api/axios.js'
 
 const authStore = useAuthStore()
 const emit = defineEmits(['disableMap'])
+const rout = useRoute()
 
 const cityValue = ref('Ciudad')
 const nameValue = ref('')
-const descrpitionValue = ref('')
-const tagsValue = ref([])
-const favoriteValue = ref(false)
-const orderByValue = ref('Ordenar por')
 const provinceValue = ref('Provincia')
+const descrpitionValue = ref('')
+const orderByValue = ref('Ordenar por')
+const favoriteValue = ref(false)
+const tagsValue = ref([])
 
 const cities = ref([])
-
-const rout = useRoute()
 const props = defineProps(['provinces', 'states', 'page', 'tags'])
 
-function loadFromRoute(q = rout.query) {
-  nameValue.value = q.name ?? ''
-  descrpitionValue.value = q.description ?? ''
-  provinceValue.value = q.province ?? 'Provincia'
-  cityValue.value = q.city ?? 'Ciudad'
-  orderByValue.value = q.order_by ?? 'Ordenar por'
-  favoriteValue.value = q.favorites === 'true' || q.favorites === true
+// Variable para mantener referencia a la instancia del multiselect
+let multiSelectInstance = null
 
-  if (q.tags) {
-    const raw = Array.isArray(q.tags) ? q.tags.join(',') : q.tags
-    tagsValue.value = raw.split(',').map(t => t.trim()).filter(Boolean)
-  } else {
-    tagsValue.value = []
-  }
+function loadFromRoute(q = rout.query) {
+  provinceValue.value = q.province || 'Provincia'
+  cityValue.value = q.city || 'Ciudad'
+  nameValue.value = q.name || ''
+  descrpitionValue.value = q.description || ''
+  orderByValue.value = q.orderBy || 'Ordenar por'
+  favoriteValue.value = q.favorites === 'true'
+  tagsValue.value = q.tags ? q.tags.split(',') : []
 }
 
 function destroyMultiSelect() {
-  const prev = document.querySelector('.multi-select-tag')
-  if (prev) prev.remove()
+  // Eliminar el contenedor creado por MultiSelectTag
+  const container = document.querySelector('.multi-select-tag')
+  if (container) {
+    container.remove()
+  }
+
+  // Mostrar el select original nuevamente
+  const tagsSelect = document.getElementById('tags')
+  if (tagsSelect) {
+    tagsSelect.style.display = ''
+  }
+
+  multiSelectInstance = null
 }
 
 function initMultiSelect() {
+  // Destruir instancia previa si existe
+  destroyMultiSelect()
+
   // Sincronizar atributos selected del <select> con tagsValue ANTES de crear MultiSelectTag
   const tagsSelect = document.getElementById('tags')
   if (tagsSelect) {
@@ -250,11 +276,7 @@ function initMultiSelect() {
     })
   }
 
-  destroyMultiSelect()
-
-  new MultiSelectTag('tags', {
-    rounded: true,
-    shadow: true,
+  multiSelectInstance = new MultiSelectTag('tags', {
     placeholder: 'Seleccionar tags',
     onChange(selected) {
       tagsValue.value = selected.map(e => e.id)
@@ -268,11 +290,7 @@ function initMultiSelect() {
   if (inputTag && container[0]) {
     container[0].classList.add('col-start-1-i', 'col-end-4-i')
     inputTag.className = 'w-full'
-    inputTag.setAttribute('readonly', '')
   }
-
-  const dropdown = document.getElementById('dropdown')
-  if (dropdown) dropdown.style.zIndex = '1200'
 }
 
 const fetchCities = async (provinceName) => {
@@ -290,13 +308,11 @@ const fetchCities = async (provinceName) => {
   }
 }
 
-const disableMapClick = () => emit('disableMap', true)
-
 const handleReset = () => {
-  nameValue.value = ''
-  descrpitionValue.value = ''
   provinceValue.value = 'Provincia'
   cityValue.value = 'Ciudad'
+  nameValue.value = ''
+  descrpitionValue.value = ''
   orderByValue.value = 'Ordenar por'
   favoriteValue.value = false
   tagsValue.value = []
@@ -307,6 +323,10 @@ const handleReset = () => {
   nextTick(() => {
     initMultiSelect()
   })
+}
+
+const disableMapClick = () => {
+  emit('disableMap')
 }
 
 // Inicialización principal
@@ -355,5 +375,16 @@ watch(
 }
 .col-end-4-i {
   grid-column-end: 4 !important;
+}
+
+/* Asegurar que el multiselect aparezca sobre el mapa */
+.multi-select-tag {
+  position: relative;
+  z-index: 1000 !important;
+}
+
+/* El dropdown de opciones también debe tener z-index alto */
+.multi-select-tag .wrapper {
+  z-index: 1001 !important;
 }
 </style>

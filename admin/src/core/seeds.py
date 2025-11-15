@@ -40,7 +40,6 @@ def run(env="production"):
     seed_rejected_reviews()
     seed_site_images_from_seed_folder()
 
-
     print("Seed finalizado")
 
 
@@ -74,16 +73,13 @@ def _recalculate_site_ratings(site_ids):
     }
 
     for site in (
-        db.session.query(HistoricSite)
-        .filter(HistoricSite.id.in_(site_ids))
-        .all()
+        db.session.query(HistoricSite).filter(HistoricSite.id.in_(site_ids)).all()
     ):
         count, average = aggregate_map.get(site.id, (0, 0.0))
         site.rating_count = count
         site.average_rating = average
 
     db.session.commit()
-
 
 
 def seed_permissions():
@@ -858,7 +854,7 @@ def seed_aditional_public_users():
             role_id=role_public.id,
             system_admin=False,
         )
-        for _ in range(50)
+        for _ in range(100)
     ]
 
     db.session.add_all(usuarios)
@@ -1076,6 +1072,7 @@ def seed_aditional_validated_historic_sites():
     db.session.commit()
     enable_audit_listeners()
 
+
 def seed_reviews():
     """Genera entre 1 y 10 reseñas aprobadas para cada sitio histórico publicado."""
     import random
@@ -1097,9 +1094,7 @@ def seed_reviews():
         print("No hay sitios publicados para generar reseñas.")
         return
 
-    public_users = (
-        User.query.join(User.role).filter_by(name="Usuario público").all()
-    )
+    public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
     if not public_users:
         print("No hay usuarios públicos para generar reseñas.")
         return
@@ -1109,7 +1104,7 @@ def seed_reviews():
     reviews = []
     try:
         for site in sites:
-            max_possible = min(30, len(public_users))
+            max_possible = min(10, len(public_users))
 
             if max_possible < 10:
                 review_count = max_possible
@@ -1194,9 +1189,9 @@ def seed_site_images_from_seed_folder():
 
     from werkzeug.datastructures import FileStorage
 
+    from core.audit import disable_audit_listeners, enable_audit_listeners
     from core.models import HistoricSite
     from core.services import site_image_service
-    from core.audit import disable_audit_listeners, enable_audit_listeners
 
     print("Asignando imagenes aleatorias a sitios historicos...")
 
@@ -1241,7 +1236,9 @@ def seed_site_images_from_seed_folder():
 
                 for index, image_path in enumerate(selected_images):
                     file_handle = stack.enter_context(image_path.open("rb"))
-                    file_storage = FileStorage(stream=file_handle, filename=image_path.name)
+                    file_storage = FileStorage(
+                        stream=file_handle, filename=image_path.name
+                    )
                     file_storage.stream.seek(0)
 
                     files.append(file_storage)
@@ -1255,6 +1252,7 @@ def seed_site_images_from_seed_folder():
                 )
     finally:
         enable_audit_listeners()
+
 
 def seed_pending_reviews():
     """Genera cinco reseñas pendientes para 50 sitios históricos aleatorios."""
@@ -1277,9 +1275,7 @@ def seed_pending_reviews():
         print("No hay sitios publicados para generar reseñas pendientes.")
         return
 
-    public_users = (
-        User.query.join(User.role).filter_by(name="Usuario público").all()
-    )
+    public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
     if not public_users:
         print("No hay usuarios públicos para generar reseñas pendientes.")
         return
@@ -1299,9 +1295,7 @@ def seed_pending_reviews():
             if not available_users:
                 continue
 
-            reviewers = random.sample(
-                available_users, min(5, len(available_users))
-            )
+            reviewers = random.sample(available_users, min(5, len(available_users)))
 
             for user in reviewers:
                 timestamp = fake.date_time_between(
@@ -1350,9 +1344,7 @@ def seed_rejected_reviews():
         print("No hay sitios publicados para generar reseñas rechazadas.")
         return
 
-    public_users = (
-        User.query.join(User.role).filter_by(name="Usuario público").all()
-    )
+    public_users = User.query.join(User.role).filter_by(name="Usuario público").all()
     if not public_users:
         print("No hay usuarios públicos para generar reseñas rechazadas.")
         return
