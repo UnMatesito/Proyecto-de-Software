@@ -126,28 +126,51 @@
         <p v-else class="text-sm text-gray-500">Sin coordenadas para mostrar el mapa.</p>
       </div>
     </div>
-
-    <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
-      <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
-      <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto" :link="`/sites/${detalle.id}/review`" />
-      <Review
-        v-for="r in reviews"
-        :key="r.id"
-        :user_name="r.user_name"
-        :user_email="r.user_email"
-        :text="r.comment"
-        :created_at="r.inserted_at"
-        :rating="r.rating"
-      />
-      <p
-        v-if="canLoadMore"
-        @click="fetchReviews"
-        class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out"
+      <!-- SI reviewsEnabled ES TRUE → mostrar reseñas -->
+      <section
+        v-if="reviewsEnabled"
+        id="reviews"
+        class="w-full max-w-[1200px] flex flex-col gap-3 mt-3"
       >
-        Ver más reseñas...
-      </p>
-      <SkeletonReview v-if="reviews.length == 0 && page == 1" />
-    </section>
+        <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
+        <ButtonPrimary
+          :text="'Dar reseña'"
+          :icon_left="'fa-solid fa-plus mr-2'"
+          class="max-w-36 w-auto"
+          :link="`/sites/${detalle.id}/review`"
+        />
+        <Review
+          v-for="r in reviews"
+          :key="r.id"
+          :user_name="r.user_name"
+          :user_email="r.user_email"
+          :text="r.comment"
+          :created_at="r.inserted_at"
+          :rating="r.rating"
+        />
+
+        <p
+          v-if="canLoadMore"
+          @click="fetchReviews"
+          class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out"
+        >
+          Ver más reseñas...
+        </p>
+
+        <SkeletonReview v-if="reviews.length == 0 && page == 1" />
+      </section>
+
+      <!-- SI reviewsEnabled ES FALSE → mostrar mensaje alternativo -->
+      <section
+        v-else
+        id="reviews"
+        class="w-full max-w-[1200px] flex flex-col gap-3 mt-3"
+      >
+        <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
+        <p class="text-gray-600 text-sm">
+          Las reseñas están deshabilitadas temporalmente.
+        </p>
+      </section>
   </div>
 </template>
 
@@ -174,6 +197,8 @@ const shortDescription = ref('')
 const reviews = ref([])
 const page = ref(1)
 const activeIndex = ref(0)
+
+const reviewsEnabled = ref(false)
 
 const authStore = useAuthStore()
 const favoritesStore = useFavoritesStore()
@@ -222,6 +247,16 @@ const fetchReviews = async () => {
   }
 }
 
+const fetchFeatureFlags = async () => {
+  try {
+    const { data } = await api.get("/feature-flags/reviews_enabled")
+    reviewsEnabled.value = data.is_enabled   
+  } catch (error) {
+    console.error("Error cargando feature flags:", error)
+  }
+}
+
+
 const toggleFavorite = async () => {
   if (!detalle.value.id) return
   try {
@@ -249,7 +284,10 @@ const setActive = (idx) => { activeIndex.value = idx }
 
 onMounted(async () => {
   await fetchDetalleSitio()
-  await fetchReviews()
+  await fetchFeatureFlags()   
+  if (reviewsEnabled.value) {
+    await fetchReviews()
+  }
   if (isAuthenticated.value) {
     await favoritesStore.fetchFavorites()
   }
