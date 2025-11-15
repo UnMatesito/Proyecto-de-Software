@@ -9,8 +9,6 @@ from core.services.review_service import (
 )
 from core.services.review_service import reject_review as reject_review_serv
 from web.utils.auth import login_required, permission_required
-from core.models.review import ReviewStatus
-
 
 review_bp = Blueprint("reviews", __name__, url_prefix="/reviews")
 
@@ -28,14 +26,13 @@ def index():
 
         # Filtro de estado
         status_param = None
-        status = request.args.get("status")
-
+        status = request.args.get("status", None)
         if status == "pending":
-            status_param = ReviewStatus.PENDIENTE
+            status_param = "Pendiente"
         elif status == "approved":
-            status_param = ReviewStatus.APROBADA
+            status_param = "Aprobada"
         elif status == "rejected":
-            status_param = ReviewStatus.RECHAZADA
+            status_param = "Rechazada"
 
         # Filtro de historic_site
         site_id = request.args.get("site_id", None)

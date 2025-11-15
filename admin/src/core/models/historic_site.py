@@ -50,7 +50,6 @@ class HistoricSite(db.Model):
     is_visible = db.Column(db.Boolean, default=False, nullable=False)
     pending_validation = db.Column(db.Boolean, default=True, nullable=False)
     location = db.Column(Geometry(geometry_type="POINT", srid=4326), nullable=False)
-    rating_total = db.Column(db.Integer, default=0, nullable=False)
     average_rating = db.Column(db.Float, default=0.0, nullable=False)
     rating_count = db.Column(db.Integer, default=0, nullable=False)
 
@@ -244,52 +243,31 @@ class HistoricSite(db.Model):
         return [image.public_url for image in self.images]
 
     def add_rating(self, rating: int):
-        """Agrega una reseña aprobada al cálculo del sitio."""
-        if rating is None:
-            return
-
-        self.rating_count += 1
-        self.rating_total += rating
-        self._compute_avg()
+        """Actualiza el promedio de rating al agregar una nueva reseña aprobada."""
+        n = self.rating_count
+        self.average_rating = self.average_rating + (rating - self.average_rating) / (
+            n + 1
+        )
+        self.rating_count = n + 1
 
     def remove_rating(self, rating: int):
-        """Elimina una reseña aprobada del cálculo del sitio."""
-        if rating is None:
-            return
-
-        # Evitar estados inconsistentes
-        if self.rating_count > 0:
-            self.rating_count -= 1
-        if self.rating_total >= rating:
-            self.rating_total -= rating
-
-        self._compute_avg()
-
-    def update_rating(self, old: int, new: int):
-        """Actualiza el total cuando se cambia el rating de una reseña aprobada."""
-        if old is None or new is None:
-            return
-
-        self.rating_total -= old
-        self.rating_total += new
-        self._compute_avg()
-
-    def recalculate_rating(self):
-        """Recalcula rating_count, total y avg desde cero."""
-        from core.models import Review, ReviewStatus
-
-        approved_reviews = [r.rating for r in self.reviews if r.status == ReviewStatus.APROBADA]
-
-        self.rating_count = len(approved_reviews)
-        self.rating_total = sum(approved_reviews)
-        self._compute_avg()
-
-    def _compute_avg(self):
-        """Actualiza el promedio a partir del total y el count."""
-        if self.rating_count <= 0:
+        """Actualiza el promedio de rating al eliminar una reseña aprobada."""
+        n = self.rating_count
+        if n <= 1:
             self.average_rating = 0.0
+            self.rating_count = 0
         else:
-            self.average_rating = self.rating_total / self.rating_count
+            self.average_rating = ((self.average_rating * n) - rating) / (n - 1)
+            self.rating_count = n - 1
+
+    def update_rating(self, old_rating: int, new_rating: int):
+        """Actualiza el promedio de rating al modificar una reseña aprobada."""
+        n = self.rating_count
+        if n == 0:
+            return
+        total = self.average_rating * n
+        total = total - old_rating + new_rating
+        self.average_rating = total / n
 
     def __repr__(self):
         """Retorna una representación de sitio histórico la cual posee su nombre"""

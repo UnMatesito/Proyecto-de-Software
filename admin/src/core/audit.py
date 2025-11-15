@@ -215,7 +215,6 @@ def _get_changed_attributes(instance_state):
         "updated_at",
         "created_at",
         "rating_count",
-        "rating_total",
         "average_rating",
     ]
     changed = [
