@@ -196,7 +196,7 @@
                dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none
                dark:focus:ring-blue-800"
       >
-        Restaurar
+        Limpiar filtros
       </router-link>
     </div>
 
