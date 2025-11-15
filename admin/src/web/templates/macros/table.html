@@ -95,33 +95,42 @@
       </form>
     {% endif %}
     {% if reject_route and item.is_pending() %}
-      {% set reject_params = {id_param: item.id}  %}
-          
-          <form action="{{ url_for(reject_route, **reject_params) }}" method="post" class="inline" onsubmit="return handleReject(this)">
-            <input type="hidden" name="reason" value="">
-            {{ button_error("Rechazar", type="submit", mobile=mobile) }}
-          </form>
-          <script>
-            function handleReject(form) {
-              const reason = prompt("Ingrese el motivo del rechazo:");
-              if (!reason || !reason.trim()) {
-                alert("Debe ingresar un motivo para rechazar la reseña.");
-                return false;
-              }
-               if (reason.trim().length  <  10) {
-                alert("El motivo tiene un minimo de 10 caracteres");
-                return false;
-              }
-                if (reason.trim().length > 200) {
-                alert("El motivo no puede superar los 200 caracteres.");
-                return false;
-              }
-              form.querySelector('input[name="reason"]').value = reason.trim();
-              return true;
+    {% set reject_params = {id_param: item.id} %}
+
+      <form action="{{ url_for(reject_route, **reject_params) }}" 
+            method="post" 
+            class="inline-flex items-center gap-2"
+            onsubmit="return validateInlineReject(this)">
+
+          <input type="text" 
+                name="reason"
+                placeholder="Motivo..."
+                required
+                minlength="10"
+                maxlength="200"
+                class="border border-gray-300 rounded px-2 py-1 text-sm w-40">
+
+          {{ button_error("Rechazar", type="submit", mobile=mobile) }}
+        </form>
+        <script>
+            function validateInlineReject(form) {
+                const reason = form.querySelector('input[name="reason"]').value.trim();
+
+                if (reason.length < 10) {
+                    alert("El motivo debe tener al menos 10 caracteres.");
+                    return false;
+                }
+                if (reason.length > 200) {
+                    alert("El motivo no puede superar los 200 caracteres.");
+                    return false;
+                }
+
+                return confirm("¿Está seguro de rechazar esta reseña?");
             }
-          </script>
-    {% endif %}
-  
+        </script>
+
+      {% endif %}
+
 
     {% if edit_route and not item.deleted_at %}
       {% set edit_params = {id_param: item.id} %}
