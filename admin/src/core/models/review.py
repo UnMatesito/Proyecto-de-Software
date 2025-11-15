@@ -2,7 +2,7 @@ import enum
 from datetime import datetime, timezone
 
 from sqlalchemy import CheckConstraint, event
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, attributes
 
 from core.database import db
 
@@ -107,53 +107,80 @@ class Review(db.Model):
 def update_site_rating_after_flush(session, ctx):
     """
     Actualiza rating_count, rating_total y average_rating de HistoricSite
-    después de que SQLAlchemy termina el flush.
-    Maneja inserts, updates y deletes sin inner-flush warnings.
+    después de flush.
+    Maneja inserts, updates, deletes y cambios de sitio sin inner-flush.
     """
-    from core.models import Review, HistoricSite
+    from core.models import Review, HistoricSite, ReviewStatus
+    import sqlalchemy as sa
 
-    # agregar rating si la review está aprobada
+    def commit_rating_fields(site):
+        attributes.set_committed_value(site, "rating_total", site.rating_total)
+        attributes.set_committed_value(site, "rating_count", site.rating_count)
+        attributes.set_committed_value(site, "average_rating", site.average_rating)
+
     for obj in session.new:
-        if isinstance(obj, Review):
-            if obj.status == ReviewStatus.APROBADA:
-                site = session.get(HistoricSite, obj.historic_site_id)
-                if site:
-                    site.add_rating(obj.rating)
-
-    # manejar cambios en rating o status
-    for obj in session.dirty:
-        if isinstance(obj, Review):
-            state = db.inspect(obj)
-
+        if isinstance(obj, Review) and obj.status == ReviewStatus.APROBADA:
             site = session.get(HistoricSite, obj.historic_site_id)
-            if not site:
-                continue
-
-            rating_hist = state.attrs.rating.history
-            status_hist = state.attrs.status.history
-
-            # Rating cambió y sigue aprobada
-            if rating_hist.has_changes() and obj.status == ReviewStatus.APROBADA:
-                old = rating_hist.deleted[0] if rating_hist.deleted else None
-                if old is not None:
-                    site.update_rating(old, obj.rating)
-
-            # Cambió status y ahora está aprobada
-            if status_hist.has_changes() and obj.status == ReviewStatus.APROBADA:
+            if site:
                 site.add_rating(obj.rating)
+                commit_rating_fields(site)
 
-            # Cambió status y dejó de estar aprobada
-            if (
-                status_hist.has_changes()
-                and status_hist.deleted
-                and status_hist.deleted[0] == ReviewStatus.APROBADA
-            ):
-                site.remove_rating(obj.rating)
+    for obj in session.dirty:
+        if not isinstance(obj, Review):
+            continue
 
-    # si la review era aprobada, restar rating
+        state = sa.inspect(obj)
+
+        new_site = session.get(HistoricSite, obj.historic_site_id)
+        old_site_id = (
+            state.attrs.historic_site_id.history.deleted[0]
+            if state.attrs.historic_site_id.history.deleted
+            else obj.historic_site_id
+        )
+        old_site = session.get(HistoricSite, old_site_id)
+
+        old_rating = (
+            state.attrs.rating.history.deleted[0]
+            if state.attrs.rating.history.deleted
+            else None
+        )
+        new_rating = obj.rating
+
+        old_status = (
+            state.attrs.status.history.deleted[0]
+            if state.attrs.status.history.deleted
+            else None
+        )
+        new_status = obj.status
+
+        if state.attrs.historic_site_id.history.has_changes():
+            if old_status == ReviewStatus.APROBADA and old_site:
+                old_site.remove_rating(old_rating)
+                commit_rating_fields(old_site)
+
+            if new_status == ReviewStatus.APROBADA and new_site:
+                new_site.add_rating(new_rating)
+                commit_rating_fields(new_site)
+
+            continue
+
+        if old_rating is not None and old_rating != new_rating:
+            if new_status == ReviewStatus.APROBADA and new_site:
+                new_site.update_rating(old_rating, new_rating)
+                commit_rating_fields(new_site)
+
+        if old_status != new_status:
+            if new_status == ReviewStatus.APROBADA and new_site:
+                new_site.add_rating(new_rating)
+                commit_rating_fields(new_site)
+
+            if old_status == ReviewStatus.APROBADA and new_site:
+                new_site.remove_rating(old_rating or new_rating)
+                commit_rating_fields(new_site)
+
     for obj in session.deleted:
-        if isinstance(obj, Review):
-            if obj.status == ReviewStatus.APROBADA:
-                site = session.get(HistoricSite, obj.historic_site_id)
-                if site:
-                    site.remove_rating(obj.rating)
+        if isinstance(obj, Review) and obj.status == ReviewStatus.APROBADA:
+            site = session.get(HistoricSite, obj.historic_site_id)
+            if site:
+                site.remove_rating(obj.rating)
+                commit_rating_fields(site)
