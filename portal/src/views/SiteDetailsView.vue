@@ -129,7 +129,7 @@
 
     <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
       <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
-      <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto"/>
+      <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto" :link="`/sites/${detalle.id}/review`" />
       <Review
         v-for="r in reviews"
         :key="r.id"

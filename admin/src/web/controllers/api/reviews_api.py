@@ -233,8 +233,8 @@ def delete_review(site_id, review_id):
     if blocked_response:
         return blocked_response
 
-    user_id = get_jwt_identity()
-
+    user_id = int(get_jwt_identity())
+ 
     try:
         review = Review.query.get(review_id)
         if not review or review.historic_site_id != site_id:

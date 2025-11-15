@@ -68,9 +68,7 @@ import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-
-import {createReview } from "@/api/axios.js";
-
+import api from "@/api/axios.js";
 
 
 const route = useRoute();
@@ -104,25 +102,33 @@ const handleSubmit = async () => {
     return;
   }
 
-  try {
-  await createReview(siteId, review.value);
+try {
+  const payload = {
+    rating: review.value.rating,
+    comment: review.value.text,
+  };
+
+  await api.post(`/sites/${siteId}/reviews`, payload);
+
   success.value = "Tu reseña fue enviada correctamente.";
-  setTimeout(() => router.push(`/sitios/${siteId}`), 2500);
+  setTimeout(() => router.push(`/sites/${siteId}`), 2500);
 
-  } catch (e) {
-    console.error("Error creando reseña:", e);
+} catch (e) {
+  console.error("Error creando reseña:", e);
 
-    if (e.response?.data?.error) {
-      const backendError = e.response.data.error;
-      const details = backendError.details
-        ? Object.values(backendError.details).flat().join(", ")
-        : backendError.message;
+  if (e.response?.data?.error) {
+    const backendError = e.response.data.error;
+    const details = backendError.details
+      ? Object.values(backendError.details).flat().join(", ")
+      : backendError.message;
 
-      error.value = details || "Error al guardar la reseña.";
-    } else {
-      error.value = "Error de conexión con el servidor.";
-    }
+    error.value = details || "Error al guardar la reseña.";
+  } else {
+    error.value = "Error de conexión con el servidor.";
+  }
 }
+
+
 
 };
 

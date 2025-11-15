@@ -47,19 +47,13 @@ const router = createRouter({
     {
       path: '/sites/:site_id',
       name: 'siteDetail',
-      component: () => import('../views/DetailView.vue')
+      component: () => import('../views/SiteDetailsView.vue')
     },
     {
       path: "/sites/:site_id/review",
       name: "reviewEditor",
       component: () => import("../views/ReviewEditorView.vue"), 
      },
-     {
-      path: '/auth/callback', 
-      name: 'authCallback',
-      component: AuthView,
-    },
-
     {
       path: '/profile',
       name: 'profile',

@@ -76,7 +76,8 @@ class MyReviewResponseSchema(Schema):
     rating = fields.Int()
     comment = fields.Str(attribute="content")
     inserted_at = fields.Method("get_inserted_at")
-
+    status = fields.Method("get_status")
+    rejected_reason = fields.Str(allow_none=True)
     historic_site = fields.Nested(
         HistoricSiteShortSchema,
         attribute="historic_site",
@@ -85,6 +86,10 @@ class MyReviewResponseSchema(Schema):
 
     # Reseña pertenece al usuario actual
     isUserReview = fields.Method("get_is_user_review")
+
+    def get_status(self, obj):
+        return obj.status.value  
+
 
     def get_inserted_at(self, obj):
         return obj.created_at.isoformat() + "Z" if obj.created_at else None

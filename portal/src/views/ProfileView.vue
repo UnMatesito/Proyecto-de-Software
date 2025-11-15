@@ -90,6 +90,32 @@
                   <RatingStars :rating="review.rating" />
                 </div>
                 <p class="mt-3 text-gray-600">{{ review.comment || review.comment_excerpt }}</p>
+                <!-- Estado -->
+                <div class="mt-3">
+                  <span
+                    class="inline-flex items-center gap-1 rounded-xl px-3 py-1 text-sm font-semibold shadow-sm"
+                    :class="{
+                      'bg-yellow-100 text-yellow-800 border border-yellow-300': review.status === 'Pendiente',
+                      'bg-green-100 text-green-800 border border-green-300': review.status === 'Aprobada',
+                      'bg-red-100 text-red-800 border border-red-300': review.status === 'Rechazada'
+                    }"
+                  >
+                    <i class="fa-solid fa-circle text-[8px]"></i>
+                    Estado: {{ review.status }}
+                  </span>
+                </div>
+                <!-- Motivo del rechazo -->
+                <div v-if="review.status === 'Rechazada'" class="mt-2 text-red-600 text-sm">
+                  Motivo del rechazo: {{ review.rejected_reason || 'No especificado' }}
+                </div>
+                <div class="mt-3 flex justify-end">
+                  <button
+                    @click="deleteReview(review)"
+                    class="text-red-600 text-sm hover:underline"
+                  >
+                    Eliminar
+                  </button>
+                </div>
               </article>
             </div>
             <p v-else class="text-gray-500 italic">Aún no escribiste reseñas.</p>
@@ -257,6 +283,22 @@ async function removeFavorite(siteId) {
     console.error('Error al eliminar favorito:', error.response?.data || error.message);
   }
 }
+//Eliminar reseña
+async function deleteReview(review) {
+  if (!confirm("¿Seguro que querés eliminar esta reseña?")) return;
+
+  try {
+    await api.delete(`/sites/${review.site?.id}/reviews/${review.id}`);
+
+    // Sacarlo del array
+    reviews.value = reviews.value.filter(r => r.id !== review.id);
+
+  } catch (error) {
+    console.error("Error al eliminar reseña:", error);
+    alert("No se pudo eliminar la reseña.");
+  }
+}
+
 
 // Event handlers
 function handleReviewPageChange(newPage) {
