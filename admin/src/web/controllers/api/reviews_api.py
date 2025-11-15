@@ -144,9 +144,9 @@ def create_review(site_id):
     except ValueError as e:
         msg = str(e).lower()
         if "ya dejó" in msg:
-            details = {"site_id": ["User already reviewed this site"]}
+            details = {"site_id": ["Uste ya tiene un reseña en el sitio"]}
         elif "rango" in msg or "calificación" in msg:
-            details = {"rating": ["Must be between 1 and 5"]}
+            details = {"rating": ["Tiene que ser entre 1 y 5 "]}
         elif "sitio" in msg:
             return (
                 jsonify({"error": {"code": "not_found", "message": "Site not found"}}),
@@ -233,8 +233,8 @@ def delete_review(site_id, review_id):
     if blocked_response:
         return blocked_response
 
-    user_id = get_jwt_identity()
-
+    user_id = int(get_jwt_identity())
+ 
     try:
         review = Review.query.get(review_id)
         if not review or review.historic_site_id != site_id:
