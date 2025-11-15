@@ -53,13 +53,13 @@ class Review(db.Model):
     __table_args__ = (
         db.UniqueConstraint(
             "user_id", "historic_site_id", name="unique_user_review"
-        ),
+        ),  # Un usuario solo puede dejar una reseña por sitio histórico
         CheckConstraint(
             "rating >= 1 AND rating <= 5", name="check_rating_range"
-        ),
+        ),  # La calificación debe estar entre 1 y 5
         db.Index(
             "idx_historic_site_rating", "rating"
-        ),
+        ),  # Índice para optimizar consultas por calificación
     )
 
     # Validaciones
