@@ -99,7 +99,7 @@
               province: provinceValue !== 'Provincia' ? provinceValue : undefined,
               city: cityValue !== 'Ciudad' ? cityValue : undefined,
               name: nameValue || undefined,
-              description: descrpitionValue || undefined,
+              description: descriptionValue || undefined,
               tags: tagsValue.length ? tagsValue.join(',') : undefined,
               order_by: orderByValue !== 'Ordenar por' ? orderByValue : undefined,
               favorites: favoriteValue || undefined,
@@ -158,7 +158,7 @@
         </div>
         <input
           type="search"
-          v-model="descrpitionValue"
+          v-model="descriptionValue"
           id="search"
           class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300
                  rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500
@@ -227,7 +227,7 @@ const rout = useRoute()
 const cityValue = ref('Ciudad')
 const nameValue = ref('')
 const provinceValue = ref('Provincia')
-const descrpitionValue = ref('')
+const descriptionValue = ref('')
 const orderByValue = ref('Ordenar por')
 const favoriteValue = ref(false)
 const tagsValue = ref([])
@@ -242,8 +242,8 @@ function loadFromRoute(q = rout.query) {
   provinceValue.value = q.province || 'Provincia'
   cityValue.value = q.city || 'Ciudad'
   nameValue.value = q.name || ''
-  descrpitionValue.value = q.description || ''
-  orderByValue.value = q.orderBy || 'Ordenar por'
+  descriptionValue.value = q.description || ''
+  orderByValue.value = q.order_by || 'Ordenar por'
   favoriteValue.value = q.favorites === 'true'
   tagsValue.value = q.tags ? q.tags.split(',') : []
 }
@@ -312,7 +312,7 @@ const handleReset = () => {
   provinceValue.value = 'Provincia'
   cityValue.value = 'Ciudad'
   nameValue.value = ''
-  descrpitionValue.value = ''
+  descriptionValue.value = ''
   orderByValue.value = 'Ordenar por'
   favoriteValue.value = false
   tagsValue.value = []
