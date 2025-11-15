@@ -41,6 +41,8 @@
       :icon="customIconOrange">
         <l-popup :visible="true">
           {{ m.name }}
+          <br/> 
+          {{ m.desc  }}
         </l-popup>
       </l-marker>
 

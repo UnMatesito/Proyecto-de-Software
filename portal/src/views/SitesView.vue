@@ -66,7 +66,7 @@
       pagination.value = response.meta
       marks.value = []
       sites.value.forEach(site => {
-        marks.value.push({name: site.name, lat: site.lat, lon: site.lon})
+        marks.value.push({name: site.name, lat: site.lat, lon: site.lon, desc: site.short_description})
       });
     } catch (error) {
       apiMessage.value = '❌ No se pudo conectar con la API'
