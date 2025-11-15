@@ -5,7 +5,7 @@
             <div class="flex gap-3 flex-col items-end">
                 <Stars :rating="rating" :class="'w-28 flex justify-start'"></Stars>
                 <span class="text-sm  gap-1 text-proyecto-accent dark:text-gray-400 flex items-center ">
-                    <i class="fa-regular fa-clock"></i> {{ created_at ? created_at.slice(0, props.created_at.indexOf("T")).replaceAll("-", "/")  : '...'}}
+                    <i class="fa-regular fa-clock"></i> {{ created_at ? new Date(created_at).toLocaleDateString('es-AR') : '...' }}
                 </span>
             </div>
         </div>         

@@ -198,8 +198,8 @@ const fetchDetalleSitio = async () => {
   try {
     const { data } = await api.get(`${route.path}`)
     const formattedDate = data.inserted_at
-      ? data.inserted_at.slice(0, data.inserted_at.indexOf('T')).replaceAll('-', '/')
-      : null
+    ? new Date(data.inserted_at).toLocaleDateString('es-AR')
+    : '-'
     detalle.value = { ...data, inserted_at: formattedDate }
     shortDescription.value = data.short_description || '-'
     detailedContent.value = [
