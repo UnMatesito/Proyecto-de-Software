@@ -45,7 +45,7 @@
           </div>
         </div>
 
-        <aside class="flex gap-4 flex-col sm:max-w-[300px] mx-auto">
+        <aside class="flex gap-4 flex-col sm:max-w-[300px] w-full">
           <div class="flex justify-between items-start gap-2 relative">
             <h2 class="text-2xl font-bold">
               {{ detalle.name || 'Cargando...' }}
