@@ -142,7 +142,7 @@
             @click="loginWithGoogle"
           />
           <ButtonPrimary
-            v-else
+            v-else-if="!hasUserReview"
             :text="'Dejar reseña'"
             :icon_left="'fa-solid fa-plus mr-2'"
             class="w-auto"
@@ -151,16 +151,18 @@
         </div>
 
         <Review
-          v-for="r in reviews"
+          v-for="r in sortedReviews"
           :key="r.id"
           :user_name="r.user_name"
           :user_email="r.user_email"
           :text="r.comment"
           :created_at="r.inserted_at"
           :rating="r.rating"
+          :user_avatar="r.user_avatar"
+          :is_own_review="isAuthenticated && r.user_email === authStore.user.email"
         />
 
-        <Pagination 
+        <Pagination
           class="p-3"
           :page="reviewsPage"
           :total-pages="reviewsTotalPages"
@@ -211,6 +213,17 @@ const detalle = ref({})
 const detailedContent = ref([])
 const shortDescription = ref('')
 const reviews = ref([])
+const sortedReviews = computed(() => {
+  const auth = authStore.user;
+  if (!reviews.value) return [];
+  if (!auth?.email) return reviews.value;
+
+  return [...reviews.value].sort((a, b) => {
+    if (a.user_email === auth.email) return -1;
+    if (b.user_email === auth.email) return 1;
+    return 0;
+  });
+});
 const page = ref(1)
 const activeIndex = ref(0)
 
@@ -363,6 +376,15 @@ const scrollToMap = () => {
 const scrollToReviews = () => {
   document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })
 }
+
+const hasUserReview = computed(() => {
+  const auth = authStore.user;
+  if (!auth?.email) return false;
+
+  return reviews.value.some(r => r.user_email === auth.email);
+});
+
+
 </script>
 
 <style>
