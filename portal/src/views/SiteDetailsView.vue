@@ -131,7 +131,7 @@
       <!-- Listado -->
       <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3 mb-2">
 
-        <div class="flex flex-row justify-between items-center mx-2">
+        <div class="flex flex-row justify-between items-center mx-2 flex-wrap gap-2">
           <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
 
           <ButtonPrimary
@@ -160,7 +160,8 @@
           :rating="r.rating"
         />
 
-        <Pagination
+        <Pagination 
+          class="p-3"
           :page="reviewsPage"
           :total-pages="reviewsTotalPages"
           :page-size="reviewsPerPage"
