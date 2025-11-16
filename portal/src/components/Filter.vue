@@ -317,7 +317,7 @@ const handleReset = () => {
   favoriteValue.value = false
   tagsValue.value = []
   cities.value = []
-
+  
   disableMapClick()
 
   nextTick(() => {
@@ -326,7 +326,7 @@ const handleReset = () => {
 }
 
 const disableMapClick = () => {
-  emit('disableMap')
+  emit('disableMap', true)
 }
 
 // Inicialización principal

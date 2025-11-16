@@ -1,8 +1,7 @@
 <template>
   <div class="flex flex-col items-center justify-center max-w-[1200px] w-full">
     <section class="w-full p-3 max-w-screen-xl">
-      <ButtonPrimary :text="'Volver'" :icon_left="'fa-solid fa-arrow-left mr-2'" :link="'/sites'" :class="'my-4'"/>
-
+      <ButtonPrimary :text="'Volver'" :icon_left="'fa-solid fa-arrow-left mr-2'" :link="prevURL || '/sites'" :class="'my-4'"/>
       <div class="flex items-start gap-4 w-full pt-1 pb-3 flex-wrap relative">
         <!-- (image + aside unchanged) -->
         <!-- ... existing image carousel and aside ... -->
@@ -126,37 +125,56 @@
         <p v-else class="text-sm text-gray-500">Sin coordenadas para mostrar el mapa.</p>
       </div>
     </div>
+      <!-- SI reviewsEnabled ES TRUE → mostrar reseñas -->
+      <section v-if="reviewsEnabled" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
+        <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto"
+          @click="authStore.isAuthenticated ? goToReview() : loginWithGoogle()"
+        />
 
-    <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3 mb-2">
-      <div class="flex flex-row justify-between items-center mx-2">
-        <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
-        <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-64 w-auto"/>
-      </div>
-      <Review
-        v-for="r in reviews"
-        :key="r.id"
-        :user_name="r.user_name"
-        :user_email="r.user_email"
-        :text="r.comment"
-        :created_at="r.inserted_at"
-        :rating="r.rating"
-      />
-      <p
-        v-if="canLoadMore"
-        @click="fetchReviews"
-        class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out text-center mb-2"
+      <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3 mb-2">
+        <div class="flex flex-row justify-between items-center mx-2">
+          <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
+          <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-64 w-auto"/>
+        </div>
+
+        <Review
+          v-for="r in reviews"
+          :key="r.id"
+          :user_name="r.user_name"
+          :user_email="r.user_email"
+          :text="r.comment"
+          :created_at="r.inserted_at"
+          :rating="r.rating"
+        />
+
+        <Pagination
+          :page="reviewsPage"
+          :total-pages="reviewsTotalPages"
+          :page-size="reviewsPerPage"
+          :page-size-options="[10, 25, 50]"
+          @page-change="handlePageChange"
+          @page-size-change="handlePageSizeChange"
+        />
+      </section>
+
+      <!-- SI reviewsEnabled ES FALSE → mostrar mensaje alternativo -->
+      <section
+        v-else
+        id="reviews"
+        class="w-full max-w-[1200px] flex flex-col gap-3 mt-3"
       >
-        Ver más reseñas...
-      </p>
-      <SkeletonReview v-if="reviews.length == 0 && page == 1" />
-    </section>
+        <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
+        <p class="text-gray-600 text-sm">
+          Las reseñas están deshabilitadas temporalmente.
+        </p>
+      </section>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Stars from '@/components/Stars.vue'
 import IconLocation from '@/components/icons/IconLocation.vue'
 import IconFavorite from '@/components/icons/IconFavorite.vue'
@@ -167,9 +185,12 @@ import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useFavoritesStore } from '@/stores/favorites.js'
 import MapDetail from '@/components/MapDetail.vue'
-import SkeletonReview from '@/components/SkeletonReview.vue'
+import Pagination from "@/components/Pagination.vue"
 
+
+const prevURL = ref('')
 const route = useRoute()
+const router = useRouter()
 const detalle = ref({})
 const detailedContent = ref([])
 const shortDescription = ref('')
@@ -177,6 +198,17 @@ const reviews = ref([])
 const page = ref(1)
 const activeIndex = ref(0)
 
+const reviewsPage = ref(1)
+const reviewsPerPage = ref(10)
+const reviewsTotal = ref(0)        
+const reviewsTotalPages = computed(() =>
+  Math.ceil(reviewsTotal.value / reviewsPerPage.value)
+)
+const reviewsLoading = ref(false)
+
+const reviewsEnabled = ref(false)
+
+prevURL.value = localStorage.prevURL || '/sites'
 const authStore = useAuthStore()
 const favoritesStore = useFavoritesStore()
 const { isAuthenticated } = storeToRefs(authStore)
@@ -196,7 +228,13 @@ const hasLocation = computed(() =>
   !Number.isNaN(Number(detalle.value.lon))
 )
 
-const canLoadMore = computed(() => reviews.value.length && reviews.value.length % 10 === 0)
+const reviewButtonLink = computed(() => {
+  if (authStore.isAuthenticated) {
+    return `/sites/${detalle.value.id}/review`
+  }
+  return "/login"
+})
+
 
 const fetchDetalleSitio = async () => {
   try {
@@ -214,15 +252,48 @@ const fetchDetalleSitio = async () => {
   }
 }
 
-const fetchReviews = async () => {
+const fetchReviews = async (page = 1) => {
+  reviewsLoading.value = true
+
   try {
-    const resp = await api.get(`${route.path}/reviews`, { params: { page: page.value } })
-    reviews.value = [...reviews.value, ...(resp.data.data || [])]
-    page.value++
+    const resp = await api.get(`${route.path}/reviews`, {
+      params: {
+        page,
+        per_page: reviewsPerPage.value
+      }
+    })
+
+    reviews.value = resp.data.data
+    reviewsPage.value = resp.data.meta.page
+    reviewsTotal.value = resp.data.meta.total
+
   } catch (error) {
-    console.error('Error al cargar reseñas:', error)
+    console.error("Error al cargar reseñas:", error)
+  } finally {
+    reviewsLoading.value = false
   }
 }
+
+function loginWithGoogle() {
+  const currentPath = router.currentRoute.value.fullPath
+  const apiUrl = import.meta.env.VITE_API_URL || "https://admin-grupo09.proyecto2025.linti.unlp.edu.ar/api"
+
+  window.location.href = `${apiUrl}/auth/google/login?next=${encodeURIComponent(currentPath)}`
+}
+
+function goToReview() {
+  router.push(`/sites/${detalle.value.id}/review`)
+}
+
+const fetchFeatureFlags = async () => {
+  try {
+    const { data } = await api.get("/feature-flags/reviews_enabled")
+    reviewsEnabled.value = data.is_enabled   
+  } catch (error) {
+    console.error("Error cargando feature flags:", error)
+  }
+}
+
 
 const toggleFavorite = async () => {
   if (!detalle.value.id) return
@@ -236,6 +307,16 @@ const toggleFavorite = async () => {
 watch(images, () => {
   activeIndex.value = 0
 }, { immediate: true })
+
+const handlePageChange = (newPage) => {
+  fetchReviews(newPage)
+}
+
+const handlePageSizeChange = (newSize) => {
+  reviewsPerPage.value = newSize
+  fetchReviews(1)
+}
+
 
 const prev = () => {
   if (!hasImages.value) return
@@ -251,7 +332,10 @@ const setActive = (idx) => { activeIndex.value = idx }
 
 onMounted(async () => {
   await fetchDetalleSitio()
-  await fetchReviews()
+  await fetchFeatureFlags()   
+  if (reviewsEnabled.value) {
+    await fetchReviews()
+  }
   if (isAuthenticated.value) {
     await favoritesStore.fetchFavorites()
   }

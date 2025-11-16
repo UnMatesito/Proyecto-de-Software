@@ -312,7 +312,6 @@ def get_user_history():
         User.role.has(Role.permissions.any(name="site_update"))
     ).all()
 
-
 def add_favorite_site(user_id: int, site_id: int):
     """Agrega un sitio histórico a los favoritos del usuario."""
     from core.services.historic_site_service import get_historic_site_by_id
