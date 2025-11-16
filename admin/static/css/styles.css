@@ -2863,11 +2863,6 @@ select {
   background-color: rgb(155 28 28 / var(--tw-bg-opacity, 1));
 }
 
-.dark\:bg-blue-900:is(.dark *) {
-  --tw-bg-opacity: 1;
-  background-color: rgb(35 56 118 / var(--tw-bg-opacity, 1));
-}
-
 .dark\:text-gray-100:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(243 244 246 / var(--tw-text-opacity, 1));
@@ -2911,11 +2906,6 @@ select {
 .dark\:text-white:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-
-.dark\:text-blue-300:is(.dark *) {
-  --tw-text-opacity: 1;
-  color: rgb(164 202 254 / var(--tw-text-opacity, 1));
 }
 
 .dark\:hover\:bg-gray-600:hover:is(.dark *) {
