@@ -45,7 +45,7 @@
           </div>
         </div>
 
-        <aside class="flex gap-4 flex-col max-w-[300px] mx-auto">
+        <aside class="flex gap-4 flex-col sm:max-w-[300px] mx-auto">
           <div class="flex justify-between items-start gap-2 relative">
             <h2 class="text-2xl font-bold">
               {{ detalle.name || 'Cargando...' }}
@@ -113,7 +113,7 @@
       </div>
     </section>
 
-    <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
+    <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3 p-3">
       <h3 class="text-3xl text-proyecto-accent mx-2">Ubicación</h3>
       <div id="map" class="w-full">
         <MapDetail
