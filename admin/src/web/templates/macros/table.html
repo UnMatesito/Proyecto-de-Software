@@ -96,7 +96,7 @@
     {% endif %}
     {% if reject_route and item.is_pending() %}
     {% set reject_params = {id_param: item.id} %}
-        <button type="button" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded-lg inline-flex items-center gap-2 text-sm"
+        <button type="button" class="bg-red-700 hover:bg-red-800 text-white font-semibold py-2.5 px-5 rounded-lg inline-flex items-center gap-2 text-sm text-center"
             onclick="handleReject('reject-form-{{ item.id }}')">
           {{ get_icon("reject")|safe }}
           <span>Rechazar</span>
