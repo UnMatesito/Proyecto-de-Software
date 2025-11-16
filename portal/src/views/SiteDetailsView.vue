@@ -46,7 +46,7 @@
           </div>
         </div>
 
-        <aside class="flex gap-4 flex-col max-w-[300px]">
+        <aside class="flex gap-4 flex-col max-w-[300px] mx-auto">
           <div class="flex justify-between items-start gap-2 relative">
             <h2 class="text-2xl font-bold">
               {{ detalle.name || 'Cargando...' }}
@@ -115,7 +115,7 @@
     </section>
 
     <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
-      <h3 class="text-3xl text-proyecto-accent">Ubicación</h3>
+      <h3 class="text-3xl text-proyecto-accent mx-2">Ubicación</h3>
       <div id="map" class="w-full">
         <MapDetail
           v-if="hasLocation"
@@ -127,9 +127,11 @@
       </div>
     </div>
 
-    <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
-      <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
-      <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto"/>
+    <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3 mb-2">
+      <div class="flex flex-row justify-between items-center mx-2">
+        <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
+        <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-64 w-auto"/>
+      </div>
       <Review
         v-for="r in reviews"
         :key="r.id"
@@ -142,7 +144,7 @@
       <p
         v-if="canLoadMore"
         @click="fetchReviews"
-        class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out"
+        class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out text-center mb-2"
       >
         Ver más reseñas...
       </p>

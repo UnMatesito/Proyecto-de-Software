@@ -9,7 +9,7 @@
 
     <section class=" w-full sm:w-auto grid  sm:grid-cols-2  md:grid-cols-3  lg:grid-cols-3 xl:grid-cols-4 gap-3 p-3">
       <Card
-      class="  md:w-[250px] lg:w-[270px]"
+      class="md:w-[230px] lg:w-[270px]"
       v-for="site in sites"
       :key="`${site.id}-${site.name}`"
       :name="site.name"
