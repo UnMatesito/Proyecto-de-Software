@@ -4,7 +4,6 @@ import { maintenanceState } from '@/utils/maintenanceState'
 import { useAuthStore } from '../stores/auth'
 
 import HomeView from '../views/HomeView.vue'
-import ProfileView from '../views/ProfileView.vue'
 
 const requireAuth = (to, from, next) => {
   const authStore = useAuthStore();
@@ -27,9 +26,6 @@ const router = createRouter({
     {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
     },
     {
@@ -55,7 +51,7 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: ProfileView,
+      component: () => import('../views/ProfileView.vue'),
       beforeEnter: requireAuth,
     }
   ],
