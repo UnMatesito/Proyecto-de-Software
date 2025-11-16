@@ -53,6 +53,12 @@
       <div v-else>
         <!-- REVIEWS TAB -->
         <section v-show="activeTab === 'reviews'">
+          <div
+          v-if="showToast"
+          class="fixed bottom-5 right-5 z-50 rounded-lg bg-green-600 px-4 py-3 text-white shadow-lg transition-all">
+          {{ toastMessage }}
+          </div>
+
           <h3 class="mb-4 text-xl font-semibold text-gray-700">Mis Reseñas</h3>
 
           <div class="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -82,9 +88,13 @@
                 <p class="text-sm text-gray-500">
                   {{ new Date(review.inserted_at || review.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}
                 </p>
-                <h4 class="mt-1 text-lg font-semibold text-gray-800">
-                  {{ review.site?.name || review.name }}
-                </h4>
+                  <h4 class="mt-1 text-lg font-semibold text-gray-800">
+                    <a
+                      :href="`/sites/${review.site?.id}`"
+                      class="text-proyecto-primary hover:underline">
+                      {{ review.site?.name || review.name }}
+                    </a>
+                  </h4>
                 <div class="mt-2 flex items-center gap-2">
                   <span class="font-semibold text-gray-700">Calificación:</span>
                   <RatingStars :rating="review.rating" />
@@ -116,6 +126,7 @@
                     Eliminar
                   </button>
                 </div>
+                
               </article>
             </div>
             <p v-else class="text-gray-500 italic">Aún no escribiste reseñas.</p>
@@ -197,6 +208,10 @@ const authStore = useAuthStore();
 const user = authStore.user;
 
 const activeTab = ref('reviews');
+
+const showToast = ref(false);
+const toastMessage = ref("");
+
 
 // Reviews state
 const reviews = ref([]);
@@ -290,14 +305,24 @@ async function deleteReview(review) {
   try {
     await api.delete(`/sites/${review.site?.id}/reviews/${review.id}`);
 
-    // Sacarlo del array
     reviews.value = reviews.value.filter(r => r.id !== review.id);
+
+    triggerToast("Reseña eliminada correctamente ");
 
   } catch (error) {
     console.error("Error al eliminar reseña:", error);
-    alert("No se pudo eliminar la reseña.");
+    triggerToast("Error al eliminar reseña ");
   }
 }
+
+function triggerToast(message) {
+  toastMessage.value = message;
+  showToast.value = true;
+  setTimeout(() => {
+    showToast.value = false;
+  }, 5000); 
+}
+
 
 
 // Event handlers
