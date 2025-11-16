@@ -114,7 +114,7 @@
     </section>
 
     <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3 p-3">
-      <h3 class="text-3xl text-proyecto-accent mx-2">Ubicación</h3>
+      <h3 id="map_title" class="text-3xl text-proyecto-accent mx-2">Ubicación</h3>
       <div id="map" class="w-full">
         <MapDetail
           v-if="hasLocation"
