@@ -66,9 +66,7 @@ def list_reviews(site_id):
         # Buscar reseñas con paginación y filtros
         pagination = search_with_pagination(
             Review,
-            filters={"historic_site_id": site_id,
-                     "status": "Aprobada"
-                    },
+            filters={"historic_site_id": site_id, "status": "Aprobada"},
             page=params["page"],
             per_page=params["per_page"],
             order_by=params["order_by"],
@@ -197,7 +195,9 @@ def get_review(site_id, review_id):
         return blocked_response
 
     try:
-        review = Review.query.filter_by(id=review_id, historic_site_id=site_id, status=ReviewStatus.APROBADA).first()
+        review = Review.query.filter_by(
+            id=review_id, historic_site_id=site_id, status=ReviewStatus.APROBADA
+        ).first()
 
         if not review:
             return (
@@ -236,7 +236,7 @@ def delete_review(site_id, review_id):
         return blocked_response
 
     user_id = int(get_jwt_identity())
- 
+
     try:
         review = Review.query.get(review_id)
         if not review or review.historic_site_id != site_id:

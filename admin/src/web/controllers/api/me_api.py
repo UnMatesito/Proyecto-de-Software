@@ -2,13 +2,12 @@ from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 
+from core.models.user import User
 from core.services import review_service, user_service
 from web.schemas.reviews_schemas import MyReviewQuerySchema, MyReviewResponseSchema
 from web.utils.format_marshmallow_validation_errors import format_validation_errors
 
 from . import api_bp
-from core.services import user_service
-from core.models.user import User
 
 
 @api_bp.route("/me", methods=["GET"])
