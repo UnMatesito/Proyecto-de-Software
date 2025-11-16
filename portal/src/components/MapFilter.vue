@@ -17,7 +17,7 @@
       </div>
       <div class="flex flex-col items-end">
         <ButtonPrimary v-if="showButton && !isDisable"
-        :text="'Actualizar radio de búsqueda'"
+        :text="'Buscar en el área seleccionada'"
         @click="updateRadiusPath"
         :icon_left="'fa-solid fa-rotate mr-2'" />
       </div>
