@@ -88,9 +88,13 @@
                 <p class="text-sm text-gray-500">
                   {{ new Date(review.inserted_at || review.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}
                 </p>
-                <h4 class="mt-1 text-lg font-semibold text-gray-800">
-                  {{ review.site?.name || review.name }}
-                </h4>
+                  <h4 class="mt-1 text-lg font-semibold text-gray-800">
+                    <a
+                      :href="`/sites/${review.site?.id}`"
+                      class="text-proyecto-primary hover:underline">
+                      {{ review.site?.name || review.name }}
+                    </a>
+                  </h4>
                 <div class="mt-2 flex items-center gap-2">
                   <span class="font-semibold text-gray-700">Calificación:</span>
                   <RatingStars :rating="review.rating" />
@@ -122,6 +126,7 @@
                     Eliminar
                   </button>
                 </div>
+                
               </article>
             </div>
             <p v-else class="text-gray-500 italic">Aún no escribiste reseñas.</p>
