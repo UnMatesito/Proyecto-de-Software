@@ -7,7 +7,7 @@
             :class="index <= Math.round(rating) ? 'fill-yellow-300' : 'fill-slate-300'"
         ></IconStar>
         <p class="text-xs sm:text-sm font-medium ml-2 font-semibold">
-            <span class="text-sm">{{ rating.toFixed(1) }}</span>
+            <span class="text-sm text-yellow-500">({{ rating.toFixed(1) }})</span>
         </p>
     </div>
 </template>
