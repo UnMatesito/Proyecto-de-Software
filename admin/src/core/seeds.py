@@ -1040,6 +1040,103 @@ def seed_aditional_validated_historic_sites():
         print("No hay datos base suficientes para generar sitios validados.")
         return
 
+    # Tipos de sitios históricos argentinos
+    tipos_sitio = [
+        # Cabildos y edificios coloniales
+        "Cabildo Histórico de",
+        "Antiguo Cabildo de",
+        "Ex Cabildo Colonial de",
+
+        # Iglesias y templos
+        "Iglesia Nuestra Señora del Rosario de",
+        "Basílica de San Francisco de",
+        "Capilla del Carmen de",
+        "Iglesia de Santo Domingo de",
+        "Parroquia Nuestra Señora de la Merced de",
+        "Iglesia de San Ignacio de",
+        "Catedral Metropolitana de",
+        "Convento de San Bernardo de",
+        "Iglesia de la Compañía de Jesús de",
+        "Capilla de Santa Ana de",
+        "Basílica del Santísimo Sacramento de",
+
+        # Casas históricas
+        "Casa Histórica de",
+        "Casa Colonial de",
+        "Residencia Histórica de",
+        "Casa de Gobierno de",
+        "Quinta Histórica de",
+        "Casa Natal de Sarmiento en",
+        "Antigua Residencia de",
+
+        # Estancias
+        "Estancia Santa Catalina de",
+        "Estancia Jesús María de",
+        "Estancia La Candelaria de",
+        "Estancia San Ignacio de",
+        "Estancia Colonial de",
+
+        # Fortines y construcciones militares
+        "Fortín Independencia de",
+        "Fortín Colonial de",
+        "Reducto Histórico de",
+        "Fuerte de",
+        "Cuartel Histórico de",
+
+        # Teatros
+        "Teatro Municipal de",
+        "Teatro del Libertador General San Martín de",
+        "Teatro Coliseo de",
+        "Teatro Provincial de",
+        "Teatro Independencia de",
+
+        # Estaciones de tren
+        "Estación Central de Ferrocarril de",
+        "Antigua Estación del Tren de",
+        "Estación Ferroviaria de",
+        "Estación del Ferrocarril Mitre de",
+
+        # Plazas y espacios públicos
+        "Plaza 25 de Mayo de",
+        "Plaza de la Independencia de",
+        "Plaza San Martín de",
+        "Plaza 9 de Julio de",
+        "Plaza Belgrano de",
+        "Plaza Moreno de",
+
+        # Molinos y construcciones rurales
+        "Molino Harinero de",
+        "Antiguo Molino de",
+        "Tahona Colonial de",
+
+        # Monumentos
+        "Monumento a los Caídos de",
+        "Monumento al General San Martín de",
+        "Obelisco de",
+        "Pirámide de Mayo de",
+
+        # Bodegas (principalmente para Mendoza, San Juan)
+        "Bodega Histórica de",
+        "Antigua Bodega de",
+
+        # Museos
+        "Museo Histórico Municipal de",
+        "Museo de Bellas Artes de",
+        "Museo Provincial de",
+
+        # Otros
+        "Aduana Histórica de",
+        "Correo Central de",
+        "Banco Provincial de",
+        "Palacio Municipal de",
+        "Mercado de Abasto de",
+        "Pulpería Histórica de",
+        "Cementerio Municipal de",
+        "Puente Colgante de",
+        "Dique de",
+        "Confitería del Molino de"
+    ]
+
     sitios = []
     for _ in range(100):
         city = choice(cities)
@@ -1047,13 +1144,17 @@ def seed_aditional_validated_historic_sites():
         state = choice(states)
         user = choice(users)
 
+        # Concatenar tipo de sitio + nombre de ciudad
+        tipo = choice(tipos_sitio)
+        nombre = f"{tipo}{city.name}"
+
         # Coordenadas aleatorias dentro del rango general de Argentina
         lon = round(uniform(-73, -53), 6)
         lat = round(uniform(-55, -21), 6)
 
         sitios.append(
             HistoricSite(
-                name=f"Sitio validado {fake.city()}",
+                name=nombre,
                 brief_description=fake.sentence(nb_words=10)[:50],
                 full_description=fake.paragraph(nb_sentences=4),
                 inauguration_year=randint(1600, 2020),
