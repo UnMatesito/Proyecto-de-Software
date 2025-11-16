@@ -101,13 +101,13 @@
         </aside>
       </div>
 
-      <!-- Brief description standalone -->
+      <!-- DESCRIPCIÓN BREVE -->
       <div v-if="shortDescription" class="mt-6 w-full bg-white rounded-xl p-5 shadow">
         <h3 class="text-xl font-semibold mb-2 text-proyecto-accent">Descripción breve del sitio</h3>
         <p class="text-gray-700 whitespace-pre-line">{{ shortDescription }}</p>
       </div>
 
-      <!-- Detailed description accordion full width -->
+      <!-- DETALLE COMPLETO -->
       <div class="mt-6 w-full">
         <Acordion :content="detailedContent"/>
       </div>
@@ -125,15 +125,28 @@
         <p v-else class="text-sm text-gray-500">Sin coordenadas para mostrar el mapa.</p>
       </div>
     </div>
-      <!-- SI reviewsEnabled ES TRUE → mostrar reseñas -->
-      <section v-if="reviewsEnabled" id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3 mb-2">
+
+    <!-- SI reviewsEnabled ES TRUE mostrar reseñas-->
+    <section v-if="reviewsEnabled" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
+      <!-- Listado -->
+      <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3 mb-2">
+
         <div class="flex flex-row justify-between items-center mx-2">
           <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
+
           <ButtonPrimary
-            :text="'Dar reseña'"
+            v-if="!isAuthenticated"
+            :text="'Iniciar sesión para dejar una reseña'"
+            :icon_left="'fa-solid fa-right-to-bracket mr-2'"
+            class="w-auto"
+            @click="loginWithGoogle"
+          />
+          <ButtonPrimary
+            v-else
+            :text="'Dejar reseña'"
             :icon_left="'fa-solid fa-plus mr-2'"
-            class="max-w-64 w-auto"
-            @click="authStore.isAuthenticated ? goToReview() : loginWithGoogle()"
+            class="w-auto"
+            @click="goToReview"
           />
         </div>
 
@@ -156,14 +169,20 @@
           @page-size-change="handlePageSizeChange"
         />
       </section>
+    </section>
 
-      <!-- SI reviewsEnabled ES FALSE → mostrar mensaje alternativo -->
-      <section v-else id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
-        <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
-        <p class="text-gray-600 text-sm">
-          Las reseñas están deshabilitadas temporalmente.
-        </p>
-      </section>
+    <!-- SI reviewsEnabled ES FALSE mostrar mensaje alternativo-->
+    <section
+      v-else
+      id="reviews"
+      class="w-full max-w-[1200px] flex flex-col gap-3 mt-3"
+    >
+      <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
+      <p class="text-gray-600 text-sm">
+        Las reseñas están deshabilitadas temporalmente.
+      </p>
+    </section>
+
   </div>
 </template>
 
