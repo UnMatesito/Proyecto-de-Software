@@ -126,15 +126,15 @@
       </div>
     </div>
       <!-- SI reviewsEnabled ES TRUE → mostrar reseñas -->
-      <section v-if="reviewsEnabled" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
-        <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto"
-          @click="authStore.isAuthenticated ? goToReview() : loginWithGoogle()"
-        />
-
-      <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3 mb-2">
+      <section v-if="reviewsEnabled" id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3 mb-2">
         <div class="flex flex-row justify-between items-center mx-2">
           <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
-          <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-64 w-auto"/>
+          <ButtonPrimary
+            :text="'Dar reseña'"
+            :icon_left="'fa-solid fa-plus mr-2'"
+            class="max-w-64 w-auto"
+            @click="authStore.isAuthenticated ? goToReview() : loginWithGoogle()"
+          />
         </div>
 
         <Review
@@ -158,11 +158,7 @@
       </section>
 
       <!-- SI reviewsEnabled ES FALSE → mostrar mensaje alternativo -->
-      <section
-        v-else
-        id="reviews"
-        class="w-full max-w-[1200px] flex flex-col gap-3 mt-3"
-      >
+      <section v-else id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
         <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
         <p class="text-gray-600 text-sm">
           Las reseñas están deshabilitadas temporalmente.
@@ -200,7 +196,7 @@ const activeIndex = ref(0)
 
 const reviewsPage = ref(1)
 const reviewsPerPage = ref(10)
-const reviewsTotal = ref(0)        
+const reviewsTotal = ref(0)
 const reviewsTotalPages = computed(() =>
   Math.ceil(reviewsTotal.value / reviewsPerPage.value)
 )
@@ -288,7 +284,7 @@ function goToReview() {
 const fetchFeatureFlags = async () => {
   try {
     const { data } = await api.get("/feature-flags/reviews_enabled")
-    reviewsEnabled.value = data.is_enabled   
+    reviewsEnabled.value = data.is_enabled
   } catch (error) {
     console.error("Error cargando feature flags:", error)
   }
@@ -332,7 +328,7 @@ const setActive = (idx) => { activeIndex.value = idx }
 
 onMounted(async () => {
   await fetchDetalleSitio()
-  await fetchFeatureFlags()   
+  await fetchFeatureFlags()
   if (reviewsEnabled.value) {
     await fetchReviews()
   }
