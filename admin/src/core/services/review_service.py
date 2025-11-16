@@ -1,7 +1,6 @@
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import joinedload
 
-
 from core.database import db
 from core.models.review import Review, ReviewStatus
 from core.models.user import User
@@ -176,7 +175,7 @@ def update_review(review_id: int, rating: int = None, content: str = None) -> Re
 def get_paginated_reviews(
     filters=None, page=1, per_page=25, order_by="created_at", order_dir="asc"
 ):
-    """     
+    """
     Obtiene reseñas con filtros combinables y paginación.
     Filtros soportados:
       - status: 'Pendiente', 'Aprobada', 'Rechazada'
@@ -196,16 +195,16 @@ def get_paginated_reviews(
         except ValueError:
             filters.pop("status", None)
 
-    # Guardo el texto de busqueda por mail 
+    # Guardo el texto de busqueda por mail
     email_search = None
     if "search_text" in filters and filters["search_text"]:
         email_search = filters["search_text"].strip()
-        filters.pop("search_text")  
+        filters.pop("search_text")
 
-    # Armo la query base 
+    # Armo la query base
     query = build_search_query(Review, filters, text_search_columns=["content"])
 
-    # Añado la busqueda por mail a la query 
+    # Añado la busqueda por mail a la query
     if email_search:
         query = query.join(User).filter(User.email.ilike(f"%{email_search}%"))
         print("FILTER:", f"%{email_search}%")

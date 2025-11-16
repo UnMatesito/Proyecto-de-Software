@@ -280,7 +280,6 @@ function initMultiSelect() {
     placeholder: 'Seleccionar tags',
     onChange(selected) {
       tagsValue.value = selected.map(e => e.id)
-      console.log('Tags seleccionados:', tagsValue.value)
     }
   })
 
@@ -317,7 +316,7 @@ const handleReset = () => {
   favoriteValue.value = false
   tagsValue.value = []
   cities.value = []
-  
+
   disableMapClick()
 
   nextTick(() => {

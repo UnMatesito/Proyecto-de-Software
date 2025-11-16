@@ -181,7 +181,7 @@ def reject(review_id):
         return redirect(url_for("reviews.detail", review_id=review_id))
 
     try:
-        review = reject_review_serv(review_id=review_id, reason=reason)
+        reject_review_serv(review_id=review_id, reason=reason)
 
         flash(f"Reseña rechazada correctamente. Motivo: {reason[:50]}...", "success")
 

@@ -1046,7 +1046,6 @@ def seed_aditional_validated_historic_sites():
         "Cabildo Histórico de",
         "Antiguo Cabildo de",
         "Ex Cabildo Colonial de",
-
         # Iglesias y templos
         "Iglesia Nuestra Señora del Rosario de",
         "Basílica de San Francisco de",
@@ -1059,7 +1058,6 @@ def seed_aditional_validated_historic_sites():
         "Iglesia de la Compañía de Jesús de",
         "Capilla de Santa Ana de",
         "Basílica del Santísimo Sacramento de",
-
         # Casas históricas
         "Casa Histórica de",
         "Casa Colonial de",
@@ -1068,34 +1066,29 @@ def seed_aditional_validated_historic_sites():
         "Quinta Histórica de",
         "Casa Natal de Sarmiento en",
         "Antigua Residencia de",
-
         # Estancias
         "Estancia Santa Catalina de",
         "Estancia Jesús María de",
         "Estancia La Candelaria de",
         "Estancia San Ignacio de",
         "Estancia Colonial de",
-
         # Fortines y construcciones militares
         "Fortín Independencia de",
         "Fortín Colonial de",
         "Reducto Histórico de",
         "Fuerte de",
         "Cuartel Histórico de",
-
         # Teatros
         "Teatro Municipal de",
         "Teatro del Libertador General San Martín de",
         "Teatro Coliseo de",
         "Teatro Provincial de",
         "Teatro Independencia de",
-
         # Estaciones de tren
         "Estación Central de Ferrocarril de",
         "Antigua Estación del Tren de",
         "Estación Ferroviaria de",
         "Estación del Ferrocarril Mitre de",
-
         # Plazas y espacios públicos
         "Plaza 25 de Mayo de",
         "Plaza de la Independencia de",
@@ -1103,27 +1096,22 @@ def seed_aditional_validated_historic_sites():
         "Plaza 9 de Julio de",
         "Plaza Belgrano de",
         "Plaza Moreno de",
-
         # Molinos y construcciones rurales
         "Molino Harinero de",
         "Antiguo Molino de",
         "Tahona Colonial de",
-
         # Monumentos
         "Monumento a los Caídos de",
         "Monumento al General San Martín de",
         "Obelisco de",
         "Pirámide de Mayo de",
-
         # Bodegas (principalmente para Mendoza, San Juan)
         "Bodega Histórica de",
         "Antigua Bodega de",
-
         # Museos
         "Museo Histórico Municipal de",
         "Museo de Bellas Artes de",
         "Museo Provincial de",
-
         # Otros
         "Aduana Histórica de",
         "Correo Central de",
@@ -1134,7 +1122,7 @@ def seed_aditional_validated_historic_sites():
         "Cementerio Municipal de",
         "Puente Colgante de",
         "Dique de",
-        "Confitería del Molino de"
+        "Confitería del Molino de",
     ]
 
     sitios = []

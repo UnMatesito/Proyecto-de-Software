@@ -4,7 +4,7 @@
     import IconBuild from './icons/IconBuild.vue'
     import { useRoute } from 'vue-router'
     import Stars from './Stars.vue'
-    
+
     const route = useRoute()
 
     const props = defineProps({
@@ -35,8 +35,6 @@
     const alt = props.imagen || props.name
 
     const toggleFavorite = (siteId) => {
-      console.log('Toggle favorite for site:', siteId)
-      console.log('Average rating:', props.average_rating)
       emit('toggle-favorite', siteId)
     }
 
@@ -54,7 +52,7 @@
 
         <div class="relative w-full aspect-[4/3] sm:aspect-video">
             <img class="absolute inset-0 w-full h-full object-cover" :src="urlImg" :alt="alt">
-            <span class="absolute right-1.5 top-1.5 sm:right-2 sm:top-2 bg-white/90 backdrop-blur-sm p-1 text-xs sm:text-base border-0 rounded-full text-center hover:fill-red-600 transition-all duration-400 ease-in-out z-10 shadow-md">  
+            <span class="absolute right-1.5 top-1.5 sm:right-2 sm:top-2 bg-white/90 backdrop-blur-sm p-1 text-xs sm:text-base border-0 rounded-full text-center hover:fill-red-600 transition-all duration-400 ease-in-out z-10 shadow-md">
                 <i class="fa-regular fa-calendar"></i>
                 14/08/2024
             </span>
