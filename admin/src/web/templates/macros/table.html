@@ -96,39 +96,52 @@
     {% endif %}
     {% if reject_route and item.is_pending() %}
     {% set reject_params = {id_param: item.id} %}
+        <button type="button" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded-lg inline-flex items-center gap-2 text-sm"
+            onclick="handleReject('reject-form-{{ item.id }}')">
+          {{ get_icon("reject")|safe }}
+          <span>Rechazar</span>
+        </button>
 
-      <form action="{{ url_for(reject_route, **reject_params) }}" 
-            method="post" 
-            class="inline-flex items-center gap-2"
-            onsubmit="return validateInlineReject(this)">
-
-          <input type="text" 
-                name="reason"
-                placeholder="Motivo..."
-                required
-                minlength="10"
-                maxlength="200"
-                class="border border-gray-300 rounded px-2 py-1 text-sm w-40">
-
-          {{ button_error("Rechazar", type="submit", mobile=mobile) }}
+        <!-- Formulario que hará el POST con el motivo -->
+        <form id="reject-form-{{ item.id }}"
+              action="{{ url_for(reject_route, **reject_params) }}"
+              method="post"
+              class="inline-flex items-center gap-2">
+          <input type="hidden" name="reason" value="">
         </form>
+
         <script>
-            function validateInlineReject(form) {
-                const reason = form.querySelector('input[name="reason"]').value.trim();
+          if (!window.handleReject) {
+            function handleReject(formId) {
+              const form = document.getElementById(formId);
+              if (!form) return;
 
-                if (reason.length < 10) {
-                    alert("El motivo debe tener al menos 10 caracteres.");
-                    return false;
-                }
-                if (reason.length > 200) {
-                    alert("El motivo no puede superar los 200 caracteres.");
-                    return false;
-                }
+              const reason = prompt('Introduzca el motivo de rechazo:', '');
+              if (reason === null) return; // Cancelado
 
-                return confirm("¿Está seguro de rechazar esta reseña?");
+              const trimmed = reason.trim();
+              if (trimmed.length < 10) {
+                alert('El motivo debe tener al menos 10 caracteres.');
+                return;
+              }
+              if (trimmed.length > 200) {
+                alert('El motivo no puede superar los 200 caracteres.');
+                return;
+              }
+              if (!confirm('¿Está seguro de rechazar esta reseña?')) return;
+
+              let input = form.querySelector('input[name="reason"]');
+              if (!input) {
+                input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'reason';
+                form.appendChild(input);
+              }
+              input.value = trimmed;
+              form.submit();
             }
+          }
         </script>
-
       {% endif %}
 
 
