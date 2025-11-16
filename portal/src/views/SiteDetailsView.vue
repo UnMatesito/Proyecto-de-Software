@@ -2,7 +2,7 @@
   <div class="flex flex-col items-center justify-center max-w-[1200px] w-full">
     <section class="w-full p-3 max-w-screen-xl">
       <ButtonPrimary :text="'Volver'" :icon_left="'fa-solid fa-arrow-left mr-2'" :link="prevURL || '/sites'" :class="'my-4'"/>
-      <div class="flex items-start gap-4 w-full pt-1 pb-3 flex-wrap relative">
+      <div class="flex items-start gap-4 w-full pt-1 pb-3 flex-wrap relative justify-center">
         <!-- (image + aside unchanged) -->
         <!-- ... existing image carousel and aside ... -->
         <div class="flex flex-col flex-1 min-w-[300px]">
@@ -45,7 +45,7 @@
           </div>
         </div>
 
-        <aside class="flex gap-4 flex-col max-w-[300px] mx-auto">
+        <aside class="flex gap-4 flex-col sm:max-w-[300px] mx-auto">
           <div class="flex justify-between items-start gap-2 relative">
             <h2 class="text-2xl font-bold">
               {{ detalle.name || 'Cargando...' }}
@@ -94,9 +94,9 @@
           <div class="flex gap-1 sm:gap-2 text-blue-700 flex-wrap border-t-2 pt-1 sm:pt-2 pb-0.5 sm:pb-1">
             <span v-for="tag in detalle.tags" :key="tag" class="inline-flex items-center bg-blue-50 text-blue-500 text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2.5 py-0.5 border sm:border-2 rounded-full border-blue-500 whitespace-nowrap">{{ tag }}</span>
           </div>
-          <div class="flex justify-between gap-2">
-            <ButtonPrimary :text="'Ver en el mapa'" :icon_left="'fa-solid fa-arrow-down mr-2'" @click="scrollToMap"/>
-            <ButtonPrimary :text="'Reseñas'" :icon_left="'fa-solid fa-arrow-down mr-2'" @click="scrollToReviews"/>
+          <div class="flex justify-between gap-2 flex-wrap">
+            <ButtonPrimary :text="'Ver en el mapa'" id="scroll_to_map" class="justify-center" :icon_left="'fa-solid fa-arrow-down mr-2'" @click="scrollToMap"/>
+            <ButtonPrimary :text="'Reseñas'" id="scroll_to_reviews"class="justify-center" :icon_left="'fa-solid fa-arrow-down mr-2'" @click="scrollToReviews"/>
           </div>
         </aside>
       </div>
@@ -113,7 +113,7 @@
       </div>
     </section>
 
-    <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
+    <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3 p-3">
       <h3 class="text-3xl text-proyecto-accent mx-2">Ubicación</h3>
       <div id="map" class="w-full">
         <MapDetail
@@ -357,9 +357,26 @@ onMounted(async () => {
 })
 
 const scrollToMap = () => {
-  document.getElementById('map')?.scrollIntoView({ behavior: 'smooth' })
+  document.getElementById('map_title')?.scrollIntoView({ behavior: 'smooth' })
 }
 const scrollToReviews = () => {
   document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })
 }
 </script>
+
+<style>
+  #map_title {
+    scroll-margin-top: 80px; /* ajustá a la altura de tu navbar para que el scroll se exacto */
+  }
+
+  #reviews {
+    scroll-margin-top: 80px; /* ajustá a la altura de tu navbar para que el scroll se exacto */
+  }
+
+  @media (max-width: 600px) {
+    #scroll_to_reviews, #scroll_to_map {
+      width: 100%;
+    }
+  }
+
+</style>
