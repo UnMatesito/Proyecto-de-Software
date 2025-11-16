@@ -142,7 +142,7 @@
             @click="loginWithGoogle"
           />
           <ButtonPrimary
-            v-else
+            v-else-if="!hasUserReview"
             :text="'Dejar reseña'"
             :icon_left="'fa-solid fa-plus mr-2'"
             class="w-auto"
@@ -376,6 +376,15 @@ const scrollToMap = () => {
 const scrollToReviews = () => {
   document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })
 }
+
+const hasUserReview = computed(() => {
+  const auth = authStore.user;
+  if (!auth?.email) return false;
+
+  return reviews.value.some(r => r.user_email === auth.email);
+});
+
+
 </script>
 
 <style>
