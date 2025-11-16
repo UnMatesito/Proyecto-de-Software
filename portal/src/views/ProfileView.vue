@@ -71,7 +71,7 @@
                 @change="handleReviewSortChange"
               >
                 <option value="date_desc">Más Recientes</option>
-                <option value="date_asc">Más Antiguos</option>
+                <option value="date_asc">Más Antiguas</option>
               </select>
             </div>
           </div>
@@ -126,7 +126,7 @@
                     Eliminar
                   </button>
                 </div>
-                
+
               </article>
             </div>
             <p v-else class="text-gray-500 italic">Aún no escribiste reseñas.</p>
@@ -320,7 +320,7 @@ function triggerToast(message) {
   showToast.value = true;
   setTimeout(() => {
     showToast.value = false;
-  }, 5000); 
+  }, 5000);
 }
 
 
