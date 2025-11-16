@@ -127,7 +127,10 @@
     </div>
       <!-- SI reviewsEnabled ES TRUE → mostrar reseñas -->
       <section v-if="reviewsEnabled" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
-        <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto" :link="`/sites/${detalle.id}/review`"/>
+        <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto"
+          @click="authStore.isAuthenticated ? goToReview() : loginWithGoogle()"
+        />
+
         <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
 
         <Review
@@ -168,7 +171,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Stars from '@/components/Stars.vue'
 import IconLocation from '@/components/icons/IconLocation.vue'
 import IconFavorite from '@/components/icons/IconFavorite.vue'
@@ -184,6 +187,7 @@ import Pagination from "@/components/Pagination.vue"
 
 const prevURL = ref('')
 const route = useRoute()
+const router = useRouter()
 const detalle = ref({})
 const detailedContent = ref([])
 const shortDescription = ref('')
@@ -221,7 +225,13 @@ const hasLocation = computed(() =>
   !Number.isNaN(Number(detalle.value.lon))
 )
 
-const canLoadMore = computed(() => reviews.value.length && reviews.value.length % 10 === 0)
+const reviewButtonLink = computed(() => {
+  if (authStore.isAuthenticated) {
+    return `/sites/${detalle.value.id}/review`
+  }
+  return "/login"
+})
+
 
 const fetchDetalleSitio = async () => {
   try {
@@ -261,6 +271,16 @@ const fetchReviews = async (page = 1) => {
   }
 }
 
+function loginWithGoogle() {
+  const currentPath = router.currentRoute.value.fullPath
+  const apiUrl = import.meta.env.VITE_API_URL || "https://admin-grupo09.proyecto2025.linti.unlp.edu.ar/api"
+
+  window.location.href = `${apiUrl}/auth/google/login?next=${encodeURIComponent(currentPath)}`
+}
+
+function goToReview() {
+  router.push(`/sites/${detalle.value.id}/review`)
+}
 
 const fetchFeatureFlags = async () => {
   try {
