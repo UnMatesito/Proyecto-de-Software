@@ -37,13 +37,8 @@ onMounted(() => {
     await ensurePortalAvailability(true)
 
     if (!maintenanceState.isActive) {
-      // Salió del mantenimiento → redirigir al home
       router.push('/')
-      console.log("Portal disponible nuevamente, redirigiendo al home.")
-      // Opcional pero recomendado: refrescar completamente la vista
       window.location.reload()
-    } else {
-      console.log("Portal aún en mantenimiento.")
     }
   }, 5000)
 })
