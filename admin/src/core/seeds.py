@@ -1146,7 +1146,7 @@ def seed_aditional_validated_historic_sites():
 
         # Concatenar tipo de sitio + nombre de ciudad
         tipo = choice(tipos_sitio)
-        nombre = f"{tipo}{city.name}"
+        nombre = f"{tipo} {city.name}"
 
         # Coordenadas aleatorias dentro del rango general de Argentina
         lon = round(uniform(-73, -53), 6)
