@@ -45,7 +45,7 @@
           </div>
         </div>
 
-        <aside class="flex gap-4 flex-col max-w-[300px]">
+        <aside class="flex gap-4 flex-col max-w-[300px] mx-auto">
           <div class="flex justify-between items-start gap-2 relative">
             <h2 class="text-2xl font-bold">
               {{ detalle.name || 'Cargando...' }}
@@ -101,20 +101,20 @@
         </aside>
       </div>
 
-      <!-- Brief description standalone -->
+      <!-- DESCRIPCIÓN BREVE -->
       <div v-if="shortDescription" class="mt-6 w-full bg-white rounded-xl p-5 shadow">
         <h3 class="text-xl font-semibold mb-2 text-proyecto-accent">Descripción breve del sitio</h3>
         <p class="text-gray-700 whitespace-pre-line">{{ shortDescription }}</p>
       </div>
 
-      <!-- Detailed description accordion full width -->
+      <!-- DETALLE COMPLETO -->
       <div class="mt-6 w-full">
         <Acordion :content="detailedContent"/>
       </div>
     </section>
 
     <div class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
-      <h3 class="text-3xl text-proyecto-accent">Ubicación</h3>
+      <h3 class="text-3xl text-proyecto-accent mx-2">Ubicación</h3>
       <div id="map" class="w-full">
         <MapDetail
           v-if="hasLocation"
@@ -126,34 +126,70 @@
       </div>
     </div>
 
-    <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
-      <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
-      <ButtonPrimary :text="'Dar reseña'" :icon_left="'fa-solid fa-plus mr-2'" class="max-w-36 w-auto"/>
-      <Review
-        v-for="r in reviews"
-        :key="r.id"
-        :user_name="r.user_name"
-        :user_email="r.user_email"
-        :text="r.comment"
-        :created_at="r.inserted_at"
-        :rating="r.rating"
-      />
-      <p
-        v-if="canLoadMore"
-        @click="fetchReviews"
-        class="text-proyecto-primary font-semibold cursor-pointer hover:text-proyecto-accent transition-all ease-in-out"
-      >
-        Ver más reseñas...
-      </p>
-      <SkeletonReview v-if="reviews.length == 0 && page == 1" />
+    <!-- SI reviewsEnabled ES TRUE mostrar reseñas-->
+    <section v-if="reviewsEnabled" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3">
+      <!-- Listado -->
+      <section id="reviews" class="w-full max-w-[1200px] flex flex-col gap-3 mt-3 mb-2">
+
+        <div class="flex flex-row justify-between items-center mx-2">
+          <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
+
+          <ButtonPrimary
+            v-if="!isAuthenticated"
+            :text="'Iniciar sesión para dejar una reseña'"
+            :icon_left="'fa-solid fa-right-to-bracket mr-2'"
+            class="w-auto"
+            @click="loginWithGoogle"
+          />
+          <ButtonPrimary
+            v-else
+            :text="'Dejar reseña'"
+            :icon_left="'fa-solid fa-plus mr-2'"
+            class="w-auto"
+            @click="goToReview"
+          />
+        </div>
+
+        <Review
+          v-for="r in reviews"
+          :key="r.id"
+          :user_name="r.user_name"
+          :user_email="r.user_email"
+          :text="r.comment"
+          :created_at="r.inserted_at"
+          :rating="r.rating"
+        />
+
+        <Pagination
+          :page="reviewsPage"
+          :total-pages="reviewsTotalPages"
+          :page-size="reviewsPerPage"
+          :page-size-options="[10, 25, 50]"
+          @page-change="handlePageChange"
+          @page-size-change="handlePageSizeChange"
+        />
+      </section>
     </section>
+
+    <!-- SI reviewsEnabled ES FALSE mostrar mensaje alternativo-->
+    <section
+      v-else
+      id="reviews"
+      class="w-full max-w-[1200px] flex flex-col gap-3 mt-3"
+    >
+      <h3 class="text-3xl text-proyecto-accent">Reseñas</h3>
+      <p class="text-gray-600 text-sm">
+        Las reseñas están deshabilitadas temporalmente.
+      </p>
+    </section>
+
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Stars from '@/components/Stars.vue'
 import IconLocation from '@/components/icons/IconLocation.vue'
 import IconFavorite from '@/components/icons/IconFavorite.vue'
@@ -164,16 +200,28 @@ import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useFavoritesStore } from '@/stores/favorites.js'
 import MapDetail from '@/components/MapDetail.vue'
-import SkeletonReview from '@/components/SkeletonReview.vue'
+import Pagination from "@/components/Pagination.vue"
+
 
 const prevURL = ref('')
 const route = useRoute()
+const router = useRouter()
 const detalle = ref({})
 const detailedContent = ref([])
 const shortDescription = ref('')
 const reviews = ref([])
 const page = ref(1)
 const activeIndex = ref(0)
+
+const reviewsPage = ref(1)
+const reviewsPerPage = ref(10)
+const reviewsTotal = ref(0)
+const reviewsTotalPages = computed(() =>
+  Math.ceil(reviewsTotal.value / reviewsPerPage.value)
+)
+const reviewsLoading = ref(false)
+
+const reviewsEnabled = ref(false)
 
 prevURL.value = localStorage.prevURL || '/sites'
 const authStore = useAuthStore()
@@ -195,7 +243,13 @@ const hasLocation = computed(() =>
   !Number.isNaN(Number(detalle.value.lon))
 )
 
-const canLoadMore = computed(() => reviews.value.length && reviews.value.length % 10 === 0)
+const reviewButtonLink = computed(() => {
+  if (authStore.isAuthenticated) {
+    return `/sites/${detalle.value.id}/review`
+  }
+  return "/login"
+})
+
 
 const fetchDetalleSitio = async () => {
   try {
@@ -213,15 +267,48 @@ const fetchDetalleSitio = async () => {
   }
 }
 
-const fetchReviews = async () => {
+const fetchReviews = async (page = 1) => {
+  reviewsLoading.value = true
+
   try {
-    const resp = await api.get(`${route.path}/reviews`, { params: { page: page.value } })
-    reviews.value = [...reviews.value, ...(resp.data.data || [])]
-    page.value++
+    const resp = await api.get(`${route.path}/reviews`, {
+      params: {
+        page,
+        per_page: reviewsPerPage.value
+      }
+    })
+
+    reviews.value = resp.data.data
+    reviewsPage.value = resp.data.meta.page
+    reviewsTotal.value = resp.data.meta.total
+
   } catch (error) {
-    console.error('Error al cargar reseñas:', error)
+    console.error("Error al cargar reseñas:", error)
+  } finally {
+    reviewsLoading.value = false
   }
 }
+
+function loginWithGoogle() {
+  const currentPath = router.currentRoute.value.fullPath
+  const apiUrl = import.meta.env.VITE_API_URL || "https://admin-grupo09.proyecto2025.linti.unlp.edu.ar/api"
+
+  window.location.href = `${apiUrl}/auth/google/login?next=${encodeURIComponent(currentPath)}`
+}
+
+function goToReview() {
+  router.push(`/sites/${detalle.value.id}/review`)
+}
+
+const fetchFeatureFlags = async () => {
+  try {
+    const { data } = await api.get("/feature-flags/reviews_enabled")
+    reviewsEnabled.value = data.is_enabled
+  } catch (error) {
+    console.error("Error cargando feature flags:", error)
+  }
+}
+
 
 const toggleFavorite = async () => {
   if (!detalle.value.id) return
@@ -235,6 +322,16 @@ const toggleFavorite = async () => {
 watch(images, () => {
   activeIndex.value = 0
 }, { immediate: true })
+
+const handlePageChange = (newPage) => {
+  fetchReviews(newPage)
+}
+
+const handlePageSizeChange = (newSize) => {
+  reviewsPerPage.value = newSize
+  fetchReviews(1)
+}
+
 
 const prev = () => {
   if (!hasImages.value) return
@@ -250,7 +347,10 @@ const setActive = (idx) => { activeIndex.value = idx }
 
 onMounted(async () => {
   await fetchDetalleSitio()
-  await fetchReviews()
+  await fetchFeatureFlags()
+  if (reviewsEnabled.value) {
+    await fetchReviews()
+  }
   if (isAuthenticated.value) {
     await favoritesStore.fetchFavorites()
   }

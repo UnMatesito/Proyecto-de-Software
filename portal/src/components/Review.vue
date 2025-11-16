@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col gap-2 border-b-2 border-b-gray-300 pb-2" id="reviews">
+    <div class="flex flex-col gap-2 border-b-2 border-b-gray-300 pb-2 mx-4" id="reviews">
         <div class="flex justify-between flex-wrap">
             <Avatar :name="user_name" :email="user_email"></Avatar>
             <div class="flex gap-3 flex-col items-end">
@@ -8,7 +8,7 @@
                     <i class="fa-regular fa-clock"></i> {{ created_at ? new Date(created_at).toLocaleDateString('es-AR') : '...' }}
                 </span>
             </div>
-        </div>         
+        </div>
         <p class="text-gray-700 w-min:full ">
             {{ text }}
         </p>

@@ -53,6 +53,12 @@
       <div v-else>
         <!-- REVIEWS TAB -->
         <section v-show="activeTab === 'reviews'">
+          <div
+          v-if="showToast"
+          class="fixed bottom-5 right-5 z-50 rounded-lg bg-green-600 px-4 py-3 text-white shadow-lg transition-all">
+          {{ toastMessage }}
+          </div>
+
           <h3 class="mb-4 text-xl font-semibold text-gray-700">Mis Reseñas</h3>
 
           <div class="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -82,14 +88,45 @@
                 <p class="text-sm text-gray-500">
                   {{ new Date(review.inserted_at || review.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}
                 </p>
-                <h4 class="mt-1 text-lg font-semibold text-gray-800">
-                  {{ review.site?.name || review.name }}
-                </h4>
+                  <h4 class="mt-1 text-lg font-semibold text-gray-800">
+                    <a
+                      :href="`/sites/${review.site?.id}`"
+                      class="text-proyecto-primary hover:underline">
+                      {{ review.site?.name || review.name }}
+                    </a>
+                  </h4>
                 <div class="mt-2 flex items-center gap-2">
                   <span class="font-semibold text-gray-700">Calificación:</span>
                   <RatingStars :rating="review.rating" />
                 </div>
                 <p class="mt-3 text-gray-600">{{ review.comment || review.comment_excerpt }}</p>
+                <!-- Estado -->
+                <div class="mt-3">
+                  <span
+                    class="inline-flex items-center gap-1 rounded-xl px-3 py-1 text-sm font-semibold shadow-sm"
+                    :class="{
+                      'bg-yellow-100 text-yellow-800 border border-yellow-300': review.status === 'Pendiente',
+                      'bg-green-100 text-green-800 border border-green-300': review.status === 'Aprobada',
+                      'bg-red-100 text-red-800 border border-red-300': review.status === 'Rechazada'
+                    }"
+                  >
+                    <i class="fa-solid fa-circle text-[8px]"></i>
+                    Estado: {{ review.status }}
+                  </span>
+                </div>
+                <!-- Motivo del rechazo -->
+                <div v-if="review.status === 'Rechazada'" class="mt-2 text-red-600 text-sm">
+                  Motivo del rechazo: {{ review.rejected_reason || 'No especificado' }}
+                </div>
+                <div class="mt-3 flex justify-end">
+                  <button
+                    @click="deleteReview(review)"
+                    class="text-red-600 text-sm hover:underline"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+                
               </article>
             </div>
             <p v-else class="text-gray-500 italic">Aún no escribiste reseñas.</p>
@@ -171,6 +208,10 @@ const authStore = useAuthStore();
 const user = authStore.user;
 
 const activeTab = ref('reviews');
+
+const showToast = ref(false);
+const toastMessage = ref("");
+
 
 // Reviews state
 const reviews = ref([]);
@@ -257,6 +298,32 @@ async function removeFavorite(siteId) {
     console.error('Error al eliminar favorito:', error.response?.data || error.message);
   }
 }
+//Eliminar reseña
+async function deleteReview(review) {
+  if (!confirm("¿Seguro que querés eliminar esta reseña?")) return;
+
+  try {
+    await api.delete(`/sites/${review.site?.id}/reviews/${review.id}`);
+
+    reviews.value = reviews.value.filter(r => r.id !== review.id);
+
+    triggerToast("Reseña eliminada correctamente ");
+
+  } catch (error) {
+    console.error("Error al eliminar reseña:", error);
+    triggerToast("Error al eliminar reseña ");
+  }
+}
+
+function triggerToast(message) {
+  toastMessage.value = message;
+  showToast.value = true;
+  setTimeout(() => {
+    showToast.value = false;
+  }, 5000); 
+}
+
+
 
 // Event handlers
 function handleReviewPageChange(newPage) {
