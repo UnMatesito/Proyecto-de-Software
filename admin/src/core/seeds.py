@@ -845,18 +845,22 @@ def seed_aditional_public_users():
 
     role_public = RoleService.get_role_by_name("Usuario público")
 
-    usuarios = [
-        User(
-            email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
-            first_name=fake.first_name(),
-            last_name=fake.last_name(),
-            password="password123",
-            role_id=role_public.id,
-            system_admin=False,
-        )
-        for _ in range(100)
-    ]
+    usuarios = []
+    for _ in range(100):
+        first = fake.first_name()
+        last = fake.last_name()
 
+        usuarios.append(
+            User(
+                email=f"{uuid.uuid4().hex[:8]}_{fake.user_name()}@example.com",
+                first_name=first,
+                last_name=last,
+                password="password123",
+                role_id=role_public.id,
+                system_admin=False,
+                avatar=f"https://ui-avatars.com/api/?name={first}",
+            )
+        )
     db.session.add_all(usuarios)
     db.session.commit()
 
