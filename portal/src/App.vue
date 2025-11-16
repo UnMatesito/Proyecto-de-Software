@@ -16,12 +16,17 @@
           <div>
             <div class="flex justify-between h-16 items-center">
               <!-- Logo + título -->
-              <div class="flex items-center">
+              <RouterLink
+                to="/"
+                class="flex items-center cursor-pointer select-none"
+              >
                 <div class="h-14 w-14 sm:mr-2">
                   <img src="../src/assets/images/logo.svg" alt="logo histori.ar" class="h-full w-full">
                 </div>
-                <h1 class="text-xl lg:text-2xl font-bold text-proyecto-primary hidden sm:block">Histori.ar</h1>
-              </div>
+                <h1 class="text-xl lg:text-2xl font-bold text-proyecto-primary hidden sm:block">
+                  Histori.ar
+                </h1>
+              </RouterLink>
 
               <!-- Botón hamburguesa (solo móvil) -->
               <button
