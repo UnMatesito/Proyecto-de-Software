@@ -44,7 +44,6 @@ def create_app(env="development", static_folder="../../static"):
         resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},
         supports_credentials=True,
     )
-
     jwt.init_app(app)
     oauth.init_app(app)
 

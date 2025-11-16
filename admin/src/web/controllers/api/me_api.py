@@ -7,6 +7,8 @@ from web.schemas.reviews_schemas import MyReviewQuerySchema, MyReviewResponseSch
 from web.utils.format_marshmallow_validation_errors import format_validation_errors
 
 from . import api_bp
+from core.services import user_service
+from core.models.user import User
 
 
 @api_bp.route("/me", methods=["GET"])

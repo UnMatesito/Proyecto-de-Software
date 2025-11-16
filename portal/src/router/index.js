@@ -50,6 +50,11 @@ const router = createRouter({
       component: () => import('../views/SiteDetailsView.vue')
     },
     {
+      path: "/sites/:site_id/review",
+      name: "reviewEditor",
+      component: () => import("../views/ReviewEditorView.vue"), 
+     },
+    {
       path: '/profile',
       name: 'profile',
       component: ProfileView,

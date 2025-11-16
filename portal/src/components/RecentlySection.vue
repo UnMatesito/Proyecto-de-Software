@@ -60,9 +60,9 @@
 </script>
 
 <template>
-  <div class="mb-8">
+  <section class="mb-8">
     <div class="flex flex-row justify-between items-center mb-4">
-        <h2 class="text-2xl sm:text-4xl text-proyecto-primary font-semibold">Recientemente Agregados</h2>
+        <h2 class="text-2xl sm:text-4xl text-proyecto-primary font-semibold">10 Sitios Recientemente Agregados</h2>
         <router-link
           to="/sites?order_by=latest"
           class="text-sm sm:text-md font-semibold hover:bg-proyecto-primary hover:text-white rounded-full px-2.5 sm:px-4 py-1 sm:py-2 transition-colors duration-400"
@@ -79,5 +79,5 @@
         :is-favorite="isFavorite"
         :toggle-favorite="toggleFavorite"
     />
-  </div>
+  </section>
 </template>

@@ -1,6 +1,7 @@
 <template>
-  <section class="flex flex-col items-center justify-center text-center py-20 space-y-8">
-    <div class="max-w-2xl space-y-6">
+  <section class="flex flex-col items-center justify-center text-center py-20 space-y-8 h-screen">
+    <p class="opacity-40 absolute text-[450px]">🚧</p>
+    <div class="max-w-2xl space-y-6 bg-gray-200/70 z-10 p-6 rounded-2xl mx-24 shadow-lg">
       <h2 class="text-4xl font-bold text-proyecto-primary">
         Portal en mantenimiento
       </h2>
@@ -9,7 +10,7 @@
         {{ message }}
       </p>
 
-      <p class="text-sm text-gray-500">
+      <p class="text-sm text-gray-600">
         Estamos trabajando para volver lo antes posible.
         Esta página se actualizará automáticamente.
       </p>

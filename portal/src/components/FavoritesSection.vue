@@ -5,7 +5,9 @@
     import { useSitesStore } from '@/stores/sites.js';
     import { useFavoritesStore } from '@/stores/favorites.js';
     import CardList from "@/components/CardList.vue";
+    import { useRouter } from 'vue-router';
 
+    const router = useRouter();
     const authStore = useAuthStore();
     const sitesStore = useSitesStore();
     const favoritesStore = useFavoritesStore();
@@ -50,6 +52,12 @@
         }
     };
 
+    function loginWithGoogle() {
+      const currentPath = router.currentRoute.value.fullPath
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://admin-grupo09.proyecto2025.linti.unlp.edu.ar/api'
+      window.location.href = `${apiUrl}/auth/google/login?next=${encodeURIComponent(currentPath)}`
+    }
+
     onMounted(async () => {
         await fetchSites();
         await fetchFavorites();
@@ -66,7 +74,7 @@
 </script>
 
 <template>
-    <div class="mb-8">
+    <section class="mb-8">
         <div class="flex flex-row justify-between items-center mb-4">
             <h2 class="text-2xl sm:text-4xl text-proyecto-primary font-semibold">Tus Favoritos</h2>
             <router-link
@@ -87,7 +95,7 @@
             :hide-favorite-button="true"
         />
         <div v-else class="h-[200px] flex justify-center items-center">
-            <p class="px-5 py-2 text-white bg-proyecto-primary/80 text-center rounded-full inline-flex font-semibold shadow-md select-none"> Inicia sesión para ver tus favoritos!</p>
+            <button @click="loginWithGoogle" class="px-5 py-2 text-white bg-proyecto-primary/80 text-center rounded-full inline-flex font-semibold shadow-md select-none"> Inicia sesión para ver tus favoritos!</button>
         </div>
-    </div>
+    </section>
 </template>
