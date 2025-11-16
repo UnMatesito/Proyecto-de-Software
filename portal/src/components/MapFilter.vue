@@ -6,14 +6,14 @@
       </h4>
     </div>
 
-    <div class="flex justify-between items-center flex-wrap gap-2">
+    <div class="flex justify-between items-center flex-wrap gap-2 mb-2">
 
-      <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+      <div class="grid grid-cols-3 md:grid-cols-7 lg:grid-cols-11 gap-2">
         <ButtonPrimary
         v-for="value in radius"
         :text="value + ' km'"
         @click="onRadiusClick(value)"
-        :class="actualRadius == value*1000 ? 'bg-proyecto-accent' : ''" />
+        :class="[actualRadius == value*1000 ? 'bg-proyecto-accent' : '']" />
       </div>
       <div class="flex flex-col items-end">
         <ButtonPrimary v-if="showButton && !isDisable"
@@ -24,7 +24,7 @@
     </div>
   </div>
   <div :style="props.styleContent">
-    <l-map @click="onMapClick" @mousemove="onMouseMove" :zoom="props.zoom" :center="props.center" :class="'border rounded-xl'">
+    <l-map @click="onMapClick" @mousemove="onMouseMove" :zoom="props.zoom" :center="props.center" class="border rounded-xl">
       <l-tile-layer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       ></l-tile-layer>
