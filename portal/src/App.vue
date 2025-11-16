@@ -170,7 +170,7 @@
                 <!-- Usuario móvil -->
                 <div v-else class="flex flex-col items-center gap-2 mt-3">
                   <RouterLink to="/profile" @click="open = false" class="flex flex-col items-center gap-2 group cursor-pointer w-full max-w-xs">
-                    <div class="flex flex-col items-center gap-2 group-hover:opacity-80 transition-opacity duration-200">
+                    <div class="flex flex-row items-center gap-2 group-hover:opacity-80 transition-opacity duration-200">
                       <img :src="authStore.user?.avatar" class="w-10 h-10 rounded-full" alt="avatar" referrerpolicy="no-referrer" />
                       <span class="text-gray-700 font-medium">{{ authStore.user?.name }}</span>
                     </div>

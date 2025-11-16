@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-proyecto-secondary w-screen h-screen">
+  <div class="bg-proyecto-secondary w-screen min-h-screen">
     <img src="../../public/sites.webp" alt="sites background" class="absolute w-full h-full object-cover object-center opacity-10 pointer-events-none" />
     <div class="flex flex-col justify-center items-center bg-gray-50 shadow-md space-y-2 p-6 md:p-12 lg:p-14 max-w-4xl mx-auto my-12 rounded-lg z-10">
       <div class="flex flex-row justify-center items-center space-x-4 mb-4">

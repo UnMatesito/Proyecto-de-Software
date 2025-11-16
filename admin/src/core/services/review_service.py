@@ -1,8 +1,10 @@
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import joinedload
 
+
 from core.database import db
 from core.models.review import Review, ReviewStatus
+from core.models.user import User
 from core.services.user_service import get_user_by_email
 from core.utils.pagination import paginate_query
 from core.utils.search import apply_ordering, build_search_query
@@ -174,7 +176,7 @@ def update_review(review_id: int, rating: int = None, content: str = None) -> Re
 def get_paginated_reviews(
     filters=None, page=1, per_page=25, order_by="created_at", order_dir="asc"
 ):
-    """
+    """     
     Obtiene reseñas con filtros combinables y paginación.
     Filtros soportados:
       - status: 'Pendiente', 'Aprobada', 'Rechazada'
@@ -182,7 +184,7 @@ def get_paginated_reviews(
       - user_id: ID del usuario
       - rating_min / rating_max
       - date_from / date_to (YYYY-MM-DD)
-      - search_text: busca en el contenido
+      - search_text: busca por email
     """
     query = Review.query
     filters = filters or {}
@@ -194,18 +196,20 @@ def get_paginated_reviews(
         except ValueError:
             filters.pop("status", None)
 
+    # Guardo el texto de busqueda por mail 
+    email_search = None
     if "search_text" in filters and filters["search_text"]:
-        text = filters["search_text"].strip()
+        email_search = filters["search_text"].strip()
+        filters.pop("search_text")  
 
-        # Si parece un mail busco por usuario
-        if "@" in text and "." in text:
-            user = get_user_by_email(text)
-            if user:
-                filters["user_id"] = user.id
-            filters.pop("search_text", None)
-
-    # Construir query de búsqueda flexible
+    # Armo la query base 
     query = build_search_query(Review, filters, text_search_columns=["content"])
+
+    # Añado la busqueda por mail a la query 
+    if email_search:
+        query = query.join(User).filter(User.email.ilike(f"%{email_search}%"))
+        print("FILTER:", f"%{email_search}%")
+        print("SQL:", str(query))
 
     # Filtros adicionales de rango de calificación
     if "rating_min" in filters:
@@ -216,7 +220,6 @@ def get_paginated_reviews(
     # Ordenar resultados
     query = apply_ordering(query, Review, order_by, order_dir)
 
-    # Retornar resultados paginados
     return paginate_query(query, page, per_page, order_by=order_by, sorted_by=order_dir)
 
 

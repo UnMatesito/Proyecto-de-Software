@@ -3,7 +3,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 
 from core.database import db
-from core.models import Review
+from core.models import Review, ReviewStatus
 from core.services import (
     get_feature_flag_by_name,
     historic_site_service,
@@ -66,7 +66,9 @@ def list_reviews(site_id):
         # Buscar reseñas con paginación y filtros
         pagination = search_with_pagination(
             Review,
-            filters={"historic_site_id": site_id},
+            filters={"historic_site_id": site_id,
+                     "status": "Aprobada"
+                    },
             page=params["page"],
             per_page=params["per_page"],
             order_by=params["order_by"],
@@ -144,9 +146,9 @@ def create_review(site_id):
     except ValueError as e:
         msg = str(e).lower()
         if "ya dejó" in msg:
-            details = {"site_id": ["User already reviewed this site"]}
+            details = {"site_id": ["Usted ya tiene un reseña en el sitio"]}
         elif "rango" in msg or "calificación" in msg:
-            details = {"rating": ["Must be between 1 and 5"]}
+            details = {"rating": ["Tiene que ser entre 1 y 5 "]}
         elif "sitio" in msg:
             return (
                 jsonify({"error": {"code": "not_found", "message": "Site not found"}}),
@@ -195,7 +197,7 @@ def get_review(site_id, review_id):
         return blocked_response
 
     try:
-        review = Review.query.filter_by(id=review_id, historic_site_id=site_id).first()
+        review = Review.query.filter_by(id=review_id, historic_site_id=site_id, status=ReviewStatus.APROBADA).first()
 
         if not review:
             return (
@@ -233,8 +235,8 @@ def delete_review(site_id, review_id):
     if blocked_response:
         return blocked_response
 
-    user_id = get_jwt_identity()
-
+    user_id = int(get_jwt_identity())
+ 
     try:
         review = Review.query.get(review_id)
         if not review or review.historic_site_id != site_id:
