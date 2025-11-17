@@ -2380,6 +2380,11 @@ select {
   color: rgb(138 44 13 / var(--tw-text-opacity, 1));
 }
 
+.text-proyecto-primary {
+  --tw-text-opacity: 1;
+  color: rgb(26 77 112 / var(--tw-text-opacity, 1));
+}
+
 .text-proyecto-text {
   --tw-text-opacity: 1;
   color: rgb(43 43 43 / var(--tw-text-opacity, 1));
