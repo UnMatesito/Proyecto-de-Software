@@ -24,7 +24,11 @@
         altImagen: String,
         isFavorite: Boolean,
         isAuthenticated: Boolean,
-        hideFavoriteButton: Boolean
+        hideFavoriteButton: Boolean,
+        created_at: {
+            type: String,
+            required: true
+        }
     })
 
     const emit = defineEmits(['toggle-favorite'])
@@ -41,6 +45,15 @@
     const saveFilterURL = () => {
         localStorage.setItem("prevURL", route.fullPath)
     }
+
+    const formatDate = (isoString) => {
+      if (!isoString) return "";
+      const d = new Date(isoString);
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String((d.getMonth() + 1)).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
 </script>
 
 <template>
@@ -54,7 +67,7 @@
             <img class="absolute inset-0 w-full h-full object-cover" :src="urlImg" :alt="alt">
             <span class="absolute right-1.5 top-1.5 sm:right-2 sm:top-2 bg-white/90 backdrop-blur-sm p-1 text-xs sm:text-base border-0 rounded-full text-center hover:fill-red-600 transition-all duration-400 ease-in-out z-10 shadow-md">
                 <i class="fa-regular fa-calendar"></i>
-                14/08/2024
+                {{ formatDate(props.created_at) }}
             </span>
         </div>
 
