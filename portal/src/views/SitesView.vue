@@ -23,7 +23,9 @@
       :imagen="site.images[0].url"
       :alt-imagen="site.images[0].alt"
       :id="site.id"
-      :rating="site.average_rating"/>
+      :rating="site.average_rating"
+      :created_at="site.inserted_at"
+      />
       <SkeletonCard v-if="!sites" v-for="n in 24" />
     </section>
 
@@ -58,7 +60,7 @@
   const disableMap = ref(false)
   const page = ref(1)
 
-  //Fetch para obtener los sitios 
+  //Fetch para obtener los sitios
   const fetchSites = async (url) => {
     try {
 
@@ -126,7 +128,7 @@
      }
   )
 
-  //Actualiza los sitios cada vez que la URL cambia 
+  //Actualiza los sitios cada vez que la URL cambia
   watch(rout, () => {
     fetchSites()
   })

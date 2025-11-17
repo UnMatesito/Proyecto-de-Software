@@ -1000,7 +1000,11 @@ def seed_aditional_historic_sites():
                 brief_description=fake.sentence(nb_words=10)[:50],
                 full_description=fake.paragraph(nb_sentences=4),
                 inauguration_year=randint(1600, 2020),
-                created_at=datetime.now(timezone.utc),
+                created_at=fake.date_time_between(
+                    start_date="-10y",
+                    end_date="now",
+                    tzinfo=timezone.utc
+                ),
                 is_visible=False,
                 pending_validation=True,
                 city_id=city.id,
@@ -1150,7 +1154,11 @@ def seed_aditional_validated_historic_sites():
                 brief_description=fake.sentence(nb_words=10)[:50],
                 full_description=fake.paragraph(nb_sentences=4),
                 inauguration_year=randint(1600, 2020),
-                created_at=datetime.now(timezone.utc),
+                created_at=fake.date_time_between(
+                    start_date="-10y",
+                    end_date="now",
+                    tzinfo=timezone.utc
+                ),
                 is_visible=True,
                 pending_validation=False,
                 city_id=city.id,

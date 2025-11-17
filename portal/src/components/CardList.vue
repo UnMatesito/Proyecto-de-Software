@@ -113,6 +113,7 @@ const unwatchCardsPerSlide = computed(() => {
             :is-authenticated="props.isAuthenticated"
             :hide-favorite-button="props.hideFavoriteButton"
             @toggle-favorite="props.toggleFavorite"
+            :created_at="site.inserted_at"
           />
         </li>
       </ul>
@@ -147,6 +148,7 @@ const unwatchCardsPerSlide = computed(() => {
               :is-authenticated="props.isAuthenticated"
               :hide-favorite-button="props.hideFavoriteButton"
               @toggle-favorite="props.toggleFavorite"
+              :created_at="site.inserted_at"
             />
           </li>
         </ul>
