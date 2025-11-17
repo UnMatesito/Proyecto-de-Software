@@ -4,9 +4,7 @@ db = SQLAlchemy()
 
 
 def init_db(app):
-
     db.init_app(app)
-
     config_db(app)
 
     with app.app_context():
