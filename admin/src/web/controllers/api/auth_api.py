@@ -6,8 +6,11 @@ from authlib.integrations.base_client.errors import AuthlibBaseError
 from flask import current_app, jsonify, redirect, request, session, url_for
 from flask_jwt_extended import (
     create_access_token,
+    create_refresh_token,
+    get_jwt_identity,
     jwt_required,
     set_access_cookies,
+    set_refresh_cookies,
     unset_jwt_cookies,
 )
 
@@ -73,14 +76,16 @@ def google_callback():
             next_url = "/"
 
         expires_delta = current_app.config.get(
-            "JWT_ACCESS_TOKEN_EXPIRES", timedelta(hours=24)
+            "JWT_ACCESS_TOKEN_EXPIRES", timedelta(hours=1)
         )
         access_token = create_access_token(
             identity=str(user.id), expires_delta=expires_delta
         )
+        refresh_token = create_refresh_token(identity=str(user.id))
 
         response = redirect(frontend_base + next_url)
         set_access_cookies(response, access_token, max_age=expires_delta)
+        set_refresh_cookies(response, refresh_token)
         return response
 
     except ValueError as e:
@@ -106,4 +111,20 @@ def google_logout():
     session.clear()
     response = jsonify({"message": "Google logout successful"})
     unset_jwt_cookies(response)
+    return response
+
+
+@api_bp.post("/auth/token/refresh")
+@jwt_required(refresh=True)
+def refresh_access_token():
+    """Genera un nuevo token de acceso usando el refresh token."""
+    user_id = get_jwt_identity()
+    expires_delta = current_app.config.get(
+        "JWT_ACCESS_TOKEN_EXPIRES", timedelta(hours=1)
+    )
+    access_token = create_access_token(
+        identity=str(user_id), expires_delta=expires_delta
+    )
+    response = jsonify({"message": "Token refreshed"})
+    set_access_cookies(response, access_token, max_age=expires_delta)
     return response
