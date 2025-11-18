@@ -159,6 +159,7 @@
             cards.forEach((card, index) => {
                 const badge = card.querySelector('[data-cover-badge]');
                 const position = card.querySelector('[data-image-position]');
+                const coverForm = card.querySelector('form[action*="/cover"]');
 
                 card.classList.toggle('border-green-500', index === 0);
                 card.classList.toggle('border-gray-300', index !== 0);
@@ -169,6 +170,14 @@
 
                 if (position) {
                     position.textContent = `#${index + 1}`;
+                }
+
+                if (coverForm) {
+                    if (index === 0) {
+                        coverForm.classList.add('invisible');
+                    } else {
+                        coverForm.classList.remove('invisible');
+                    }
                 }
             });
         };
