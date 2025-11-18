@@ -32,6 +32,10 @@
             <h2 class="text-xl font-semibold">
                 Imágenes del sitio
                 <span class="text-sm font-normal text-gray-600">({{ images|length }}/10)</span>
+                <br>
+                <p class="text-sm text-gray-500 flex items-center gap-2">
+                    Nota: Los cambios de imágenes se guardan automaticamente.
+                </p>
             </h2>
             <p class="text-sm text-gray-500 flex items-center gap-2">
                 <i class="fa-solid fa-up-down-left-right"></i>
@@ -159,6 +163,7 @@
             cards.forEach((card, index) => {
                 const badge = card.querySelector('[data-cover-badge]');
                 const position = card.querySelector('[data-image-position]');
+                const coverForm = card.querySelector('form[action*="/cover"]');
 
                 card.classList.toggle('border-green-500', index === 0);
                 card.classList.toggle('border-gray-300', index !== 0);
@@ -169,6 +174,14 @@
 
                 if (position) {
                     position.textContent = `#${index + 1}`;
+                }
+
+                if (coverForm) {
+                    if (index === 0) {
+                        coverForm.classList.add('invisible');
+                    } else {
+                        coverForm.classList.remove('invisible');
+                    }
                 }
             });
         };

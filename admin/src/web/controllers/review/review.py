@@ -48,6 +48,10 @@ def index():
         rating_min = request.args.get("rating_min", type=int)
         rating_max = request.args.get("rating_max", type=int)
 
+        # Validar que min no sea mayor que max
+        if rating_min and rating_max and rating_min > rating_max:
+            rating_min, rating_max = rating_max, rating_min
+
         # Filtro de fecha
         date_from = request.args.get("date_from")
         date_to = request.args.get("date_to")
