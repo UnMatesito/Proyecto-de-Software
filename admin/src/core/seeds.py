@@ -1286,7 +1286,7 @@ def seed_site_images_from_seed_folder():
 
     from contextlib import ExitStack
     from pathlib import Path
-    from random import sample
+    from random import sample, random
 
     from werkzeug.datastructures import FileStorage
 
@@ -1334,6 +1334,7 @@ def seed_site_images_from_seed_folder():
             with ExitStack() as stack:
                 files = []
                 titles = []
+                descriptions = []
 
                 for index, image_path in enumerate(selected_images):
                     file_handle = stack.enter_context(image_path.open("rb"))
@@ -1345,11 +1346,17 @@ def seed_site_images_from_seed_folder():
                     files.append(file_storage)
                     titles.append(f"{site.name} - Imagen {index + 1}")
 
+                    if random() < 0.5:
+                        descriptions.append(f"Descripción de la imagen {index + 1} del sitio {site.name}.")
+                    else:
+                        descriptions.append(None)
+
                 site_image_service.create_multiple_images(
                     historic_site_id=site.id,
                     files=files,
                     set_first_as_cover=True,
                     titles=titles,
+                    descriptions=descriptions,
                 )
     finally:
         enable_audit_listeners()
