@@ -1,7 +1,7 @@
 <template>
     <div class="w-full max-w-4xl mx-auto mt-16 bg-white shadow-lg rounded-2xl p-10">
     <h1 class="text-3xl font-bold mb-8 text-center">
-      Escribir una reseña 
+      Escribir una reseña
     </h1>
 
     <form @submit.prevent="handleSubmit" class="space-y-6 ">
@@ -35,6 +35,7 @@
           class="border rounded-lg w-full p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
           rows="6"
           placeholder="Contanos tu experiencia..."
+          required
         ></textarea>
       </div>
 
