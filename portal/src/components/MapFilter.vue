@@ -42,9 +42,14 @@
       :key="index"
       :icon="customIconOrange">
         <l-popup :visible="true">
-          {{ m.name }}
-          <br/>
-          {{ m.desc  }}
+          <div class="min-w-[200px] space-y-1">
+            <p class="text-base font-semibold text-proyecto-primary leading-tight">
+              {{ m.name }}
+            </p>
+            <p class="text-sm text-proyecto-text leading-snug">
+              {{ m.desc || 'Sin descripción disponible.' }}
+            </p>
+          </div>
         </l-popup>
       </l-marker>
 

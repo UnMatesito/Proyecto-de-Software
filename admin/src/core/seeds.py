@@ -1342,7 +1342,7 @@ def seed_site_images_from_seed_folder():
                     file_storage.stream.seek(0)
 
                     files.append(file_storage)
-                    titles.append(f"{site.name} - Imagen {index + 1}")
+                    titles.append(f"{site.name} - Título Imagen {index + 1}")
 
                     if random() < 0.5:
                         descriptions.append(

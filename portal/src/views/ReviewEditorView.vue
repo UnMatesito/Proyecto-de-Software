@@ -35,9 +35,6 @@
           class="border rounded-lg w-full p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
           rows="6"
           placeholder="Contanos tu experiencia..."
-          required
-          minlength="20"
-          maxlength="1000"
         ></textarea>
       </div>
 
@@ -68,7 +65,7 @@
 
 <script setup>
 import ButtonPrimary from '@/components/buttons/ButtonPrimary.vue'
-import { ref, onMounted } from "vue";
+import { ref, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import api from "@/api/axios.js";
@@ -90,6 +87,15 @@ const hoverRating = ref(0);
 
 const setRating = (n) => {
   review.value.rating = n;
+};
+
+let redirectTimeoutId = null;
+
+const clearRedirectTimeout = () => {
+  if (redirectTimeoutId) {
+    clearTimeout(redirectTimeoutId);
+    redirectTimeoutId = null;
+  }
 };
 
 const handleSubmit = async () => {
@@ -114,7 +120,10 @@ try {
   await api.post(`/sites/${siteId}/reviews`, payload);
 
   success.value = "Tu reseña fue enviada correctamente.";
-  setTimeout(() => router.push(`/sites/${siteId}`), 2500);
+  redirectTimeoutId = setTimeout(() => {
+    redirectTimeoutId = null;
+    router.push(`/sites/${siteId}`);
+  }, 2500);
 
 } catch (e) {
   console.error("Error creando reseña:", e);
@@ -137,8 +146,13 @@ try {
 
 
 const goBack = () => {
+  clearRedirectTimeout();
   router.push(`/sites/${siteId}`);
 };
+
+onBeforeUnmount(() => {
+  clearRedirectTimeout();
+});
 </script>
 
 <style scoped>

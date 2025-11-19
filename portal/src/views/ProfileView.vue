@@ -61,7 +61,10 @@
 
           <h3 class="mb-4 text-xl font-semibold text-gray-700">Mis Reseñas</h3>
 
-          <div class="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div
+            v-if="reviews.length > 0"
+            class="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+          >
             <div class="flex items-center gap-2">
               <label for="reviews-sort" class="text-sm font-medium text-gray-700">Ordenar por</label>
               <select
@@ -131,7 +134,7 @@
             </div>
             <p v-else class="text-gray-500 italic">Aún no escribiste reseñas.</p>
 
-            <div class="mt-6">
+            <div v-if="reviews.length > 0" class="mt-6">
               <Pagination
                 :page="reviewsPage"
                 :total-pages="reviewsTotalPages"
