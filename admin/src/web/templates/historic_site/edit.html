@@ -154,6 +154,78 @@
         let draggedCard = null;
         let lastPersistedOrder = null;
 
+        const ensureToastContainer = () => {
+            let container = document.querySelector('[data-dynamic-toast-container]');
+            if (!container) {
+                container = document.createElement('div');
+                container.dataset.dynamicToastContainer = 'true';
+                container.className = 'fixed top-4 right-4 space-y-4 z-50';
+                document.body.appendChild(container);
+            }
+            return container;
+        };
+
+        const showFlashMessage = (type, message) => {
+            const iconConfig = {
+                success: {
+                    icon: 'fa-circle-check',
+                    classes: 'text-green-500 bg-green-100 dark:bg-green-800 dark:text-green-200',
+                    sr: 'Icono de éxito'
+                },
+                error: {
+                    icon: 'fa-circle-exclamation',
+                    classes: 'text-red-500 bg-red-100 dark:bg-red-800 dark:text-red-200',
+                    sr: 'Icono de error'
+                },
+                warning: {
+                    icon: 'fa-triangle-exclamation',
+                    classes: 'text-orange-500 bg-orange-100 dark:bg-orange-700 dark:text-orange-200',
+                    sr: 'Icono de advertencia'
+                },
+                info: {
+                    icon: 'fa-circle-info',
+                    classes: 'text-blue-500 bg-blue-100 dark:bg-blue-800 dark:text-blue-200',
+                    sr: 'Icono de información'
+                }
+            };
+
+            const container = ensureToastContainer();
+            const toast = document.createElement('div');
+            toast.className = 'flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-sm dark:text-gray-400 dark:bg-gray-800';
+            toast.setAttribute('role', 'alert');
+
+            const icon = iconConfig[type] || iconConfig.info;
+            const iconWrapper = document.createElement('div');
+            iconWrapper.className = `inline-flex items-center justify-center shrink-0 w-8 h-8 ${icon.classes} rounded-lg`;
+            iconWrapper.innerHTML = `
+                <i class="fa-solid ${icon.icon}"></i>
+                <span class="sr-only">${icon.sr}</span>
+            `;
+
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = 'ms-3 text-sm font-normal';
+            messageWrapper.textContent = message;
+
+            const closeButton = document.createElement('button');
+            closeButton.type = 'button';
+            closeButton.className = 'ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700';
+            closeButton.setAttribute('aria-label', 'Cerrar');
+            closeButton.innerHTML = `
+                <span class="sr-only">Cerrar</span>
+                <i class="fa-solid fa-xmark"></i>
+                <span class="sr-only">Cerrar Toast</span>
+            `;
+
+            const removeToast = () => toast.remove();
+            closeButton.addEventListener('click', removeToast);
+            setTimeout(removeToast, 5000);
+
+            toast.appendChild(iconWrapper);
+            toast.appendChild(messageWrapper);
+            toast.appendChild(closeButton);
+            container.appendChild(toast);
+        };
+
         const getCurrentOrder = () => Array
             .from(gallery.querySelectorAll('[data-image-id]'))
             .map((card) => Number(card.dataset.imageId));
@@ -193,6 +265,7 @@
 
             const currentOrder = getCurrentOrder();
             const serialized = JSON.stringify(currentOrder);
+            const previousOrder = lastPersistedOrder ? JSON.parse(lastPersistedOrder) : null;
 
             if (serialized === lastPersistedOrder) {
                 return;
@@ -210,15 +283,22 @@
                     body: JSON.stringify({ ordered_image_ids: currentOrder }),
                 });
 
+                const data = await response.json().catch(() => ({}));
+
                 if (!response.ok) {
-                    const data = await response.json().catch(() => ({}));
                     throw new Error(data.error || 'No se pudo guardar el nuevo orden de imágenes.');
                 }
 
                 lastPersistedOrder = serialized;
+                const coverChanged = Boolean(previousOrder && previousOrder[0] !== currentOrder[0]);
+                const successMessage = data.message
+                    || (coverChanged
+                        ? 'Se guardó el nuevo orden y se actualizó la portada del sitio.'
+                        : 'Se guardó el nuevo orden de las imágenes.');
+                showFlashMessage('success', successMessage);
             } catch (error) {
                 console.error(error);
-                alert(error.message || 'No se pudo guardar el nuevo orden de imágenes.');
+                showFlashMessage('error', error.message || 'No se pudo guardar el nuevo orden de imágenes.');
             }
         };
 
