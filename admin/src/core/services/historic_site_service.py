@@ -86,6 +86,7 @@ def increment_site_visits(site: HistoricSite):
 
     return site
 
+
 def assign_relations_to_historic_site(
     historic_site, conservation_state, category, user, city, tags=None
 ):

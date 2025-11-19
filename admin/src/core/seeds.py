@@ -1001,9 +1001,7 @@ def seed_aditional_historic_sites():
                 full_description=fake.paragraph(nb_sentences=4),
                 inauguration_year=randint(1600, 2020),
                 created_at=fake.date_time_between(
-                    start_date="-10y",
-                    end_date="now",
-                    tzinfo=timezone.utc
+                    start_date="-10y", end_date="now", tzinfo=timezone.utc
                 ),
                 is_visible=False,
                 pending_validation=True,
@@ -1155,9 +1153,7 @@ def seed_aditional_validated_historic_sites():
                 full_description=fake.paragraph(nb_sentences=4),
                 inauguration_year=randint(1600, 2020),
                 created_at=fake.date_time_between(
-                    start_date="-10y",
-                    end_date="now",
-                    tzinfo=timezone.utc
+                    start_date="-10y", end_date="now", tzinfo=timezone.utc
                 ),
                 is_visible=True,
                 pending_validation=False,
@@ -1286,7 +1282,7 @@ def seed_site_images_from_seed_folder():
 
     from contextlib import ExitStack
     from pathlib import Path
-    from random import sample, random
+    from random import random, sample
 
     from werkzeug.datastructures import FileStorage
 
@@ -1347,7 +1343,9 @@ def seed_site_images_from_seed_folder():
                     titles.append(f"{site.name} - Imagen {index + 1}")
 
                     if random() < 0.5:
-                        descriptions.append(f"Descripción de la imagen {index + 1} del sitio {site.name}.")
+                        descriptions.append(
+                            f"Descripción de la imagen {index + 1} del sitio {site.name}."
+                        )
                     else:
                         descriptions.append(None)
 
