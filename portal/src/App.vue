@@ -47,25 +47,28 @@
                 <RouterLink
                   to="/"
                   exact-active-class="bg-proyecto-accent/80 text-white"
-                  class="px-3 py-2 rounded-md text-xs sm:text-sm font-medium hover:bg-proyecto-secondary hover:text-proyecto-text transition"
+                  class="px-3 py-2 rounded-md text-xs sm:text-sm font-medium hover:bg-proyecto-secondary hover:text-proyecto-text transition flex items-center gap-2"
                 >
-                  Inicio
+                  <i class="fa-solid fa-house text-base"></i>
+                  <span>Inicio</span>
                 </RouterLink>
 
                 <RouterLink
                   to="/about"
                   exact-active-class="bg-proyecto-accent/80 text-white"
-                  class="px-3 py-2 rounded-md text-xs sm:text-sm font-medium hover:bg-proyecto-secondary transition"
+                  class="px-3 py-2 rounded-md text-xs sm:text-sm font-medium hover:bg-proyecto-secondary transition flex items-center gap-2"
                 >
-                  Acerca de
+                  <i class="fa-solid fa-circle-info text-base"></i>
+                  <span>Acerca de</span>
                 </RouterLink>
 
                 <RouterLink
                   to="/sites"
                   exact-active-class="bg-proyecto-accent/80 text-white"
-                  class="px-3 py-2 rounded-md text-xs sm:text-sm font-medium hover:bg-proyecto-secondary transition"
+                  class="px-3 py-2 rounded-md text-xs sm:text-sm font-medium hover:bg-proyecto-secondary transition flex items-center gap-2"
                 >
-                  Sitios históricos
+                  <i class="fa-solid fa-landmark text-base"></i>
+                  <span>Sitios históricos</span>
                 </RouterLink>
               </div>
 
@@ -97,9 +100,10 @@
                 </div>
                 <button
                   @click.prevent="authStore.logout"
-                  class="text-sm text-white font-medium bg-proyecto-primary hover:bg-proyecto-primary/80 rounded-md px-3 py-2 transition-colors duration-200 ml-2 z-10 relative"
+                  class="text-sm text-white font-medium bg-proyecto-primary hover:bg-proyecto-primary/80 rounded-md px-3 py-2 transition-colors duration-200 ml-2 z-10 relative flex items-center gap-2"
                 >
-                  Cerrar sesión
+                  <i class="fa-solid fa-right-from-bracket text-base"></i>
+                  <span>Cerrar sesión</span>
                 </button>
               </RouterLink>
             </div>
@@ -183,9 +187,10 @@
 
                   <button
                     @click="()=>{ authStore.logout(); open = false; }"
-                    class="text-sm text-white font-medium bg-proyecto-primary hover:bg-proyecto-primary/80 rounded-md px-4 py-2 mt-2 transition-colors duration-200 w-full max-w-xs"
+                    class="text-sm text-white font-medium bg-proyecto-primary hover:bg-proyecto-primary/80 rounded-md px-4 py-2 mt-2 transition-colors duration-200 w-full max-w-xs flex items-center justify-center gap-2"
                   >
-                    Cerrar sesión
+                    <i class="fa-solid fa-right-from-bracket text-base"></i>
+                    <span>Cerrar sesión</span>
                   </button>
                 </div>
               </div>

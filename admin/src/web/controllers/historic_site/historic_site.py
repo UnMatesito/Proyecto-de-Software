@@ -312,7 +312,9 @@ def get_edit(site_id):
         site_name = site.name
         images = get_site_images(site_id)
         form = EditSiteForm(site=site)
-        image_form = SiteImageUploadForm(existing_images=len(images))
+        image_form = SiteImageUploadForm(
+            existing_images=len(images), require_images=len(images) == 0
+        )
 
         # Cargo tags del sitio
         tags = site.tags
@@ -348,7 +350,10 @@ def post_edit(site_id):
     site = get_historic_site_by_id(site_id=site_id)
     existing_images = get_site_images(site_id)
     form = EditSiteForm()
-    image_form = SiteImageUploadForm(existing_images=len(existing_images))
+    image_form = SiteImageUploadForm(
+        existing_images=len(existing_images),
+        require_images=len(existing_images) == 0,
+    )
 
     form_valid = form.validate_on_submit()
     images_valid = image_form.validate()
@@ -460,6 +465,7 @@ def delete(site_id):
 @permission_required("site_update")
 def delete_image(image_id):
     """Elimina una imagen específica de un sitio"""
+    site_id = None
     try:
         from core.models import SiteImage
         from core.services.site_image_service import delete_site_image
@@ -467,11 +473,24 @@ def delete_image(image_id):
         image = SiteImage.query.get_or_404(image_id)
         site_id = image.historic_site_id
 
+        total_images = SiteImage.query.filter_by(historic_site_id=site_id).count()
+        if total_images <= 1:
+            flash(
+                "El sitio debe conservar al menos una imagen antes de eliminarla.",
+                "error",
+            )
+            return redirect(url_for("site_bp.get_edit", site_id=site_id))
+
         delete_site_image(image_id)
         flash("Imagen eliminada correctamente", "success")
 
+    except ValueError as e:
+        flash(str(e), "error")
     except Exception as e:
         flash(f"Error al eliminar imagen: {e}", "error")
+
+    if site_id is None:
+        return redirect(url_for("site_bp.list_paginated_sites"))
 
     return redirect(url_for("site_bp.get_edit", site_id=site_id))
 

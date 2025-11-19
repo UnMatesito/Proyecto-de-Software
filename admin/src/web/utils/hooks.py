@@ -1,9 +1,34 @@
-from flask import render_template, request, session
+from flask import jsonify, redirect, render_template, request, session, url_for
 
 from core.services import get_feature_flag_by_name, get_user_by_id
 
 EXEMPT_PATHS = ["/static/", "/auth/"]
-EXEMPT_ENDPOINTS = ["auth.login", "auth.logout", "auth.authenticate"]
+EXEMPT_ENDPOINTS = [
+    "auth.login",
+    "auth.logout",
+    "auth.authenticate",
+    "main_bp.maintenance",
+]
+
+
+def _is_api_request():
+    """Determina si la solicitud actual proviene del blueprint de la API."""
+    return request.blueprint == "api" or request.path.startswith("/api")
+
+
+def _api_maintenance_response(message):
+    """Respuesta JSON estándar cuando la API no está disponible."""
+    return (
+        jsonify(
+            {
+                "error": {
+                    "code": "service_unavailable",
+                    "message": message,
+                }
+            }
+        ),
+        503,
+    )
 
 
 def hook_admin_maintenance():
@@ -26,8 +51,14 @@ def hook_admin_maintenance():
     if user and user.is_admin():
         return
 
-    # Bloqueo para todos los demás
-    return render_template("maintenance.html", message=flag.maintenance_message), 503
+    message = flag.maintenance_message or "La API no está disponible porque el administrador está en mantenimiento."
+
+    # Cuando la solicitud proviene de la API, devolvemos un JSON
+    if _is_api_request():
+        return _api_maintenance_response(message)
+
+    # Para el panel administrativo, redirigimos a la vista de mantenimiento
+    return redirect(url_for("main_bp.maintenance"))
 
 
 def hook_portal_maintenance():
@@ -39,10 +70,11 @@ def hook_portal_maintenance():
         user = get_user_by_id(user_id) if user_id else None
 
         if not (user and user.is_admin()):
-            return (
-                render_template("maintenance.html", message=flag.maintenance_message),
-                503,
+            message = (
+                flag.maintenance_message
+                or "La API no está disponible porque el portal está en mantenimiento."
             )
+            return _api_maintenance_response(message)
 
 
 def hook_reviews_enabled():

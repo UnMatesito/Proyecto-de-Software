@@ -78,10 +78,26 @@
       const response = data
       sites.value = response.data
       pagination.value = response.meta
-      marks.value = []
-      sites.value.forEach(site => {
-        marks.value.push({name: site.name, lat: site.lat, lon: site.lon, desc: site.short_description})
-      });
+
+      const buildMarkerFromSite = (site) => {
+        const rawDescription =
+          site?.short_description ??
+          site?.description ??
+          site?.brief_description ??
+          ''
+
+        const normalizedDescription =
+          typeof rawDescription === 'string' ? rawDescription.trim() : ''
+
+        return {
+          name: site.name,
+          lat: site.lat,
+          lon: site.lon,
+          desc: normalizedDescription || null,
+        }
+      }
+
+      marks.value = sites.value.map(buildMarkerFromSite)
     } catch (error) {
       apiMessage.value = '❌ No se pudo conectar con la API'
       console.error(error)
