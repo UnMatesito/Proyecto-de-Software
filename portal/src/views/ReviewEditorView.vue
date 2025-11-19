@@ -36,6 +36,8 @@
           rows="6"
           placeholder="Contanos tu experiencia..."
           required
+          minlength="20"
+          maxlength="1000"
         ></textarea>
       </div>
 
