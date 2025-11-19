@@ -1,12 +1,12 @@
 <template>
-  <form class="m-auto">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+  <form class="m-auto w-full">
+    <div class="grid w-full grid-cols-1 gap-3 mb-3 sm:grid-cols-2 xl:grid-cols-4">
       <!-- Provincia -->
       <select
         id="small"
         v-model="provinceValue"
         @change="fetchCities(provinceValue)"
-        class="block max-w-96 p-2 text-sm text-gray-900 border border-gray-300
+        class="order-3 sm:order-none block w-full p-2 text-sm text-gray-900 border border-gray-300
                rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500
                dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
                dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -22,7 +22,7 @@
       </select>
 
       <!-- Nombre del sitio -->
-      <div class="relative">
+      <div class="relative order-1 sm:order-none">
         <div
           class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
         >
@@ -56,7 +56,7 @@
 
       <!-- Favoritos (con tooltip cuando no está autenticado) -->
       <div
-        class="p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500
+        class="order-5 sm:order-none w-full p-2 border rounded-md text-sm bg-gray-50 focus:ring-blue-500
                focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600
                dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500
                dark:focus:border-blue-500 relative"
@@ -90,7 +90,7 @@
 
       <!-- Botón Filtrar -->
       <div
-        class="col-start-2 row-start-3 md:col-start-4 md:row-start-1"
+        class="order-8 sm:order-none w-full sm:col-span-2 xl:col-span-1"
         :class="authStore.isAuthenticated ? 'flex flex-col gap-1' : 'flex gap-1'"
       >
         <router-link
@@ -120,7 +120,7 @@
       <select
         id="default"
         v-model="cityValue"
-        class="block p-2 text-sm text-gray-900 border border-gray-300 rounded-lg
+        class="order-4 sm:order-none block w-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg
                bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700
                dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
                dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -136,7 +136,7 @@
       </select>
 
       <!-- Descripción -->
-      <div class="relative">
+      <div class="relative order-2 sm:order-none">
         <div
           class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
         >
@@ -169,7 +169,7 @@
       </div>
 
       <!-- Ordenar por -->
-      <div>
+      <div class="order-6 sm:order-none">
         <select
           id="order"
           v-model="orderByValue"
@@ -194,7 +194,8 @@
       <router-link
         @click="handleReset"
         :to="{ query: {} }"
-        class="text-white w-full bg-proyecto-primary hover:bg-proyecto-accent
+        class="order-9 sm:order-none text-white w-full bg-proyecto-primary hover:bg-proyecto-accent
+               sm:col-span-2 xl:col-span-1
                focus:ring-2 focus:ring-offset-2 focus:ring-proyecto-accent transition
                font-medium rounded-lg text-sm px-5 py-2.5 text-center
                dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none
@@ -202,19 +203,20 @@
       >
         Limpiar filtros
       </router-link>
-    </div>
 
     <!-- Tags multiselect -->
-    <select name="tags" id="tags" multiple>
-      <option
-        v-for="tag in tags"
-        :key="tag.id"
-        :value="tag.slug"
-      >
-        {{ tag.name }}
-      </option>
-    </select>
-    <div></div>
+    <div class="order-7 sm:order-none sm:col-span-2 xl:col-span-4">
+        <select name="tags" id="tags" multiple class="w-full">
+          <option
+            v-for="tag in tags"
+            :key="tag.id"
+            :value="tag.slug"
+          >
+            {{ tag.name }}
+          </option>
+        </select>
+      </div>
+    </div>
   </form>
 </template>
 
@@ -373,11 +375,10 @@ watch(
 </script>
 
 <style>
-.col-start-1-i {
-  grid-column-start: 1 !important;
-}
+.col-start-1-i,
 .col-end-4-i {
-  grid-column-end: 4 !important;
+  grid-column: 1 / -1 !important;
+  width: 100%;
 }
 
 /* Asegurar que el multiselect aparezca sobre el mapa */
