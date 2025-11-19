@@ -6,20 +6,22 @@
       </h4>
     </div>
 
-    <div class="flex justify-between items-center flex-wrap gap-2 mb-2">
+    <div class="flex flex-col gap-3 mb-2 sm:flex-row sm:items-center sm:justify-between flex-wrap">
 
-      <div class="grid grid-cols-3 md:grid-cols-7 lg:grid-cols-11 gap-2">
+      <div class="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-3 md:grid-cols-7 lg:grid-cols-11">
         <ButtonPrimary
         v-for="value in radius"
+        :key="value"
         :text="value + ' km'"
         @click="onRadiusClick(value)"
-        :class="[actualRadius == value*1000 ? 'bg-proyecto-accent' : '']" />
+        :class="['w-full justify-center sm:w-auto', actualRadius == value*1000 ? 'bg-proyecto-accent' : '']" />
       </div>
-      <div class="flex flex-col items-end">
+      <div class="flex flex-col w-full items-stretch sm:w-auto sm:items-end">
         <ButtonPrimary v-if="showButton && !isDisable"
         :text="'Buscar en el área seleccionada'"
         @click="updateRadiusPath"
-        :icon_left="'fa-solid fa-rotate mr-2'" />
+        :icon_left="'fa-solid fa-rotate mr-2'"
+        :class="['w-full justify-center sm:w-auto']" />
       </div>
     </div>
   </div>
@@ -41,7 +43,7 @@
       :icon="customIconOrange">
         <l-popup :visible="true">
           {{ m.name }}
-          <br/> 
+          <br/>
           {{ m.desc  }}
         </l-popup>
       </l-marker>

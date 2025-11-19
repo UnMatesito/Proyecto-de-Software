@@ -1,0 +1,75 @@
+<script setup>
+import { computed, onMounted, ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
+import CardList from '@/components/CardList.vue';
+import { useAuthStore } from '@/stores/auth.js';
+import { useSitesStore } from '@/stores/sites.js';
+import { useFavoritesStore } from '@/stores/favorites.js';
+const authStore = useAuthStore();
+const sitesStore = useSitesStore();
+const favoritesStore = useFavoritesStore();
+const { isAuthenticated } = storeToRefs(authStore);
+const apiMessage = ref('');
+const sites = computed(() => sitesStore.getMostVisitedSites(10));
+const isFavorite = siteId => favoritesStore.isFavorite(siteId);
+const toggleFavorite = async siteId => {
+  try {
+    await favoritesStore.toggleFavorite(siteId);
+  } catch (error) {
+    console.error('Error al modificar favoritos:', error);
+  }
+};
+const fetchSites = async () => {
+  try {
+    await sitesStore.fetchSites();
+  } catch (error) {
+    apiMessage.value = '❌ No se pudo conectar con la API';
+    console.error(error);
+  }
+};
+const fetchFavorites = async () => {
+  try {
+    await favoritesStore.fetchFavorites();
+  } catch (error) {
+    console.error('Error al obtener favoritos:', error);
+  }
+};
+onMounted(async () => {
+  await fetchSites();
+  await fetchFavorites();
+});
+watch(
+  () => isAuthenticated.value,
+  async loggedIn => {
+    if (loggedIn) {
+      await fetchFavorites();
+    }
+  }
+);
+</script>
+
+<template>
+  <section class="mb-8">
+    <div class="flex flex-row justify-between items-center mb-4">
+      <h2 class="text-xl sm:text-3xl lg:text-4xl text-proyecto-primary font-semibold w-[220px] sm:w-3/4">
+        Sitios más visitados
+      </h2>
+      <router-link
+        to="/sites?order_by=most-visited"
+        class="text-sm sm:text-md lg:text-[16px] font-semibold hover:bg-proyecto-primary hover:text-white rounded-full px-2.5 sm:px-4 py-1 sm:py-2 transition-colors duration-400"
+      >
+        Ver Todos <i class="fa-solid fa-chevron-right ml-1"></i>
+      </router-link>
+    </div>
+    <div v-if="apiMessage" class="mb-4 rounded-md bg-red-100 px-4 py-2 text-sm text-red-700">
+      {{ apiMessage }}
+    </div>
+    <CardList
+      :sites="sites"
+      :is-authenticated="isAuthenticated"
+      :is-favorite="isFavorite"
+      :toggle-favorite="toggleFavorite"
+      :hide-favorite-button="false"
+    />
+  </section>
+</template>

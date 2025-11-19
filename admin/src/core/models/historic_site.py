@@ -52,6 +52,7 @@ class HistoricSite(db.Model):
     location = db.Column(Geometry(geometry_type="POINT", srid=4326), nullable=False)
     average_rating = db.Column(db.Float, default=0.0, nullable=False)
     rating_count = db.Column(db.Integer, default=0, nullable=False)
+    visits = db.Column(db.Integer, default=0, nullable=False)
 
     # Latitud
     @property
@@ -268,6 +269,12 @@ class HistoricSite(db.Model):
         total = self.average_rating * n
         total = total - old_rating + new_rating
         self.average_rating = total / n
+
+    def increment_visits_count(self):
+        """Incrementa el contador de visitas asegurando valores numéricos."""
+
+        self.visits = (self.visits or 0) + 1
+        return self
 
     def __repr__(self):
         """Retorna una representación de sitio histórico la cual posee su nombre"""

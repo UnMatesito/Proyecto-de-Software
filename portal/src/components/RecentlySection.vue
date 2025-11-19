@@ -62,7 +62,7 @@
 <template>
   <section class="mb-8">
     <div class="flex flex-row justify-between items-center mb-4">
-        <h2 class="text-xl sm:text-3xl lg:text-4xl text-proyecto-primary font-semibold w-[220px] sm:w-3/4">10 Sitios Recientemente Agregados</h2>
+        <h2 class="text-xl sm:text-3xl lg:text-4xl text-proyecto-primary font-semibold w-[220px] sm:w-3/4">Sitios Recientemente Agregados</h2>
         <router-link
           to="/sites?order_by=latest"
           class="text-sm sm:text-md lg:text-[16px] font-semibold hover:bg-proyecto-primary hover:text-white rounded-full px-2.5 sm:px-4 py-1 sm:py-2 transition-colors duration-400"

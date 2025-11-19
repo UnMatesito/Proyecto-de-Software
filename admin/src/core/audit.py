@@ -216,6 +216,7 @@ def _get_changed_attributes(instance_state):
         "created_at",
         "rating_count",
         "average_rating",
+        "visits",
     ]
     changed = [
         attr.key

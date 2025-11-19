@@ -24,6 +24,9 @@
       <!-- Seccion Favoritos del usuario-->
       <FavoritesSection />
 
+      <!-- Seccion sitios más visitados -->
+      <MostVisitedSection />
+
       <!-- Seccion recientemente agregados-->
       <RecentlySection />
     </div>
@@ -37,6 +40,7 @@ import ButtonPrimary from "@/components/buttons/ButtonPrimary.vue";
 import RecentlySection from "@/components/RecentlySection.vue";
 import FavoritesSection from "@/components/FavoritesSection.vue";
 import TopRatedSection from "@/components/TopRatedSection.vue";
+import MostVisitedSection from "@/components/MostVisitedSection.vue";
 
 const apiMessage = ref('')
 const searchQuery = ref('')
