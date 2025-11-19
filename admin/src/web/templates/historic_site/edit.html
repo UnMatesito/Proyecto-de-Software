@@ -23,25 +23,35 @@
 {% endblock %}
 
 {% block content %}
-<div class="flex items-center flex-col p-4">
+<div class="flex items-center flex-col p-4 gap-6">
+    {{ form_site(lon=lon,
+        lat=lat,
+        lon_view=lon,
+        lat_view=lat,
+        site_name=site_name,
+        site=site,
+        form=form,
+        image_form=image_form,
+        existing_images_count=images|length if images else 0) }}
 
     <!-- Galería de imágenes existentes -->
     {% if images %}
-    <div class="w-full max-w-4xl mb-6 bg-white shadow-lg rounded-lg border border-gray-200 p-6">
-        <div class="flex items-center justify-between mb-3">
-            <h2 class="text-xl font-semibold">
-                Imágenes del sitio
-                <span class="text-sm font-normal text-gray-600">({{ images|length }}/10)</span>
-                <br>
+    <div class="w-full flex justify-center">
+        <div class="w-full max-w-4xl bg-white shadow-lg rounded-lg border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-xl font-semibold">
+                    Imágenes del sitio
+                    <span class="text-sm font-normal text-gray-600">({{ images|length }}/10)</span>
+                    <br>
+                    <p class="text-sm text-gray-500 flex items-center gap-2">
+                        Nota: Los cambios de imágenes se guardan automaticamente.
+                    </p>
+                </h2>
                 <p class="text-sm text-gray-500 flex items-center gap-2">
-                    Nota: Los cambios de imágenes se guardan automaticamente.
+                    <i class="fa-solid fa-up-down-left-right"></i>
+                    Arrastrá las imágenes para reordenar. La primera será la portada.
                 </p>
-            </h2>
-            <p class="text-sm text-gray-500 flex items-center gap-2">
-                <i class="fa-solid fa-up-down-left-right"></i>
-                Arrastrá las imágenes para reordenar. La primera será la portada.
-            </p>
-        </div>
+            </div>
 
         <div
             class="flex flex-col gap-4"
@@ -129,17 +139,8 @@
         </p>
         {% endif %}
     </div>
+    </div>
     {% endif %}
-
-{{ form_site(lon=lon,
-        lat=lat,
-        lon_view=lon,
-        lat_view=lat,
-        site_name=site_name,
-        site=site,
-        form=form,
-        image_form=image_form,
-        existing_images_count=images|length) }}
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
