@@ -25,7 +25,18 @@ class SiteQuerySchema(Schema):
     province = fields.Str()
     tags = fields.Str()  # Separados por comas
     order_by = fields.Str(
-        validate=validate.OneOf(["latest", "oldest", "rating-5-1", "rating-1-5"]),
+        validate=validate.OneOf(
+            [
+                "latest",
+                "oldest",
+                "rating-5-1",
+                "rating-1-5",
+                "name-asc",
+                "name-desc",
+                "most-visited",
+                "least-visited",
+            ]
+        ),
         load_default="latest",
     )
     favorites = fields.Bool(load_default=False)
@@ -220,6 +231,7 @@ class SiteResponseSchema(Schema):
     description = fields.Str()
     review_count = fields.Int()
     average_rating = fields.Float()
+    visits = fields.Int()
     city = fields.Str()
     province = fields.Str()
     lat = fields.Float()

@@ -74,6 +74,18 @@ def get_historic_site_by_id(site_id: int):
     return site
 
 
+def increment_site_visits(site: HistoricSite):
+    """Incrementa el contador de visitas de un sitio histórico publicado."""
+
+    try:
+        site.increment_visits_count()
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        raise e
+
+    return site
+
 def assign_relations_to_historic_site(
     historic_site, conservation_state, category, user, city, tags=None
 ):
@@ -430,7 +442,7 @@ def list_published_sites(
         city_name: Nombre exacto de ciudad (case-insensitive)
         province_name: Nombre exacto de provincia (case-insensitive)
         tags_str: Tags separados por coma (todos deben coincidir)
-        order_by: latest | oldest | rating-5-1 | rating-1-5
+        order_by: latest | oldest | rating-5-1 | rating-1-5 | name-asc | name-desc | most-visited | least-visited
         lat, lon, radius: Para búsqueda geoespacial
         favorited_by_user_id: ID de usuario para filtrar sólo sus favoritos
         page: Número de página
@@ -526,6 +538,18 @@ def list_published_sites(
         service_sorted_by = "desc"
     elif order_by == "rating-1-5":
         service_order_by = "average_rating"
+        service_sorted_by = "asc"
+    elif order_by == "name-asc":
+        service_order_by = "name"
+        service_sorted_by = "asc"
+    elif order_by == "name-desc":
+        service_order_by = "name"
+        service_sorted_by = "desc"
+    elif order_by == "most-visited":
+        service_order_by = "visits"
+        service_sorted_by = "desc"
+    elif order_by == "least-visited":
+        service_order_by = "visits"
         service_sorted_by = "asc"
 
     # Aplicar ordenamiento

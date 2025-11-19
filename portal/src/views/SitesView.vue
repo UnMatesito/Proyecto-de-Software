@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-col items-center p-3 w-full">
     <h2 class="font-semibold text-3xl text-proyecto-primary">Listado de sitios históricos</h2>
-    <p class="text-proyecto-accent">Aqui puedes buscar el sitio que justo necesitas.</p>
+    <p class="text-proyecto-accent">Aquí puedes buscar el sitio que deseas conocer.</p>
     <aside class="p-3 max-w-[1150px]">
-      <Filter :page="pagination.page" :tags="tags" :provinces="provinces" @disableMap="changeMapState" />
+      <Filter :tags="tags" :provinces="provinces" @disableMap="changeMapState" />
       <Map styleContent="height:400px;  width: 100%" :marks="marks" :isDisable="disableMap" @changeMapState="changeMapState" />
     </aside>
 

@@ -3,6 +3,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_req
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from geoalchemy2.functions import ST_X, ST_Y
 from marshmallow import ValidationError
+from sqlalchemy.exc import SQLAlchemyError
 
 from core.database import db
 from core.services import historic_site_service
@@ -44,6 +45,7 @@ def _serialize_site(site):
         "review_count": site.rating_count,
         "average_rating": site.average_rating,
         "city": site.city.name if site.city else None,
+        "visits": site.visits,
         "province": (
             site.city.province.name if site.city and site.city.province else None
         ),
@@ -179,6 +181,12 @@ def get_site(site_id):
     """
     try:
         site = historic_site_service.get_published_site_by_id(site_id)
+        try:
+            site.increment_visits_count()
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
         return jsonify(_serialize_site(site)), 200
 
     except ValueError:

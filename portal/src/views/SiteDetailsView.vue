@@ -64,11 +64,19 @@
             {{ isFavorite ? 'Quitar de Favoritos' : 'Agregar a favoritos' }}
             <div class="tooltip-arrow" data-popper-arrow></div>
           </div>
-          <div class="flex gap-1 items-center border-b-2 pb-2">
-            <Stars :rating="detalle.average_rating || 0" :class="'w-32'"/>
-            <span class="text-lg font-semibold text-yellow-500">
-              ({{ detalle.review_count || 0 }})
-            </span>
+          <div class="border-b-2 pb-2">
+            <div class="flex gap-1 items-center">
+              <Stars :rating="detalle.average_rating || 0" :class="'w-32'"/>
+              <span class="text-lg font-semibold text-yellow-500">
+                ({{ detalle.review_count || 0 }})
+              </span>
+            </div>
+
+            <div class="mt-1">
+              <span class="text-sm font-semibold text-gray-500">
+                {{ visitsCount }} visitas
+              </span>
+            </div>
           </div>
           <div class="flex gap-2 border-b-2 pt-1 pb-2" v-if="detalle.province || detalle.city">
             <IconLocation class="fill-red-700 w-4"/>
@@ -258,6 +266,7 @@ const images = computed(() => detalle.value.images || [])
 const currentImage = computed(() => images.value[activeIndex.value] || null)
 const hasImages = computed(() => images.value.length > 0)
 const isFavorite = computed(() => detalle.value.id ? favoritesStore.isFavorite(detalle.value.id) : false)
+const visitsCount = computed(() => detalle.value?.visits ?? 0)
 
 const hasLocation = computed(() =>
   detalle.value &&

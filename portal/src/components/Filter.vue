@@ -103,7 +103,7 @@
               tags: tagsValue.length ? tagsValue.join(',') : undefined,
               order_by: orderByValue !== 'Ordenar por' ? orderByValue : undefined,
               favorites: favoriteValue || undefined,
-              page: props.page
+              page: 1
             }
           }"
           class="text-white w-full bg-proyecto-primary hover:bg-proyecto-accent
@@ -183,6 +183,10 @@
           <option value="latest">Más recientes primero</option>
           <option value="rating-1-5">Reseñas 1-5 estrellas</option>
           <option value="rating-5-1">Reseñas 5-1 estrellas</option>
+          <option value="name-asc">Nombre A-Z</option>
+          <option value="name-desc">Nombre Z-A</option>
+          <option value="most-visited">Más visitados</option>
+          <option value="least-visited">Menos visitados</option>
         </select>
       </div>
 
@@ -233,7 +237,7 @@ const favoriteValue = ref(false)
 const tagsValue = ref([])
 
 const cities = ref([])
-const props = defineProps(['provinces', 'states', 'page', 'tags'])
+const props = defineProps(['provinces', 'tags'])
 
 // Variable para mantener referencia a la instancia del multiselect
 let multiSelectInstance = null

@@ -49,7 +49,7 @@ export const useSitesStore = defineStore('sites', () => {
           currentPage++;
         } while (currentPage <= totalPages);
 
-        sites.value = allSites;
+        sites.value = allSites.map(site => ({ ...site, visits: site.visits ?? 0 }));
         lastFetchedAt.value = Date.now();   // ⏱️ renovar el TTL
 
         return sites.value;
@@ -65,6 +65,16 @@ export const useSitesStore = defineStore('sites', () => {
     })();
 
     return ongoingRequest;
+  }
+
+  function getMostVisitedSites(limit = 10) {
+    return [...sites.value]
+      .sort((a, b) => {
+        const visitsA = a.visits ?? 0;
+        const visitsB = b.visits ?? 0;
+        return visitsB - visitsA;
+      })
+      .slice(0, limit);
   }
 
   function getRecentlyAddedSites(limit = 10) {
@@ -94,6 +104,7 @@ export const useSitesStore = defineStore('sites', () => {
     fetchSites,
     getRecentlyAddedSites,
     getTopScoredSites,
+    getMostVisitedSites,
     getUserFavoriteSites,
     lastFetchedAt
   };
