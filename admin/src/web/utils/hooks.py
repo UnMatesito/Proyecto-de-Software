@@ -51,7 +51,10 @@ def hook_admin_maintenance():
     if user and user.is_admin():
         return
 
-    message = flag.maintenance_message or "La API no está disponible porque el administrador está en mantenimiento."
+    message = (
+        flag.maintenance_message
+        or "La API no está disponible porque el administrador está en mantenimiento."
+    )
 
     # Cuando la solicitud proviene de la API, devolvemos un JSON
     if _is_api_request():
