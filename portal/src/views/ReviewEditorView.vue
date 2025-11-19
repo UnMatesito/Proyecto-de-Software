@@ -35,6 +35,9 @@
           class="border rounded-lg w-full p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
           rows="6"
           placeholder="Contanos tu experiencia..."
+          required
+          minlength="20"
+          maxlength="1000"
         ></textarea>
       </div>
 
