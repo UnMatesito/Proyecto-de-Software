@@ -815,14 +815,16 @@ def seed_site_tags():
         print("No hay tags disponibles para asignar.")
         return
 
-    max_tags = min(5, len(tags))
+    total_tags = len(tags)
+    min_tags = min(1, total_tags)
+    max_tags = total_tags
 
     disable_audit_listeners()
 
     try:
         for site in sites:
             site.tags.clear()
-            count = randint(1, max_tags)
+            count = randint(min_tags, max_tags)
             selected_tags = sample(tags, count)
             site.tags.extend(selected_tags)
 
