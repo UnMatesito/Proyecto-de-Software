@@ -91,8 +91,19 @@
               <span>{{ detalle.inserted_at || '-' }}</span>
             </div>
           </div>
-          <div class="flex gap-1 sm:gap-2 text-blue-700 flex-wrap border-t-2 pt-1 sm:pt-2 pb-0.5 sm:pb-1">
-            <span v-for="tag in detalle.tags" :key="tag" class="inline-flex items-center bg-blue-50 text-blue-500 text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2.5 py-0.5 border sm:border-2 rounded-full border-blue-500 whitespace-nowrap">{{ tag }}</span>
+          <div
+            v-if="detalle.tags?.length"
+            class="flex gap-1 sm:gap-2 text-blue-700 flex-wrap border-t-2 pt-1 sm:pt-2 pb-0.5 sm:pb-1"
+          >
+            <button
+              v-for="tag in detalle.tags"
+              :key="tag"
+              type="button"
+              @click="handleTagClick(tag)"
+              class="inline-flex items-center bg-blue-50 text-blue-500 text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2.5 py-0.5 border sm:border-2 rounded-full border-blue-500 whitespace-nowrap transition hover:bg-blue-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+            >
+              {{ tag }}
+            </button>
           </div>
           <div class="flex justify-between gap-2 flex-wrap">
             <ButtonPrimary :text="'Ver en el mapa'" id="scroll_to_map" class="justify-center" :icon_left="'fa-solid fa-arrow-down mr-2'" @click="scrollToMap"/>
@@ -213,6 +224,7 @@ const detalle = ref({})
 const detailedContent = ref([])
 const shortDescription = ref('')
 const reviews = ref([])
+const tagSlugMap = ref({})
 const sortedReviews = computed(() => {
   const auth = authStore.user;
   if (!reviews.value) return [];
@@ -278,6 +290,18 @@ const fetchDetalleSitio = async () => {
     ]
   } catch (error) {
     console.error('Error al cargar detalle:', error)
+  }
+}
+
+const fetchTagsCatalog = async () => {
+  try {
+    const { data } = await api.get('/tags')
+    tagSlugMap.value = data.data.reduce((acc, tag) => {
+      acc[tag.name] = tag.slug
+      return acc
+    }, {})
+  } catch (error) {
+    console.error('Error al cargar tags:', error)
   }
 }
 
@@ -360,7 +384,7 @@ const next = () => {
 const setActive = (idx) => { activeIndex.value = idx }
 
 onMounted(async () => {
-  await fetchDetalleSitio()
+  await Promise.all([fetchDetalleSitio(), fetchTagsCatalog()])
   await fetchFeatureFlags()
   if (reviewsEnabled.value) {
     await fetchReviews()
@@ -384,6 +408,11 @@ const hasUserReview = computed(() => {
   return reviews.value.some(r => r.user_email === auth.email);
 });
 
+const handleTagClick = (tagName) => {
+  if (!tagName) return
+  const slug = tagSlugMap.value[tagName] || tagName
+  router.push({ path: '/sites', query: { tags: slug } })
+}
 
 </script>
 
