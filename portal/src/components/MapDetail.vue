@@ -7,11 +7,18 @@
         name="OpenStreetMap"
       ></l-tile-layer>
 
-      <l-marker  
+      <l-marker
         :lat-lng="mark"
         :icon="customIconOrange">
         <l-popup :visible="true">
-          {{ markName }}
+          <div class="min-w-[200px] space-y-1">
+            <p class="text-base font-semibold text-proyecto-primary leading-tight">
+              {{ markName }}
+            </p>
+            <p class="text-sm text-proyecto-text leading-snug">
+              {{ markDesc || 'Sin descripción disponible.' }}
+            </p>
+          </div>
         </l-popup>
       </l-marker>
     </l-map>
@@ -41,6 +48,9 @@
             default: []
         },
         markName: {
+            default: ''
+        },
+        markDesc: {
             default: ''
         }
     })
