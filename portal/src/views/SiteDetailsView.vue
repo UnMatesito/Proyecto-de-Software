@@ -139,6 +139,7 @@
           v-if="hasLocation"
           :mark="[Number(detalle.lat), Number(detalle.lon)]"
           :markName="detalle.name"
+          :markDesc="shortDescription"
           :zoom="14"
         />
         <p v-else class="text-sm text-gray-500">Sin coordenadas para mostrar el mapa.</p>
