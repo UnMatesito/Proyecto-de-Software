@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template
 
 from core.services import get_feature_flag_by_name
-
 from web.utils.auth import get_current_user, login_required
 
 main_bp = Blueprint("main_bp", __name__)

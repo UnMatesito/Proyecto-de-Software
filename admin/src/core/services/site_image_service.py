@@ -110,9 +110,9 @@ def delete_site_image(image_id: int) -> bool:
     """Elimina una imagen del sitio histórico"""
     image = SiteImage.query.get_or_404(image_id)
 
-    total_images = (
-        SiteImage.query.filter_by(historic_site_id=image.historic_site_id).count()
-    )
+    total_images = SiteImage.query.filter_by(
+        historic_site_id=image.historic_site_id
+    ).count()
 
     if total_images <= 1:
         raise ValueError("El sitio debe conservar al menos una imagen")

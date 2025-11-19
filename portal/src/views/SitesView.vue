@@ -8,28 +8,36 @@
     </aside>
 
     <section class="w-full sm:w-auto grid  sm:grid-cols-2  md:grid-cols-3  lg:grid-cols-3 xl:grid-cols-4 gap-3 p-3">
-      <Card
-      class="md:w-[230px] lg:w-[270px]"
-      v-for="site in sites"
-      :key="`${site.id}-${site.name}`"
-      :name="site.name"
-      :province="site.province"
-      :city="site.city"
-      :tags="site.tags"
-      :average_rating="site.average_rating"
-      :state_of_conservation="site.state_of_conservation"
-      :inauguration_year="site.inauguration_year"
-      :category="site.category"
-      :imagen="site.images[0].url"
-      :alt-imagen="site.images[0].alt"
-      :id="site.id"
-      :rating="site.average_rating"
-      :created_at="site.inserted_at"
-      />
-      <SkeletonCard v-if="!sites" v-for="n in 24" />
+      <template v-if="sites === null">
+        <SkeletonCard v-for="n in 24" :key="`skeleton-${n}`" />
+      </template>
+      <template v-else-if="hasSites">
+        <Card
+        class="md:w-[230px] lg:w-[270px]"
+        v-for="site in sites"
+        :key="`${site.id}-${site.name}`"
+        :name="site.name"
+        :province="site.province"
+        :city="site.city"
+        :tags="site.tags"
+        :average_rating="site.average_rating"
+        :state_of_conservation="site.state_of_conservation"
+        :inauguration_year="site.inauguration_year"
+        :category="site.category"
+        :imagen="site.images[0].url"
+        :alt-imagen="site.images[0].alt"
+        :id="site.id"
+        :rating="site.average_rating"
+        :created_at="site.inserted_at"
+        />
+      </template>
+      <p v-else class="col-span-full text-center text-proyecto-primary font-semibold py-10">
+        No hay sitios para mostrar.
+      </p>
     </section>
 
     <Pagination
+      v-if="hasSites"
       class="md:justify-center mb-3"
       :page="pagination.page"
       :pageSize=25
@@ -39,7 +47,7 @@
 </template>
 
 <script setup>
-  import { ref, watch, onMounted} from 'vue'
+  import { ref, watch, onMounted, computed} from 'vue'
   import { useRoute, useRouter} from 'vue-router'
   import {useAuthStore} from "@/stores/auth.js";
   import api from '@/api/axios'
@@ -59,6 +67,7 @@
   const provinces = ref([])
   const disableMap = ref(false)
   const page = ref(1)
+  const hasSites = computed(() => Array.isArray(sites.value) && sites.value.length > 0)
 
   //Fetch para obtener los sitios
   const fetchSites = async (url) => {
