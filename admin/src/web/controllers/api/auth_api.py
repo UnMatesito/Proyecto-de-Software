@@ -33,7 +33,6 @@ def google_login():
     next_url = request.args.get("next", "/")
     session["next_url"] = next_url
 
-    print(f"DEBUG: Google Redirect URI usada: {redirect_uri}, next= {next_url}")
     return oauth.google.authorize_redirect(redirect_uri)
 
 
