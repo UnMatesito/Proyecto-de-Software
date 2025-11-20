@@ -2,12 +2,20 @@ from flask import jsonify, redirect, render_template, request, session, url_for
 
 from core.services import get_feature_flag_by_name, get_user_by_id
 
-EXEMPT_PATHS = ["/static/", "/auth/"]
+EXEMPT_PATHS = ["/static/", "/auth/", "/api/auth/", "/api/me", "/api/feature-flags/"]
 EXEMPT_ENDPOINTS = [
     "auth.login",
     "auth.logout",
     "auth.authenticate",
     "main_bp.maintenance",
+    "api.google_login",
+    "api.google_callback",
+    "api.google_logout",
+    "api.refresh_access_token",
+    "api.get_current_user",
+    "api.list_my_reviews",
+    "api.my_favorites",
+    "api.get_feature_flag",
 ]
 
 
@@ -68,16 +76,20 @@ def hook_portal_maintenance():
     """Verifica el estado del flag portal_maintenance, en caso de estar on y no ser system admin, redirige"""
     flag = get_feature_flag_by_name("portal_maintenance_mode")
 
-    if flag and flag.is_enabled:
-        user_id = session.get("user_id")
-        user = get_user_by_id(user_id) if user_id else None
+    if not flag or not flag.is_enabled:
+        return
 
-        if not (user and user.is_admin()):
-            message = (
-                flag.maintenance_message
-                or "La API no está disponible porque el portal está en mantenimiento."
-            )
-            return _api_maintenance_response(message)
+    if any(request.path.startswith(p) for p in EXEMPT_PATHS):
+        return
+
+    if request.endpoint in EXEMPT_ENDPOINTS:
+        return
+
+    message = (
+        flag.maintenance_message
+        or "La API no está disponible porque el portal está en mantenimiento."
+    )
+    return _api_maintenance_response(message)
 
 
 def hook_reviews_enabled():
