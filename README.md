@@ -1,96 +1,111 @@
-# Grupo 09
+# Histori.ar - Sistema de Gestión Histórica
+**Proyecto académico** creado para la materia **Proyecto de Software** de la Universidad Nacional de La Plata (UNLP).
 
-## Para instalar dependencias
+**Integrantes del equipo - Grupo 09**
+- Carlos Benítez
+- Tobias Palumbo
+- Cielo Vega
+- Mateo Suarez
+- Neftalí Toledo
+
+---
+
+## Índice
+
+- [Descripción del Proyecto](#descripción-del-proyecto)
+- [Módulos Principales](#módulos-principales)
+- [Instalación y Configuración](#instalación-y-configuración)
+- [Accesos](#accesos)
+
+---
+
+## Descripción del Proyecto
+
+**Histori.ar** es un sistema con una arquitectura MVC de gestión de sitios históricos diseñado para centralizar, administrar y consultar información y realizar reseñas de sitios históricos de manera eficiente. El proyecto implementa una arquitectura con:
+
+- **Backend**: API REST desarrollada con Flask (Python)
+- **Frontend**: Aplicación web interactiva con Vue.js
+- **Base de Datos**: PostgreSQL para persistencia de datos
+- **Almacenamiento**: MinIO para gestión de archivos
+- **Administración**: Panel de control administrativo
+---
+## Módulos Principales
+
+### [`admin/`](./admin/README.md) - Aplicación de Administración & API REST
+
+**Stack**: Python, Flask, SQLAlchemy, PostgreSQL, MinIO (Almacenamiento de Imagenes)
+
+Backend responsable de:
+- **API REST** para todas las operaciones del sistema
+- **CRUD** de usuarios
+- **Autenticación** de usuarios Administradores
+- **Gestión de Sitios Historicos** y evaluación de reseñas
+- 
+- **Validación** y procesamiento de datos
+
+**Documentación completa**: Ver [`admin/README.md`](./admin/README.md)
+
+---
+### [`portal/`](./portal/README.md) - Frontend Web
+
+**Stack**: Vue.js 3, Vite, HTML5, CSS3, JavaScript
+
+Interfaz de usuario pública que proporciona:
+- **Visualización** de contenido histórico
+- **Búsqueda y Filtrado** avanzado
+- **Interfaz Responsiva** para múltiples dispositivos
+- **Consumo de API REST** del backend
+
+**Documentación completa**: Ver [`portal/README.md`](./portal/README.md)
+
+**Características**:
+- Dashboard interactivo
+- Galería de contenido
+- Búsqueda de registros
+- Perfil de usuario
+
+---
+
+### [`calculator/`](./calculator/README.md) - Herramienta de Cálculo
+
+**Módulo de prueba** para experimentar las funcionalidades de Gitflow.
+
+---
+## Instalación y Configuración
+
+### 1️⃣ Clonar el Repositorio
+
 ```bash
-poetry install
+git clone https://github.com/UnMatesito/Proyecto-de-Software.git
+cd Proyecto-de-Software
 ```
 
-## Para entrar en el entorno virtual
-```bash
-# Acceder a la carpeta de admin 
-cd admin 
+### 2️⃣ Instalar Dependencias del Backend
 
-# y ejecutar
+```bash
+# Instalar las dependencias de Python
+poetry install
+
+# Entrar al entorno virtual
+cd admin
 eval $(poetry env activate)
 ```
 
-## Para iniciar el servidor
+### 3️⃣ Instalar Dependencias del Frontend
+
 ```bash
-poetry run python app.py
+# En una nueva terminal, desde la raíz del proyecto
+cd portal
+npm install
 ```
 
-## Para ejecutar tests
-```bash
-poetry run pytest
-```
+### 4️⃣ Configurar Variables de Entorno y Levantar las aplicaciones
 
-## Para linteo
-Formateo y linteo
-```bash
-poetry run black .
-```
-Ordenar imports
-```bash
-poetry run isort .
-```
-Chequear cumplimiento con PEP8
-```bash
-poetry run flake8 --show-source .
-```
-Correr todo junto
-```bash
-poetry run black . ; poetry run isort . ; poetry run flake8 --show-source .
-```
+Consulta el `README.md` de la carpeta admin para la configuración del proyecto y despliegue local.
 
-## Para configurar el .env
-1. Hacer una copia del .env.example de la carpeta admin y renombrarla a .env
-2. Rellenar los campos
-3. Para rellenar el campo de SECRET_KEY, ejecutar lo siguiente y copiar el resultado
-```py
-python -c "import secrets;print(secrets.token_hex(32))"
-```
-5. Para rellenar el campo de la base de datos usar la siguiete plantilla y reemplazar los campos
-- usuario
-- contraseña
-- host
-- puerto
-- nombre_db
-```
-postgresql+psycopg2://usuario:contraseña@host:puerto/nombre_db
-```
-6. Hacer una copia del .env.example de la carpeta docker y renombrarla a .env en esa misma carpeta
-7. Para rellenar configuraciones de base de datos hay que completar los siguientes campos
-- POSTGRES_USER
-- POSTGRES_PASSWORD
-- POSTGRES_DB
-- PGADMIN_PASSWORD
-8. Replicar lo anterior en el .env de la carpeta admin (Sin PGADMIN_PASSWORD)
-
-## Info acceder a pgadmin y la base de datos
-- Pgadmin: http://localhost:5050
-- Usuario: admin@proyecto.com
-- Contraseña: La que pongan en el .env de la carpeta docker en el campo PGADMIN_PASSWORD
-
-- Host de la base de datos: db
-- Puerto: 5432
-- Usuario: El que pongan en el .env de la carpeta docker en el campo POST
-- Contraseña: La que pongan en el .env de la carpeta docker en el campo POSTGRES_PASSWORD
-- Nombre de la base de datos: El que pongan en el .env de la carpeta docker en el campo POSTGRES_DB
-- Puerto de la base de datos: 5432
-
-## Para configurar MINIO
-- Completar los campos en el .env de la carpeta docker con los campos añadidos del .env.example
-- Lo que hay que completar es el usuario y la contraseña
-```
-MINIO_ROOT_USER=COMPLETAR
-MINIO_ROOT_PASSWORD=COMPLETAR
-MINIO_ENDPOINT=http://minio:9000
-MINIO_BUCKET=proyecto
-MINIO_SECURE=False
-```
-- Para poder acceder desde flask, hay que completar los campos de SECRET_KEY y ACCESS_KEY del .env de la carpeta admin
-- Estos datos se completan con los mismos datos que los de MINIO_ROOT_USER y MINIO_ROOT_PASSWORD del .env de la carpeta docker
-```
-MINIO_ACCESS_KEY=COMPLETAR
-MINIO_SECRET_KEY=COMPLETAR
-```
+---
+## Accesos
+- **Portal Web**: [http://localhost:3000](http://localhost:3000)
+- **Panel de Administación**: [http://localhost:5000](http://localhost:5000)
+- **PgAdmin**: [http://localhost:5050](http://localhost:5050)
+- **MinIO**: [http://localhost:9001](http://localhost:9001)
