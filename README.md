@@ -66,7 +66,7 @@ Interfaz de usuario pública que proporciona:
 
 ---
 
-### [`calculator/`](./calculator/README.md) - Herramienta de Cálculo
+### `calculator/` - Herramienta de Cálculo
 
 **Módulo de prueba** para experimentar las funcionalidades de Gitflow.
 
